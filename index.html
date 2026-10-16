@@ -585,6 +585,7 @@
       const CATS = ["همه", ...new Set(MENU.map((m) => m.c))];
       const ST = ["جدید", "در حال آماده‌سازی", "آماده تحویل", "تحویل شد"],
         NX = ["شروع آماده‌سازی", "آماده شد", "تحویل شد ✓"];
+      // ⚠️ یوزرنیم تلگرام کافه را بدون @ بنویس. مثال: cafe_lamour
       const TELEGRAM = "Avesta_son";
       const K = "cafe_orders_v1";
       let mem = [];
@@ -637,7 +638,7 @@
         $("#menu").innerHTML = MENU.filter((m) => cat == "همه" || m.c == cat)
           .map(
             (m) =>
-              `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
+              `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
           )
           .join("");
       }
@@ -792,7 +793,12 @@
         resetForm();
         renderCart();
         try { navigator.clipboard.writeText(msg); } catch (e) {}
-        location.href = "https://t.me/" + TELEGRAM + "?text=" + encodeURIComponent(msg);
+        const q = encodeURIComponent(msg);
+        location.href = "tg://resolve?domain=" + TELEGRAM + "&text=" + q;
+        setTimeout(() => {
+          if (!document.hidden)
+            location.href = "https://t.me/" + TELEGRAM + "?text=" + q;
+        }, 1500);
       };
       $("#clr").onclick = () => {
         if (confirm("همه سفارش‌های تحویل‌شده پاک شوند؟")) {
