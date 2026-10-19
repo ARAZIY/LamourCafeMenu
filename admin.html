@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>مدیریت کافه لامور</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--warn:#c27a10;--bad:#b3392f;--blue:#2b6cb0}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
+header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd)}
+header h1{font-size:1.05rem;flex:1}
+.tab{padding:8px 14px;font-weight:600;color:var(--mut);position:relative;border:1px solid var(--bd)}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.badge{position:absolute;top:-6px;left:-4px;background:var(--bad);color:#fff;border-radius:99px;font-size:.7rem;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px}
+a.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:8px}
+main{max-width:1100px;margin:auto;padding:14px}
+.view{display:none}.view.on{display:block}
+.cats{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none}
+.chip{white-space:nowrap;flex:0 0 auto;padding:7px 13px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.9rem}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 8px;text-align:center;position:relative;cursor:pointer;user-select:none}
+.item:active{transform:scale(.96)}
+.item b{display:block;font-size:.95rem}.item span{color:var(--mut);font-size:.8rem}
+.item i{position:absolute;top:6px;right:6px;background:var(--pri);color:#fff;border-radius:99px;min-width:22px;height:22px;line-height:22px;font-size:.78rem;font-style:normal}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;position:sticky;top:10px}
+.panel h2{font-size:1rem;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--bd)}
+.row .t{flex:1;font-size:.92rem}
+.qb{display:flex;align-items:center;gap:6px}.qb button{width:32px;height:32px;background:var(--bd);font-weight:800}
+input,textarea{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-top:8px}
+textarea{resize:vertical;min-height:4rem}
+.seg{display:flex;gap:6px;margin-top:8px}.seg button{flex:1;padding:8px;border:1px solid var(--bd)}.seg .on{background:var(--pri);color:#fff}
+.tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}
+.big{width:100%;padding:13px;background:var(--ok);color:#fff;font-weight:800}.big:disabled{opacity:.4}
+.mut{color:var(--mut);font-size:.88rem}.empty{text-align:center;color:var(--mut);padding:30px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;color:var(--pri)}
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.oc{background:var(--card);border:1px solid var(--bd);border-top:5px solid var(--blue);border-radius:14px;padding:12px}
+.oc.s1{border-top-color:var(--warn)}.oc.s2{border-top-color:var(--ok)}.oc.s3{border-top-color:var(--mut);opacity:.7}
+.oc .h{display:flex;justify-content:space-between;gap:8px;font-weight:800;margin-bottom:6px}
+.oc ul{list-style:none;padding:0;font-size:.93rem}
+.note{background:var(--bg);border-radius:8px;padding:6px 8px;margin-top:6px;font-size:.85rem}
+.acts{display:flex;gap:6px;margin-top:10px}.acts .go{flex:1;padding:9px;background:var(--pri);color:#fff;font-weight:600}
+.acts .ed,.acts .x{padding:9px 12px;background:var(--bd)}.acts .x{color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--ok);color:#fff;padding:12px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.panel{position:static}.menu{grid-template-columns:repeat(2,1fr)}.qb button{width:38px;height:38px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>مدیریت کافه لامور</h1>
+  <button class="tab on" data-v="v2">📖 سفارش‌ها <i class="badge" id="bd" hidden>0</i></button>
+  <button class="tab" data-v="v1">➕ ثبت سفارش (گارسون)</button>
+  <a class="lnk" href="factor.html">🧾 فاکتورها</a>
+</header>
+<main>
+  <section class="view on" id="v2">
+    <div class="stats">
+      <div class="stat"><b id="s1">۰</b><span class="mut">سفارش امروز</span></div>
+      <div class="stat"><b id="s2">۰</b><span class="mut">در جریان</span></div>
+      <div class="stat"><b id="s3">۰</b><span class="mut">فروش امروز (تومان)</span></div>
+    </div>
+    <div class="cats" id="fl"></div>
+    <div class="orders" id="ol"></div>
+    <div style="margin-top:16px;text-align:center"><button class="chip" id="clr">🗑️ پاک‌کردن سفارش‌های تحویل‌شده از این صفحه</button></div>
+    <p class="mut" style="text-align:center;margin-top:6px">فاکتورها با پاک‌کردن حذف نمی‌شوند و در صفحهٔ فاکتور می‌مانند.</p>
+  </section>
+  <section class="view" id="v1">
+    <div class="grid2">
+      <div><div class="cats" id="cats"></div><div class="menu" id="menu"></div></div>
+      <div class="panel">
+        <div id="eb" hidden class="mut" style="margin-bottom:6px"><span id="et"></span> <button data-ce style="color:var(--bad)">لغو ویرایش</button></div>
+        <h2>سفارش سر میز</h2>
+        <div id="cart"></div>
+        <div class="seg" id="typ"><button class="on" data-t="میز">سالن</button><button data-t="بیرون‌بر">بیرون‌بر</button></div>
+        <input id="tbl" type="text" inputmode="numeric" placeholder="شماره میز" />
+        <textarea id="note" placeholder="توضیحات (مثلاً بدون شکر)"></textarea>
+        <div class="tot"><span>جمع کل</span><span id="sum">۰</span></div>
+        <button class="big" id="sub" disabled>ثبت سفارش ✓</button>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="toast" role="status"></div>
+<script>
+const MENU=[["سینگل","قهوه",140],["دبل","قهوه",160],["ترک","قهوه",160],["آمریکانو","گرم",180],["آیس آمریکانو","سرد",190],["لاته","گرم",210],["آیس لاته","سرد",230],["هات چاکلت","گرم",240],["آلفردو","غذا",490],["پیتزا","غذا",600],["املت","غذا",270],["ایرانی","غذا",600],["نیمرو","غذا",200],["سوسیس تخم مرغ","غذا",270],["قیساوا","غذا",270],["سجوک","غذا",290],["موکا","گرم",230],["ماکیاتو","گرم",230],["آیس ماکیاتو","سرد",250],["چای ماسالا","گرم",230],["وایت چاکلت","گرم",240],["کاپوچینو","گرم",240],["آیس موکا","سرد",250],["آفوگاتو","سرد",360],["چای ویژه","چایی",250],["فنجانی","چایی",70],["دمنوش زنجبیل","چایی",250],["دمنوش لیمو نعناع","چایی",250],["سرماخوردگی","چایی",250],["گل گاوزبان","چایی",250],["دمنوش میوه","چایی",290],["شکلاتی","شیک",470],["نوتلا","شیک",470],["موز","شیک",420],["بادام زمینی","شیک",420],["نسکافه","شیک",400],["کیک خیس","خوراکی",250],["باقلوا","خوراکی",50],["پستو","غذا",620],["مکن چیز","غذا",400],["آب","نوشیدنی",25]].map((m,i)=>({n:m[0],c:m[1],p:m[2],id:i}));
+const CATS=["همه",...new Set(MENU.map(m=>m.c))];
+const ST=["جدید","در حال آماده‌سازی","آماده تحویل","تحویل داده شد"],NX=["شروع آماده‌سازی","آماده شد","تحویل داده شد ✓"];
+const NTFY="https://ntfy.sh/lamour-ce97ecdd2624b89c6b5d";
+const K="cafe_orders_v1",A="cafe_invoices_v1",SEEN="cafe_seen_v1",CNT="cafe_no_v1";
+const TZ="Asia/Tehran";
+const irDate=t=>new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"long",day:"numeric"});
+const irTime=t=>new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const irDay=t=>new Date(t).toLocaleDateString("en-CA",{timeZone:TZ});
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR");
+const esc=s=>String(s||"").replace(/[<>&"]/g,"");
+const ld=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let cart={},cat="همه",typ="میز",flt=-1,editing=null;
+
+function nextNo(){let n=(+localStorage.getItem(CNT)||0)+1;try{localStorage.setItem(CNT,n)}catch(e){}return n}
+function addOrder(o){
+  const seen=ld(SEEN);if(seen.includes(o.id))return false;
+  seen.push(o.id);sv(SEEN,seen.slice(-500));
+  o.s=0;o.no=nextNo();const all=ld(K);all.push(o);sv(K,all);return true;
+}
+function archive(o){const a=ld(A);if(ld("cafe_inv_del_v1").includes(o.id))return;if(!a.some(x=>x.id==o.id)){a.push({...o,dt:Date.now()});sv(A,a)}}
+const toast=(t,bad)=>{const el=$("#toast");el.textContent=t;el.style.background=bad?"var(--bad)":"";el.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>el.className="",3000)};
+
+/* دریافت سفارش مشتری‌ها از ntfy */
+try{
+  const es=new EventSource(NTFY+"/sse?since=6h");
+  es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event!="message")return;const o=JSON.parse(m.message);
+    if(o&&o.id&&Array.isArray(o.items)&&addOrder(o)){renderOrders();toast("🔔 سفارش جدید رسید")}}catch(x){}};
+}catch(e){}
+
+function show(v){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.v==v));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==v));if(v=="v2")renderOrders()}
+function setTyp(t){typ=t;document.querySelectorAll("#typ button").forEach(x=>x.classList.toggle("on",x.dataset.t==t));$("#tbl").style.display=t=="میز"?"":"none"}
+function renderCats(){$("#cats").innerHTML=CATS.map(c=>`<button class="chip ${c==cat?"on":""}" data-c="${c}">${c}</button>`).join("")}
+function renderMenu(){$("#menu").innerHTML=MENU.filter(m=>cat=="همه"||m.c==cat).map(m=>`<div class="item" data-id="${m.id}">${cart[m.id]?`<i>${fa(cart[m.id])}</i>`:""}<b>${m.n}</b><span>${fa(m.p)} تومان</span></div>`).join("")}
+function renderCart(){
+  const ids=Object.keys(cart);let sum=0;
+  $("#cart").innerHTML=ids.length?ids.map(id=>{const m=MENU[id],q=cart[id];sum+=m.p*q;return `<div class="row"><span class="t">${m.n}<br><span class="mut">${fa(m.p*q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`}).join(""):'<div class="empty">آیتمی انتخاب نشده</div>';
+  $("#sum").textContent=fa(sum)+" تومان";
+  $("#sub").disabled=!ids.length;
+  $("#sub").textContent=editing?"ذخیره تغییرات ✓":"ثبت سفارش ✓";
+  $("#eb").hidden=!editing;
+  if(editing){const o=ld(K).find(r=>r.id==editing);$("#et").textContent="✎ ویرایش سفارش #"+fa(o?o.no:0)}
+  renderMenu();
+}
+function renderOrders(){
+  const all=ld(K),today=irDay(Date.now()),td=all.filter(o=>irDay(o.t)==today);
+  $("#s1").textContent=fa(td.length);
+  $("#s2").textContent=fa(all.filter(o=>o.s<3).length);
+  $("#s3").textContent=fa(td.filter(o=>o.s==3).reduce((a,o)=>a+o.sum,0));
+  const nw=all.filter(o=>o.s==0).length;$("#bd").hidden=!nw;$("#bd").textContent=fa(nw);
+  $("#fl").innerHTML=["همه",...ST].map((s,i)=>`<button class="chip ${flt==i-1?"on":""}" data-f="${i-1}">${s}</button>`).join("");
+  const list=all.filter(o=>flt<0||o.s==flt).sort((a,b)=>(a.s==3)-(b.s==3)||a.t-b.t);
+  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button><button class="ed" data-ed="${o.id}">✎</button>`:""}<button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+}
+function resetForm(){cart={};editing=null;$("#tbl").value="";$("#note").value="";setTyp("میز")}
+
+document.addEventListener("click",e=>{
+  const it=e.target.closest(".item");
+  if(it){cart[it.dataset.id]=(cart[it.dataset.id]||0)+1;renderCart();return}
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.v)show(b.dataset.v);
+  else if(b.dataset.c){cat=b.dataset.c;renderCats();renderMenu()}
+  else if(b.dataset.d){const id=b.dataset.id;cart[id]=(cart[id]||0)+ +b.dataset.d;if(cart[id]<=0)delete cart[id];renderCart()}
+  else if(b.dataset.t)setTyp(b.dataset.t);
+  else if(b.dataset.f!==undefined){flt=+b.dataset.f;renderOrders()}
+  else if(b.dataset.adv){const o=ld(K),x=o.find(r=>r.id==b.dataset.adv);if(x){x.s++;if(x.s==3)archive(x)}sv(K,o);renderOrders()}
+  else if(b.dataset.ed){
+    const x=ld(K).find(r=>r.id==b.dataset.ed);if(!x)return;
+    cart={};x.items.forEach(i=>{const m=MENU.find(m=>m.n==i.n);if(m)cart[m.id]=(cart[m.id]||0)+i.q});
+    editing=x.id;setTyp(x.typ);$("#tbl").value=x.tbl||"";$("#note").value=x.note||"";show("v1");renderCart();scrollTo({top:0,behavior:"smooth"});
+  }
+  else if(b.dataset.ce!==undefined){resetForm();renderCart()}
+  else if(b.dataset.del){if(confirm("این سفارش حذف شود؟")){save2(ld(K).filter(r=>r.id!=b.dataset.del));if(editing==b.dataset.del){resetForm();renderCart()}renderOrders()}}
+});
+const save2=o=>sv(K,o);
+
+$("#sub").onclick=()=>{
+  const ids=Object.keys(cart);if(!ids.length)return;
+  const tbl=$("#tbl").value.trim();
+  if(typ=="میز"&&!tbl){alert("لطفاً شماره میز را وارد کنید");$("#tbl").focus();return}
+  const items=ids.map(id=>({id:+id,n:MENU[id].n,q:cart[id],p:MENU[id].p}));
+  const sum=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
+  if(editing){
+    const all=ld(K),x=all.find(r=>r.id==editing);
+    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum});sv(K,all)}
+    toast("✓ تغییرات ذخیره شد");
+  }else{
+    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter"});
+    toast("✓ سفارش ثبت شد");
+  }
+  resetForm();renderCart();renderOrders();
+};
+$("#clr").onclick=()=>{if(confirm("سفارش‌های تحویل‌شده از این صفحه پاک شوند؟ (فاکتورها حفظ می‌شوند)")){const all=ld(K);all.filter(o=>o.s==3).forEach(archive);sv(K,all.filter(o=>o.s<3));renderOrders()}};
+addEventListener("storage",e=>{if(e.key==K)renderOrders()});
+setInterval(renderOrders,30000);
+renderCats();renderCart();renderOrders();
+</script>
+</body>
+</html>
