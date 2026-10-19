@@ -414,6 +414,7 @@
       .oc .h {
         display: flex;
         justify-content: space-between;
+        gap: 8px;
         font-weight: 800;
         margin-bottom: 6px;
       }
@@ -746,7 +747,27 @@
       const ST = ["جدید", "در حال آماده‌سازی", "آماده تحویل", "تحویل داده شد"],
         NX = ["شروع آماده‌سازی", "آماده شد", "تحویل داده شد ✓"];
       const PHONE = "+989932675263";
-     
+
+      /* ===== تاریخ و ساعت شمسی بر اساس وقت ایران (مستقل از دستگاه) ===== */
+      const TZ = "Asia/Tehran";
+      const irDate = (t) =>
+        new Date(t).toLocaleDateString("fa-IR-u-ca-persian", {
+          timeZone: TZ,
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      const irTime = (t) =>
+        new Date(t).toLocaleTimeString("fa-IR", {
+          timeZone: TZ,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+      // کلید روز بر اساس ایران (برای شمارش «سفارش امروز»)
+      const irDay = (t) =>
+        new Date(t).toLocaleDateString("en-CA", { timeZone: TZ });
+
       const TOPIC = "lamour-ce97ecdd2624b89c6b5d";
       const NTFY = "https://ntfy.sh/" + TOPIC;
       const K = "cafe_orders_v1";
@@ -835,8 +856,8 @@
       }
       function renderOrders() {
         const all = load(),
-          today = new Date().toDateString(),
-          td = all.filter((o) => new Date(o.t).toDateString() == today);
+          today = irDay(Date.now()),
+          td = all.filter((o) => irDay(o.t) == today);
         $("#s1").textContent = fa(td.length);
         $("#s2").textContent = fa(all.filter((o) => o.s < 3).length);
         $("#s3").textContent = fa(
@@ -858,7 +879,7 @@
           ? list
               .map(
                 (o) =>
-                  `<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ == "میز" ? "میز " + (esc(o.tbl) || "؟") : "بیرون‌بر"}</span><span class="mut">${new Date(o.t).toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" })}</span></div><ul>${o.items.map((i) => `<li>${fa(i.q)} × ${i.n}</li>`).join("")}</ul>${o.note ? `<div class="note">${esc(o.note)}</div>` : ""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s < 3 ? `<button class="go" data-adv="${o.id}">${NX[o.s]}</button>` : ""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`,
+                  `<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ == "میز" ? "میز " + (esc(o.tbl) || "؟") : "بیرون‌بر"}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map((i) => `<li>${fa(i.q)} × ${i.n}</li>`).join("")}</ul>${o.note ? `<div class="note">${esc(o.note)}</div>` : ""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s < 3 ? `<button class="go" data-adv="${o.id}">${NX[o.s]}</button>` : ""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`,
               )
               .join("")
           : '<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
@@ -980,6 +1001,10 @@
           if (confirm("ارسال اینترنتی انجام نشد. با پیامک ارسال شود؟")) {
             const msg =
               "سفارش جدید\n" +
+              irDate(order.t) +
+              " - " +
+              irTime(order.t) +
+              "\n" +
               (typ == "میز" ? "میز " + tbl : "بیرون‌بر") +
               "\n\n" +
               items.map((i) => "• " + i.q + " × " + i.n).join("\n") +
