@@ -1,5 +1,5 @@
 (function () {
-  const API = 'https://script.google.com/macros/s/AKfycbzZVGe05Th5A2nB2o3kw1jdZDHANwvbsDFfgXNicT-F4ryu3UIYSMnWoeghppcbDMlDmw/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbx-JQXOBlBGeXCWTnAaTlHZa0cSY5PVorB0hHmmvyyFCrwrZZ5FequtCdLGHTuOSXnKiA/exec';
   const KEYS = ['cafe_orders_v1', 'cafe_invoices_v1', 'cafe_seen_v1', 'cafe_no_v1', 'cafe_inv_del_v1', 'cafe_staff_v1'];
   const me = document.currentScript;
   const needAuth = me && me.dataset.auth === '1';
