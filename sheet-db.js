@@ -1,6 +1,6 @@
 /* اتصال صفحات به Google Sheet (جایگزین localStorage). فقط آدرس API را عوض کنید. */
 (function () {
-  const API = 'https://script.google.com/macros/s/AKfycbzfJxM1hKN5xWsAmb0RjNaM7_YmNHazljWo4WTvlmw4m3NciSu5VVGWCt0hosPJ0rsAuQ/exec';
+  const API = 'https://script.google.com/macros/s/1C4LQAilSBk4VhmRcKzu3W78flp9kgnpJhcn8a_v-0DQ/exec';
   const KEYS = ['cafe_orders_v1', 'cafe_invoices_v1', 'cafe_seen_v1', 'cafe_no_v1', 'cafe_inv_del_v1', 'cafe_staff_v1'];
   const me = document.currentScript;
   const needAuth = me && me.dataset.auth === '1';
