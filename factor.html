@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>فاکتورهای کافه لامور</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--bad:#b3392f}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);min-width:0;width:100%}
+header{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
+header h1{font-size:1.05rem;flex:1}
+a.lnk,button.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:6px}
+main{max-width:1100px;margin:auto;padding:14px}
+#lock{max-width:320px;margin:18vh auto;padding:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;text-align:center}
+#lock input{margin:12px 0}
+#go{width:100%;padding:11px;background:var(--pri);color:#fff;font-weight:800}
+#err{color:var(--bad);font-size:.88rem;min-height:1.2em}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px}
+.filters>label,.filters>div{font-size:.78rem;color:var(--mut);display:grid;gap:3px;align-content:start}
+.d3{display:grid;grid-template-columns:1.2fr 1.6fr 1fr;gap:4px}
+.d3 select{padding:9px 4px}
+.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sum div{flex:1;min-width:120px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
+.sum b{display:block;color:var(--pri)}
+.mut{color:var(--mut);font-size:.85rem}
+.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.chip{padding:7px 13px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.88rem}
+.chip.bad{color:var(--bad)}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.92rem;white-space:nowrap}
+th{background:var(--bg);color:var(--mut);font-weight:600}
+.tag{padding:2px 10px;border-radius:99px;background:var(--bd);font-size:.8rem}
+.del{color:var(--bad);background:var(--bd);padding:5px 10px}
+.empty{text-align:center;color:var(--mut);padding:30px}
+@media(max-width:700px){
+  .wrap{border:0;background:none}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;padding:6px 10px}
+  td{display:flex;justify-content:space-between;align-items:center;gap:10px;border:0;padding:5px 0;white-space:normal}
+  td[data-l]::before{content:attr(data-l);color:var(--mut)}
+}
+</style>
+</head>
+<body>
+<div id="lock">
+  <h2>🔒 ورود به فاکتورها</h2>
+  <input id="pw" type="password" placeholder="رمز عبور" autocomplete="current-password" />
+  <div id="err"></div>
+  <button id="go">ورود</button>
+</div>
+<div id="app" hidden>
+  <header><h1>🧾 فاکتورهای تحویل‌شده</h1><a class="lnk" href="admin.html">← مدیریت</a><button class="lnk" id="out">خروج</button></header>
+  <main>
+    <div class="filters">
+      <label>جستجو (محصول / میز / شمارهٔ سفارش)<input id="q" type="search" placeholder="جستجو…" /></label>
+      <label>نوع سفارش<select id="ty"><option value="">همه</option><option>میز</option><option>بیرون‌بر</option></select></label>
+      <div>از تاریخ (شمسی)<div class="d3" id="f1"></div></div>
+      <div>تا تاریخ (شمسی)<div class="d3" id="f2"></div></div>
+      <label>نمایش<select id="so"><option value="new">جدیدترین فاکتورها</option><option value="old">قدیمی‌ترین فاکتورها</option><option value="top">پرفروش‌ترین محصولات</option><option value="low">کم‌فروش‌ترین محصولات</option></select></label>
+      <label>معیار رتبه‌بندی<select id="mt"><option value="qty">تعداد کل فروش</option><option value="ord">تعداد سفارش‌های جداگانه</option><option value="avg">میانگین تعداد در هر سفارش</option></select></label>
+    </div>
+    <div class="bar"><button class="chip" id="cd">✕ پاک‌کردن فیلتر تاریخ</button><button class="chip bad" id="da">🗑️ حذف فاکتورهای نمایش‌داده‌شده</button></div>
+    <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div></div>
+    <div class="wrap"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+  </main>
+</div>
+<script src="sheet-db.js" data-auth="1">});</script>
+<script>DB.ready.then(()=>{
+const PASS="lamour2023mns",A="cafe_invoices_v1",DEL="cafe_inv_del_v1",TZ="Asia/Tehran";
+const MONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR");
+const esc=s=>String(s||"").replace(/[<>&"]/g,"");
+const irDate=t=>new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"long",day:"numeric"});
+const irTime=t=>new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const ld=(k=A)=>{try{return JSON.parse(DB.get(k))||[]}catch(e){return[]}};
+const sv=(k,v)=>{try{DB.set(k,JSON.stringify(v))}catch(e){}};
+
+/* کلید تاریخ شمسی (سال*10000+ماه*100+روز) بر اساس وقت تهران */
+const jf=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{timeZone:TZ,year:"numeric",month:"numeric",day:"numeric"});
+function jKey(t){const p={};jf.formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);return (+p.year)*10000+(+p.month)*100+(+p.day)}
+const curY=Math.floor(jKey(Date.now())/10000);
+function buildDate(box,p){
+  const o=a=>a.map(([v,t])=>`<option value="${v}">${t}</option>`).join("");
+  const ys=[],ds=[];for(let y=curY;y>=curY-5;y--)ys.push([y,fa(y).replace(/٬/g,"")]);
+  for(let d=1;d<=31;d++)ds.push([d,fa(d)]);
+  $(box).innerHTML=`<select id="${p}y"><option value="">سال</option>${o(ys)}</select><select id="${p}m"><option value="">ماه</option>${o(MONTHS.map((m,i)=>[i+1,m]))}</select><select id="${p}d"><option value="">روز</option>${o(ds)}</select>`;
+}
+buildDate("#f1","a");buildDate("#f2","b");
+function selKey(p){const y=$("#"+p+"y").value,m=$("#"+p+"m").value,d=$("#"+p+"d").value;return y&&m&&d?(+y)*10000+(+m)*100+(+d):null}
+
+function unlock(){$("#lock").hidden=true;$("#app").hidden=false;render()}
+function tryLogin(){
+  if($("#pw").value===PASS){try{sessionStorage.setItem("fok","1")}catch(e){}unlock()}
+  else{$("#err").textContent="رمز اشتباه است";$("#pw").value="";$("#pw").focus()}
+}
+$("#go").onclick=tryLogin;
+$("#pw").onkeydown=e=>{if(e.key=="Enter")tryLogin()};
+$("#out").onclick=()=>{try{sessionStorage.removeItem("fok")}catch(e){}location.reload()};
+
+let cur=[];
+function removeInvoices(ids){
+  const del=ld(DEL);ids.forEach(i=>{if(!del.includes(i))del.push(i)});sv(DEL,del);
+  sv(A,ld().filter(o=>!ids.includes(o.id)));render();
+}
+function render(){
+  const q=$("#q").value.trim(),ty=$("#ty").value,k1=selKey("a"),k2=selKey("b"),so=$("#so").value,mt=$("#mt").value;
+  const inv=ld().filter(o=>{const k=jKey(o.t);return(!ty||o.typ==ty)&&(!k1||k>=k1)&&(!k2||k<=k2)
+    &&(!q||o.items.some(i=>i.n.includes(q))||String(o.tbl||"").includes(q)||String(o.no||"").includes(q))});
+  cur=inv;
+  let qty=0,total=0;inv.forEach(o=>{o.items.forEach(i=>qty+=i.q);total+=o.sum});
+  $("#c1").textContent=fa(inv.length);$("#c2").textContent=fa(qty);$("#c3").textContent=fa(total);
+  $("#mt").parentElement.style.display=(so=="top"||so=="low")?"":"none";
+
+  if(so=="top"||so=="low"){
+    const m={};
+    inv.forEach(o=>{
+      const textHit=String(o.tbl||"").includes(q)||String(o.no||"").includes(q);
+      o.items.forEach(i=>{
+        if(q&&!i.n.includes(q)&&!textHit)return;
+        const r=m[i.n]||(m[i.n]={n:i.n,q:0,s:0,o:0});
+        r.q+=i.q;r.s+=i.q*i.p;r.o++;   /* هر فاکتور یک سفارش جداگانه است */
+      });
+    });
+    const rows=Object.values(m).map(r=>({...r,a:r.q/r.o}));
+    const val=r=>mt=="ord"?r.o:mt=="avg"?r.a:r.q;
+    rows.sort((a,b)=>(so=="top"?val(b)-val(a):val(a)-val(b))||(so=="top"?b.q-a.q:a.q-b.q));
+    $("#th").innerHTML="<tr><th>رتبه</th><th>نام محصول</th><th>تعداد کل فروش</th><th>تعداد سفارش‌های جداگانه</th><th>میانگین تعداد در هر سفارش</th><th>مجموع فروش (تومان)</th></tr>";
+    $("#tb").innerHTML=rows.length?rows.map((r,i)=>`<tr><td data-l="رتبه">${fa(i+1)}</td><td data-l="نام محصول">${esc(r.n)}</td><td data-l="تعداد کل فروش">${fa(r.q)}</td><td data-l="سفارش‌های جداگانه">${fa(r.o)}</td><td data-l="میانگین در هر سفارش">${fa(Math.round(r.a*100)/100)}</td><td data-l="مجموع فروش">${fa(r.s)}</td></tr>`).join(""):'<tr><td class="empty" colspan="6">موردی یافت نشد</td></tr>';
+    return;
+  }
+  const list=[...inv].sort((a,b)=>so=="old"?a.t-b.t:b.t-a.t);
+  $("#th").innerHTML="<tr><th>سفارش</th><th>نام محصول</th><th>تعداد</th><th>قیمت واحد</th><th>قیمت کل</th><th>تاریخ و ساعت</th><th>نوع</th><th>حذف</th></tr>";
+  const rows=[];
+  list.forEach(o=>o.items.forEach(i=>rows.push(`<tr><td data-l="سفارش">#${fa(o.no||0)}</td><td data-l="نام محصول">${esc(i.n)}</td><td data-l="تعداد">${fa(i.q)}</td><td data-l="قیمت واحد">${fa(i.p)}</td><td data-l="قیمت کل">${fa(i.p*i.q)}</td><td data-l="تاریخ و ساعت">${irDate(o.t)} · ${irTime(o.t)}</td><td data-l="نوع"><span class="tag">${o.typ=="میز"?"داخل سالن"+(o.tbl?" (میز "+esc(o.tbl)+")":""):"بیرون‌بر"}</span></td><td><button class="del" data-del="${o.id}">🗑️ حذف فاکتور</button></td></tr>`)));
+  $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="8">فاکتوری یافت نشد</td></tr>';
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-del]");if(!b)return;
+  const o=ld().find(x=>x.id==b.dataset.del);if(!o)return;
+  if(confirm("کل فاکتور سفارش #"+fa(o.no||0)+" ("+o.items.length+" قلم) حذف شود؟"))removeInvoices([o.id]);
+});
+$("#da").onclick=()=>{
+  if(!cur.length)return;
+  if(confirm(fa(cur.length)+" فاکتور نمایش‌داده‌شده (طبق فیلترهای فعلی) برای همیشه حذف شود؟"))removeInvoices(cur.map(o=>o.id));
+};
+$("#cd").onclick=()=>{["a","b"].forEach(p=>["y","m","d"].forEach(s=>$("#"+p+s).value=""));render()};
+document.querySelectorAll(".filters input,.filters select").forEach(el=>el.addEventListener("input",render));
+addEventListener("storage",e=>{if(e.key==A&&!$("#app").hidden)render()});
+try{if(sessionStorage.getItem("fok")==="1")unlock()}catch(e){}
+});</script>
+</body>
+</html>

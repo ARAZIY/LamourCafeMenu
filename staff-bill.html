@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>صورت حساب پرسنل - کافه لامور</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--bad:#b3392f}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);min-width:0;width:100%}
+header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd)}
+header h1{font-size:1.05rem;flex:1}header select{width:auto}
+main{max-width:1000px;margin:auto;padding:14px}
+#login{max-width:340px;margin:12vh auto;padding:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;display:grid;gap:10px;text-align:center}
+.btn{padding:10px 14px;background:var(--pri);color:#fff;font-weight:700;white-space:nowrap}
+.x{color:var(--bad);background:var(--bd);padding:4px 9px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h3{font-size:1rem;margin-bottom:10px}
+.inl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.inl>*{flex:1;min-width:110px}.inl .btn{flex:0 0 auto}
+.stp{display:flex;gap:10px;align-items:center;margin-bottom:6px}.stp b{min-width:70px;text-align:center;font-size:1.2rem}
+.stp button:not(.btn){width:44px;height:44px;background:var(--bd);font-size:1.3rem;font-weight:800}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.sum div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:.82rem;color:var(--mut)}
+.sum b{display:block;color:var(--pri);font-size:1.05rem}.sum .net b{color:var(--bad)}
+.mut{color:var(--mut);font-size:.85rem}.empty{text-align:center;color:var(--mut);padding:14px}.tl{margin-top:8px;font-weight:700}
+.wrap{overflow-x:auto}table{width:100%;border-collapse:collapse}
+th,td{padding:8px;text-align:right;border-bottom:1px solid var(--bd);font-size:.9rem;white-space:nowrap}th{color:var(--mut);font-weight:600}
+.lk{color:var(--pri);font-weight:700;text-decoration:underline}
+.d3{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:4px}
+@media(max-width:700px){
+ thead{display:none}table,tbody,tr,td{display:block;width:100%}
+ tr{border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;padding:4px 8px}
+ td{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;white-space:normal}
+ td[data-l]::before{content:attr(data-l);color:var(--mut)}
+}
+</style>
+</head>
+<body>
+<div id="login">
+  <h2>👥 صورت حساب پرسنل</h2>
+  <select id="who"></select>
+  <input id="pw" type="password" placeholder="رمز عبور" />
+  <input id="pw2" type="password" placeholder="تکرار رمز مدیر" hidden />
+  <button class="btn" id="go"><span id="lt">ورود</span></button>
+</div>
+<div id="app" hidden>
+  <header><h1 id="hello"></h1><select id="mo"></select><button class="btn" data-a="out">خروج</button></header>
+  <main id="body"></main>
+</div>
+<script src="sheet-db.js" data-auth="1">});</script>
+<script>DB.ready.then(()=>{
+const K="cafe_staff_v1",TZ="Asia/Tehran",STEP=5,RATE=0.05;
+const MONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+let MENU=[["سینگل","قهوه",140],["دبل","قهوه",160],["ترک","قهوه",160],["آمریکانو","گرم",180],["آیس آمریکانو","سرد",190],["لاته","گرم",210],["آیس لاته","سرد",230],["هات چاکلت","گرم",240],["آلفردو","غذا",490],["پیتزا","غذا",600],["املت","غذا",270],["ایرانی","غذا",600],["نیمرو","غذا",200],["سوسیس تخم مرغ","غذا",270],["قیساوا","غذا",270],["سجوک","غذا",290],["موکا","گرم",230],["ماکیاتو","گرم",230],["آیس ماکیاتو","سرد",250],["چای ماسالا","گرم",230],["وایت چاکلت","گرم",240],["کاپوچینو","گرم",240],["آیس موکا","سرد",250],["آفوگاتو","سرد",360],["چای ویژه","چایی",250],["فنجانی","چایی",70],["دمنوش زنجبیل","چایی",250],["دمنوش لیمو نعناع","چایی",250],["سرماخوردگی","چایی",250],["گل گاوزبان","چایی",250],["دمنوش میوه","چایی",290],["شکلاتی","شیک",470],["نوتلا","شیک",470],["موز","شیک",420],["بادام زمینی","شیک",420],["نسکافه","شیک",400],["کیک خیس","خوراکی",250],["باقلوا","خوراکی",50],["پستو","غذا",620],["مکن چیز","غذا",400],["آب","نوشیدنی",25]].map(m=>({n:m[0],c:m[1],p:m[2]}));
+if(DB.menu)MENU=DB.menu.map(m=>({n:m.n,c:m.c,p:m.p}));
+const $=s=>document.querySelector(s),nf=n=>Number(n).toLocaleString("fa-IR"),nn=n=>Number(n).toLocaleString("fa-IR",{useGrouping:false});
+const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const irD=t=>new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"long",day:"numeric"});
+const irT=t=>new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const dt=t=>irD(t)+" "+irT(t);
+const jf=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{timeZone:TZ,year:"numeric",month:"numeric",day:"numeric"});
+const jKey=t=>{const p={};jf.formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);return(+p.year)*10000+(+p.month)*100+(+p.day)};
+const jfmt=k=>nn(Math.floor(k/10000))+"/"+nn(Math.floor(k/100)%100)+"/"+nn(k%100);
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+function months(){const k=jKey(Date.now());let y=Math.floor(k/10000),m=Math.floor(k/100)%100,a=[];for(let i=0;i<12;i++){a.push(y*100+m);if(--m<1){m=12;y--}}return a}
+const mlab=v=>MONTHS[v%100-1]+" "+nn(Math.floor(v/100));
+let M=Math.floor(jKey(Date.now())/100),cashv=0;
+const inM=t=>Math.floor(jKey(t)/100)==M;
+
+let D;try{D=Object.assign({admin:null,staff:[]},JSON.parse(DB.get(K))||{})}catch(e){D={admin:null,staff:[]}}
+const sv=()=>{try{DB.set(K,JSON.stringify(D))}catch(e){alert("ذخیره‌سازی در مرورگر ممکن نیست")}};
+const sess=()=>{try{return JSON.parse(sessionStorage.getItem("psess"))}catch(e){return null}};
+const setS=s=>{try{s?sessionStorage.setItem("psess",JSON.stringify(s)):sessionStorage.removeItem("psess")}catch(e){}};
+const person=id=>D.staff.find(p=>p.id==id);
+
+/* ورود */
+function loginUi(){
+  $("#who").innerHTML='<option value="admin">👑 مدیر</option>'+D.staff.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  loginMode();
+}
+function loginMode(){const st=$("#who").value=="admin"&&!D.admin;$("#pw2").hidden=!st;$("#lt").textContent=st?"تعیین رمز مدیر (اولین ورود)":"ورود"}
+$("#who").onchange=loginMode;
+$("#go").onclick=()=>{
+  const w=$("#who").value,pw=$("#pw").value;
+  if(w=="admin"){
+    if(!D.admin){if(pw.length<4||pw!==$("#pw2").value)return alert("رمز باید حداقل ۴ حرف و با تکرارش یکسان باشد");D.admin=pw;sv()}
+    else if(pw!==D.admin)return alert("رمز اشتباه است");
+    setS({r:"admin",view:null});
+  }else{const p=person(w);if(!p||p.pw!==pw)return alert("رمز اشتباه است");setS({r:"staff",id:p.id})}
+  $("#pw").value=$("#pw2").value="";render();
+};
+
+/* محاسبات ماه انتخاب‌شده */
+function calc(p){
+  const food=p.food.filter(x=>inM(x.t)),cash=p.cash.filter(x=>inM(x.t)),tips=p.tips.filter(x=>inM(x.t)),fr=p.fr.filter(x=>inM(x.t));
+  const F=sum(food,x=>x.q*x.p),C=sum(cash,x=>x.a),T=sum(tips,x=>x.a),FR=sum(fr,x=>x.a),com=FR*RATE,debt=F+C;
+  return{food,cash,tips,fr,F,C,T,FR,com,debt,net:debt-T-com,
+    att:p.att.filter(x=>inM(x.i)),lv:p.lv.filter(x=>Math.floor(x.d/100)==M)};
+}
+const T_=(h,rows)=>rows.length?`<div class="wrap"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td data-l="${h[i]}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:'<div class="empty">موردی ثبت نشده</div>';
+const dur=(i,o)=>{const m=Math.round((o-i)/6e4);return nf(Math.floor(m/60))+" ساعت و "+nf(m%60)+" دقیقه"};
+const dsel=(p)=>{const k=jKey(Date.now()),y=Math.floor(k/10000),m=Math.floor(k/100)%100,d=k%100;let ys="";for(let i=y-1;i<=y+1;i++)ys+=`<option value="${i}" ${i==y?"selected":""}>${nn(i)}</option>`;
+  return`<div class="d3"><select id="${p}y">${ys}</select><select id="${p}m">${MONTHS.map((n,i)=>`<option value="${i+1}" ${i+1==m?"selected":""}>${n}</option>`).join("")}</select><select id="${p}d">${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${i+1==d?"selected":""}>${nn(i+1)}</option>`).join("")}</select></div>`};
+
+const curM=()=>Math.floor(jKey(Date.now())/100);
+const stc=(x,adm)=>{const s=x.st||"ok";return(s=="ok"?"✅ تأیید شد":s=="no"?"❌ رد شد":"⏳ در انتظار")+(adm&&s!="ok"?` <button class="x" data-a="lvok" data-i="${x.id}">✓ تأیید</button>`:"")+(adm&&s!="no"?` <button class="x" data-a="lvno" data-i="${x.id}">رد</button>`:"")};
+function closeSec(p,adm,c){const z=(p.set||{})[M];
+  return`<section class="card"><h3>🔒 بستن حساب ماه</h3>`+(z?`<div>حساب ${mlab(M)} در ${dt(z.t)} بسته شد.<br>مانده نهایی: <b>${nf(z.net)} تومان</b> (بدهی ${nf(z.debt)}، انعام ${nf(z.tips)}، پورسانت ${nf(z.com)})</div>`+(adm?`<button class="btn" style="margin-top:8px" data-a="openm">باز کردن مجدد حساب</button>`:""):`<div class="mut">حساب ${mlab(M)} هنوز بسته نشده است. مانده فعلی: ${nf(c.net)} تومان</div>`+(adm?`<button class="btn" style="margin-top:8px" data-a="closem">بستن حساب این ماه</button>`:""))+`</section>`}
+function panel(p,adm){
+  const c=calc(p),X=(k,id)=>adm?`<button class="x" data-a="del" data-k="${k}" data-i="${id}">✕</button>`:"",xh=adm?[""]:[];
+  const groups={};MENU.forEach((m,i)=>(groups[m.c]=groups[m.c]||[]).push(`<option value="${i}">${m.n} — ${nf(m.p)}</option>`));
+  const open=p.att.find(x=>!x.o);
+  return(adm?`<button class="btn" data-a="back" style="margin-bottom:10px">← بازگشت به لیست پرسنل</button><h2 style="margin-bottom:10px">${esc(p.name)}</h2>`:"")+
+  `<div class="sum"><div><b>${nf(c.F)}</b>خوراکی</div><div><b>${nf(c.C)}</b>برداشت نقدی</div><div><b>${nf(c.debt)}</b>جمع کل بدهی</div><div><b>${nf(c.T)}</b>انعام</div><div><b>${nf(c.com)}</b>پورسانت</div><div class="net"><b>${nf(c.net)}</b>مانده (بدهی − انعام − پورسانت)</div></div>${closeSec(p,adm,c)}
+  <section class="card"><h3>🍽️ خوراکی‌ها</h3><div class="inl"><select id="fi">${Object.keys(groups).map(g=>`<optgroup label="${g}">${groups[g].join("")}</optgroup>`).join("")}</select><input id="fq" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfood">افزودن به حساب</button></div>`+
+  T_(["نام","تعداد","قیمت واحد","قیمت کل","تاریخ و ساعت",...xh],c.food.map(x=>[esc(x.n),nf(x.q),nf(x.p),nf(x.q*x.p),dt(x.t),...(adm?[X("food",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.F)} تومان</div></section>
+  <section class="card"><h3>💵 برداشت نقدی از دخل</h3><div class="mut" style="margin-bottom:6px">هر کلیک ${nf(STEP)} تومان</div><div class="stp"><button data-a="cdn">−</button><b id="cv">${nf(cashv)}</b><button data-a="cup">+</button><button class="btn" data-a="addcash">ثبت برداشت</button></div>`+
+  T_(["مبلغ","تاریخ و ساعت",...xh],c.cash.map(x=>[nf(x.a),dt(x.t),...(adm?[X("cash",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.C)} تومان</div></section>
+  <section class="card"><h3>🎁 انعام</h3><div class="inl"><input id="ta" type="number" min="1" placeholder="مبلغ انعام"><button class="btn" data-a="addtip">ثبت انعام</button></div>`+
+  T_(["مبلغ","تاریخ و ساعت",...xh],c.tips.map(x=>[nf(x.a),dt(x.t),...(adm?[X("tips",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.T)} تومان</div></section>
+  <section class="card"><h3>🤝 پورسانت (${nf(RATE*100)}٪ خرید آشنایان)</h3><div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><input id="fa" type="number" min="1" placeholder="مبلغ خرید"><button class="btn" data-a="addfr">ثبت خرید</button></div>`+
+  T_(["نام","مبلغ خرید","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),nf(x.a),nf(x.a*RATE),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
+  <section class="card"><h3>⏱️ ورود و خروج</h3><div class="inl"><button class="btn" data-a="in" ${open?"disabled":""}>ثبت ورود</button><button class="btn" data-a="out2" ${open?"":"disabled"}>ثبت خروج</button></div>`+
+  T_(["ورود","خروج","مدت",...xh],c.att.map(x=>[dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار",...(adm?[X("att",x.id)]:[])]))+`</section>
+  <section class="card"><h3>🏖️ مرخصی</h3><div class="inl"><select id="lk"><option value="day">روزانه</option><option value="hr">ساعتی</option></select><input id="ln" placeholder="توضیحات (اختیاری)"></div>
+  <div class="mut">تاریخ شمسی</div>${dsel("l")}<div class="inl" id="lday" style="margin-top:8px"><input id="ldays" type="number" min="1" value="1" placeholder="تعداد روز"></div>
+  <div class="inl" id="lhr" style="margin-top:8px" hidden><input id="lf" type="time"><input id="lt2" type="time"></div><button class="btn" data-a="addlv">ثبت مرخصی</button><div style="margin-top:10px"></div>`+
+  T_(["نوع","تاریخ","مقدار","توضیحات","ثبت‌کننده","وضعیت",...xh],c.lv.map(x=>[x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?nf(x.days)+" روز":nn(x.f)+" تا "+nn(x.to),esc(x.n)||"—",x.by=="admin"?"مدیر":"خود فرد",stc(x,adm),...(adm?[X("lv",x.id)]:[])]))+`</section>
+  <section class="card"><h3>🔑 ${adm?"تغییر رمز این فرد":"تغییر رمز من"}</h3><div class="inl"><input id="np" type="password" placeholder="رمز جدید (حداقل ۴ حرف)"><button class="btn" data-a="chpw">ذخیره رمز</button></div></section>`;
+}
+function overview(){
+  const rows=D.staff.map(p=>{const c=calc(p);return[`<span class="lk" data-a="open" data-i="${p.id}">${esc(p.name)}</span>`,nf(c.F),nf(c.C),nf(c.debt),nf(c.T),nf(c.com),nf(c.net),(p.set||{})[M]?"🔒 بسته":"باز",`<button class="x" data-a="rpw" data-i="${p.id}">رمز</button> <button class="x" data-a="dst" data-i="${p.id}">حذف</button>`]});
+  return`<section class="card"><h3>📋 حساب‌کتاب پرسنل — ${mlab(M)}</h3>`+T_(["نام","خوراکی","برداشت","جمع بدهی","انعام","پورسانت","مانده","وضعیت","مدیریت"],rows)+`<div class="mut" style="margin-top:6px">برای دیدن و ثبت اطلاعات (حساب، مرخصی، ورود و خروج) روی نام هر نفر بزن.</div></section>
+  <section class="card"><h3>➕ تعریف پرسنل جدید</h3><div class="inl"><input id="sn" placeholder="نام"><input id="sp" type="password" placeholder="رمز اولیه (حداقل ۴ حرف)"><button class="btn" data-a="addst">افزودن</button></div></section>
+  <section class="card"><h3>💾 خروجی و پشتیبان‌گیری (همهٔ داده‌ها)</h3><div class="inl"><button class="btn" data-a="ex" data-f="json">فایل JSON (پشتیبان کامل)</button><button class="btn" data-a="ex" data-f="txt">فایل متنی</button><button class="btn" data-a="ex" data-f="csv">اکسل (CSV)</button><button class="btn" data-a="ex" data-f="doc">ورد (DOC)</button></div>
+  <div class="mut">بازیابی از فایل JSON:</div><input id="imp" type="file" accept=".json,application/json" style="margin-top:6px"></section>
+  <section class="card"><h3>🔑 تغییر رمز مدیر</h3><div class="inl"><input id="ap" type="password" placeholder="رمز جدید مدیر"><button class="btn" data-a="apw">ذخیره رمز</button></div></section>`;
+}
+function render(){
+  const s=sess();$("#login").hidden=!!s;$("#app").hidden=!s;
+  if(!s){loginUi();return}
+  const adm=s.r=="admin",p=adm?(s.view?person(s.view):null):person(s.id);
+  if(!adm&&!p){setS(null);return render()}
+  $("#hello").textContent=adm?"👑 پنل مدیر":"👤 "+p.name;
+  $("#mo").innerHTML=months().map(v=>`<option value="${v}" ${v==M?"selected":""}>${mlab(v)}</option>`).join("");
+  $("#body").innerHTML=adm&&!p?overview():panel(p,adm);
+}
+$("#mo").onchange=e=>{M=+e.target.value;render()};
+
+/* گزارش و خروجی */
+function report(){
+  const S=[{t:"خلاصه پرسنل",h:["نام","خوراکی","برداشت نقدی","بدهی کل","انعام","پورسانت","مانده"],r:[]},{t:"خوراکی‌ها",h:["پرسنل","نام","تعداد","قیمت واحد","قیمت کل","تاریخ و ساعت"],r:[]},{t:"برداشت نقدی",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"انعام",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"خرید آشنایان و پورسانت",h:["پرسنل","نام","مبلغ خرید","پورسانت","تاریخ و ساعت"],r:[]},{t:"ورود و خروج",h:["پرسنل","ورود","خروج","مدت"],r:[]},{t:"مرخصی",h:["پرسنل","نوع","تاریخ","مقدار","توضیحات","وضعیت"],r:[]},{t:"تسویه حساب ماه‌ها",h:["پرسنل","ماه","بدهی","انعام","پورسانت","مانده","تاریخ بستن"],r:[]}];
+  D.staff.forEach(p=>{const F=sum(p.food,x=>x.q*x.p),C=sum(p.cash,x=>x.a),T=sum(p.tips,x=>x.a),com=sum(p.fr,x=>x.a)*RATE;
+    S[0].r.push([p.name,F,C,F+C,T,com,F+C-T-com]);
+    p.food.forEach(x=>S[1].r.push([p.name,x.n,x.q,x.p,x.q*x.p,dt(x.t)]));
+    p.cash.forEach(x=>S[2].r.push([p.name,x.a,dt(x.t)]));p.tips.forEach(x=>S[3].r.push([p.name,x.a,dt(x.t)]));
+    p.fr.forEach(x=>S[4].r.push([p.name,x.n,x.a,x.a*RATE,dt(x.t)]));
+    p.att.forEach(x=>S[5].r.push([p.name,dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار"]));
+    p.lv.forEach(x=>S[6].r.push([p.name,x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?x.days+" روز":x.f+" تا "+x.to,x.n||"",({ok:"تأیید شد",no:"رد شد",pending:"در انتظار"})[x.st||"ok"]]));Object.keys(p.set||{}).sort().forEach(m=>{const z=p.set[m];S[7].r.push([p.name,mlab(+m),z.debt,z.tips,z.com,z.net,dt(z.t)])})});
+  return S;
+}
+function dl(name,type,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function exportAs(f){
+  const day=new Date().toLocaleDateString("en-CA",{timeZone:TZ}),R=report(),base="staff-bill-"+day;
+  if(f=="json")dl(base+".json","application/json",JSON.stringify(D,null,1));
+  else if(f=="txt")dl(base+".txt","text/plain;charset=utf-8","\ufeff"+R.map(s=>"## "+s.t+"\n"+[s.h,...s.r].map(r=>r.join(" | ")).join("\n")).join("\n\n"));
+  else if(f=="csv")dl(base+".csv","text/csv;charset=utf-8","\ufeff"+R.map(s=>s.t+"\n"+[s.h,...s.r].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n")).join("\n\n"));
+  else dl(base+".doc","application/msword","<html dir=\"rtl\"><head><meta charset=\"utf-8\"></head><body style=\"font-family:Tahoma\"><h1>صورت حساب پرسنل کافه لامور</h1>"+R.map(s=>`<h2>${s.t}</h2><table border="1" cellpadding="4" style="border-collapse:collapse"><tr>${s.h.map(h=>`<th>${h}</th>`).join("")}</tr>${s.r.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table>`).join("")+"</body></html>");
+}
+
+/* رویدادها */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const a=b.dataset.a,s=sess();if(!s&&a!="x")return;
+  const adm=s.r=="admin",p=adm?person(s.view):person(s.id),now=Date.now(),v=id=>$("#"+id).value;
+  const num=id=>Math.floor(+v(id));
+  if(a=="out"){setS(null);return render()}
+  if(a=="open"){s.view=b.dataset.i;setS(s);cashv=0;return render()}
+  if(a=="back"){s.view=null;setS(s);return render()}
+  if(a=="cup"||a=="cdn"){cashv=Math.max(0,cashv+(a=="cup"?STEP:-STEP));$("#cv").textContent=nf(cashv);return}
+  if(a=="ex")return exportAs(b.dataset.f);
+  if(adm&&!p){
+    if(a=="addst"){const n=v("sn").trim(),pw=v("sp");if(!n||pw.length<4)return alert("نام و رمز (حداقل ۴ حرف) را وارد کنید");D.staff.push({id:uid(),name:n,pw,food:[],cash:[],tips:[],fr:[],att:[],lv:[]})}
+    else if(a=="rpw"){const n=prompt("رمز جدید این فرد:");if(!n||n.length<4)return;person(b.dataset.i).pw=n;alert("رمز تغییر کرد")}
+    else if(a=="dst"){if(!confirm("این فرد و همهٔ اطلاعاتش حذف شود؟"))return;D.staff=D.staff.filter(x=>x.id!=b.dataset.i)}
+    else if(a=="apw"){const n=v("ap");if(n.length<4)return alert("حداقل ۴ حرف");D.admin=n;alert("رمز مدیر تغییر کرد")}
+    sv();return render();
+  }
+  if(!p)return;
+  if(["addfood","addcash","addtip","addfr"].includes(a)&&(p.set||{})[curM()])return alert("حساب این ماه بسته شده است. مدیر باید آن را دوباره باز کند.");
+  if(a=="addfood"){const m=MENU[+v("fi")],q=Math.max(1,num("fq")||1);p.food.push({id:uid(),n:m.n,q,p:m.p,t:now})}
+  else if(a=="addcash"){if(cashv<=0)return;p.cash.push({id:uid(),a:cashv,t:now});cashv=0}
+  else if(a=="addtip"){const x=+v("ta");if(!(x>0))return;p.tips.push({id:uid(),a:x,t:now})}
+  else if(a=="addfr"){const n=v("fn").trim(),x=+v("fa");if(!n||!(x>0))return alert("نام و مبلغ را وارد کنید");p.fr.push({id:uid(),n,a:x,t:now})}
+  else if(a=="in"){if(!p.att.some(x=>!x.o))p.att.push({id:uid(),i:now,o:null})}
+  else if(a=="out2"){const o=p.att.find(x=>!x.o);if(o)o.o=now}
+  else if(a=="addlv"){const k=v("lk"),d=num("ly")*10000+num("lm")*100+num("ld"),r={id:uid(),k,d,n:v("ln").trim(),by:adm?"admin":"staff",st:adm?"ok":"pending",t:now};
+    if(k=="day")r.days=Math.max(1,num("ldays")||1);else{if(!v("lf")||!v("lt2"))return alert("ساعت شروع و پایان را وارد کنید");r.f=v("lf");r.to=v("lt2")}p.lv.push(r)}
+  else if(a=="closem"&&adm){if(!confirm("حساب "+mlab(M)+" بسته شود؟ تا زمانی که دوباره باز نشود، خوراکی، برداشت، انعام و خرید جدیدی برای این ماه ثبت نمی‌شود."))return;const c=calc(p);(p.set=p.set||{})[M]={t:now,debt:c.debt,tips:c.T,com:c.com,net:c.net}}
+  else if(a=="openm"&&adm){if(!confirm("حساب این ماه دوباره باز شود؟"))return;if(p.set)delete p.set[M]}
+  else if((a=="lvok"||a=="lvno")&&adm){const x=p.lv.find(y=>y.id==b.dataset.i);if(x)x.st=a=="lvok"?"ok":"no"}
+  else if(a=="chpw"){const n=v("np");if(n.length<4)return alert("حداقل ۴ حرف");p.pw=n;alert("رمز تغییر کرد")}
+  else if(a=="del"&&adm){if(!confirm("حذف شود؟"))return;p[b.dataset.k]=p[b.dataset.k].filter(x=>x.id!=b.dataset.i)}
+  sv();render();
+});
+document.addEventListener("change",e=>{
+  if(e.target.id=="lk"){const h=e.target.value=="hr";$("#lday").hidden=h;$("#lhr").hidden=!h}
+  if(e.target.id=="imp"&&e.target.files[0]){
+    const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.staff))throw 0;
+      if(confirm("همهٔ اطلاعات فعلی با این فایل جایگزین شود؟")){D=Object.assign({admin:null,staff:[]},j);sv();render();alert("بازیابی شد")}}catch(x){alert("فایل معتبر نیست")}};
+    r.readAsText(e.target.files[0]);
+  }
+});
+render();
+});</script>
+</body>
+</html>
