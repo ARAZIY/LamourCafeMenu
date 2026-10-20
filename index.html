@@ -6,8 +6,6 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-      <link rel="favicon" type="image/png" href="logolamour.png">
-  <link rel="apple-touch-icon" href="logolamour.png">
     <title>منوی کافه لامور</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap"
@@ -572,76 +570,6 @@
           max-width: 1300px;
         }
       }
-
-      /* ===== مودال انتخاب نوع قهوه ===== */
-      #modal {
-        position: fixed;
-        inset: 0;
-        background: #0007;
-        z-index: 200;
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      #modal.on {
-        display: flex;
-      }
-      .mbox {
-        background: var(--card);
-        color: var(--tx);
-        width: 100%;
-        max-width: 480px;
-        border-radius: 18px 18px 0 0;
-        padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
-      }
-      @media (min-width: 600px) {
-        #modal {
-          align-items: center;
-        }
-        .mbox {
-          border-radius: 18px;
-        }
-      }
-      .mbox h3 {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-      }
-      .mbox .sub {
-        color: var(--mut);
-        font-size: 0.85rem;
-        margin-bottom: 10px;
-      }
-      .mbox .x {
-        width: 32px;
-        height: 32px;
-        background: var(--bd);
-      }
-      .mo-opt {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        padding: 12px 14px;
-        margin-top: 8px;
-        border: 1px solid var(--bd);
-        background: var(--bg);
-        border-radius: 12px;
-        text-align: right;
-      }
-      .mo-opt:active {
-        background: var(--pri);
-        color: #fff;
-      }
-      .mo-opt b {
-        color: var(--pri);
-        white-space: nowrap;
-      }
-      .mo-opt:active b {
-        color: #fff;
-      }
-
       #v2,
       .tab {
         display: none !important;
@@ -728,13 +656,6 @@
       </section>
     </main>
     <div id="toast" role="status"></div>
-    <div id="modal">
-      <div class="mbox">
-        <h3><span id="mt"></span><button class="x" data-mc>✕</button></h3>
-        <div class="sub" id="ms">یکی را انتخاب کنید</div>
-        <div id="mo"></div>
-      </div>
-    </div>
     <script src="sheet-db.js">});</script>
 <script>DB.ready.then(()=>{
       let MENU = [
@@ -856,53 +777,16 @@
       const $ = (s) => document.querySelector(s),
         fa = (n) => Number(n).toLocaleString("fa-IR");
       const esc = (s) => String(s || "").replace(/[<>&"]/g, "");
-      const load = () => {
-        try {
-          return JSON.parse(localStorage.getItem(K)) || [];
-        } catch (e) {
-          return mem;
-        }
-      };
+      const load = () => mem;
       const save = (o) => {
         mem = o;
-        try {
-          localStorage.setItem(K, JSON.stringify(o));
-        } catch (e) {}
       };
       const desc = (m) => m.d || DESC[m.n] || "";
-
-      /* ===== گزینه‌های قهوه (مودال) ===== */
-      const mix = (ps) =>
-        ["۱۰۰٪ روبوستا","۷۰٪ روبوستا + ۳۰٪ عربیکا","۵۰٪ روبوستا + ۵۰٪ عربیکا","۳۰٪ روبوستا + ۷۰٪ عربیکا","۱۰۰٪ عربیکا"]
-          .map((l, i) => ({ l, p: ps[i] }));
-      const OPTS = {
-        "ترک": [{ l: "تلخ" }, { l: "مدیوم" }, { l: "شیرین" }],
-        "سینگل": mix([140, 160, 180, 200, 250]),
-        "دبل": mix([160, 180, 200, 250, 280]),
-      };
-      // کلید سبد: "id" یا "id:شماره‌گزینه"
-      const parse = (k) => {
-        const [a, b] = String(k).split(":");
-        const m = MENU[a];
-        const o = b !== undefined && OPTS[m.n] ? OPTS[m.n][b] : null;
-        return { m, o, p: o && o.p != null ? o.p : m.p, n: m.n + (o ? " (" + o.l + ")" : "") };
-      };
       let cart = {},
         cat = "همه",
         typ = "میز",
         flt = -1,
         editing = null;
-      const qtyOf = (id) =>
-        Object.keys(cart).filter((k) => k.split(":")[0] == id).reduce((a, k) => a + cart[k], 0);
-      function openOpt(m) {
-        $("#mt").textContent = m.n;
-        $("#mo").innerHTML = OPTS[m.n]
-          .map((o, i) =>
-            `<button class="mo-opt" data-k="${m.id}:${i}"><span>${o.l}</span><b>${fa(o.p != null ? o.p : m.p)} تومان</b></button>`)
-          .join("");
-        $("#modal").classList.add("on");
-      }
-      const closeOpt = () => $("#modal").classList.remove("on");
 
       function show(v) {
         document
@@ -930,7 +814,7 @@
         $("#menu").innerHTML = MENU.filter((m) => cat == "همه" || m.c == cat)
           .map(
             (m) =>
-              `<div class="item" data-id="${m.id}">${qtyOf(m.id) ? `<span class="q">${fa(qtyOf(m.id))}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
+              `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
           )
           .join("");
       }
@@ -941,11 +825,11 @@
         $("#cart").innerHTML = ids.length
           ? ids
               .map((id) => {
-                const x = parse(id),
+                const m = MENU[id],
                   q = cart[id];
-                sum += x.p * q;
+                sum += m.p * q;
                 cnt += q;
-                return `<div class="row"><span class="t">${x.n}<br><span class="mut">${fa(x.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
+                return `<div class="row"><span class="t">${m.n}<br><span class="mut">${fa(m.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
               })
               .join("")
           : '<div class="empty">آیتمی انتخاب نشده</div>';
@@ -1001,24 +885,8 @@
         setTyp("میز");
       }
       document.addEventListener("click", (e) => {
-        const mo = e.target.closest(".mo-opt");
-        if (mo) {
-          cart[mo.dataset.k] = (cart[mo.dataset.k] || 0) + 1;
-          closeOpt();
-          renderCart();
-          return;
-        }
-        if (e.target.id == "modal" || e.target.closest("[data-mc]")) {
-          closeOpt();
-          return;
-        }
         const it = e.target.closest(".item");
         if (it) {
-          const m = MENU[it.dataset.id];
-          if (OPTS[m.n]) {
-            openOpt(m);
-            return;
-          }
           cart[it.dataset.id] = (cart[it.dataset.id] || 0) + 1;
           renderCart();
           return;
@@ -1050,10 +918,6 @@
           if (!x) return;
           cart = {};
           x.items.forEach((i) => {
-            if (i.k !== undefined) {
-              cart[i.k] = (cart[i.k] || 0) + i.q;
-              return;
-            }
             const m =
               MENU.find((m) => m.id == i.id && m.n == i.n) ||
               MENU.find((m) => m.n == i.n);
@@ -1096,10 +960,12 @@
           $("#tbl").focus();
           return;
         }
-        const items = ids.map((id) => {
-          const x = parse(id);
-          return { id: +id.split(":")[0], k: id, n: x.n, q: cart[id], p: x.p };
-        });
+        const items = ids.map((id) => ({
+          id: +id,
+          n: MENU[id].n,
+          q: cart[id],
+          p: MENU[id].p,
+        }));
         const sum = items.reduce((a, i) => a + i.p * i.q, 0);
         const note = $("#note").value.trim();
         const order = {
