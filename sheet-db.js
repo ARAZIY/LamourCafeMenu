@@ -1,6 +1,5 @@
-/* اتصال صفحات به Google Sheet (جایگزین localStorage). فقط آدرس API را عوض کنید. */
 (function () {
-  const API = 'https://script.google.com/macros/s/1C4LQAilSBk4VhmRcKzu3W78flp9kgnpJhcn8a_v-0DQ/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbzZVGe05Th5A2nB2o3kw1jdZDHANwvbsDFfgXNicT-F4ryu3UIYSMnWoeghppcbDMlDmw/exec';
   const KEYS = ['cafe_orders_v1', 'cafe_invoices_v1', 'cafe_seen_v1', 'cafe_no_v1', 'cafe_inv_del_v1', 'cafe_staff_v1'];
   const me = document.currentScript;
   const needAuth = me && me.dataset.auth === '1';
@@ -88,5 +87,5 @@
     get: k => (k in cache ? cache[k] : null),
     set(k, v) { cache[k] = String(v); mirror(k, cache[k]); pending[k] = 1; push(k); }
   };
-  DB.ready = Promise.all([load(), menu()]).then(([, m]) => { DB.menu = m; setInterval(refresh, 8000); });
+  DB.ready = Promise.all([load(), menu()]).then(([, m]) => { DB.menu = m; setInterval(refresh, 30000); });
 })();
