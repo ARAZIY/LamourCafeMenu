@@ -472,7 +472,16 @@
         position: relative;
         z-index: 1;
       }
-
+      #om{position:fixed;inset:0;z-index:200;background:#0007;display:none;align-items:center;justify-content:center;padding:14px}
+      #om.show{display:flex}
+      #om .box{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:380px;padding:16px;max-height:90vh;overflow-y:auto}
+      #om h3{font-size:1.05rem;margin-bottom:4px}
+      #om .sub{color:var(--mut);font-size:.85rem;margin-bottom:10px}
+      #om .opt{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:12px;margin-top:8px;border:1px solid var(--bd);background:var(--bg);font-weight:600}
+      #om .opt:active{background:var(--pri);color:#fff}
+      #om .opt .pr{color:var(--pri);font-weight:800;white-space:nowrap}
+      #om .opt:active .pr{color:#fff}
+      #om .cl{width:100%;margin-top:12px;padding:10px;background:var(--bd)}
       /* تبلت */
       @media (max-width: 1000px) {
         .grid2 {
@@ -656,6 +665,14 @@
       </section>
     </main>
     <div id="toast" role="status"></div>
+    <div id="om" role="dialog" aria-modal="true">
+      <div class="box">
+        <h3 id="omt"></h3>
+        <div class="sub" id="oms">لطفاً یکی را انتخاب کنید</div>
+        <div id="omo"></div>
+        <button class="cl" id="omc">انصراف</button>
+      </div>
+    </div>
     <script src="sheet-db.js">});</script>
 <script>DB.ready.then(()=>{
       let MENU = [
@@ -744,6 +761,51 @@
         "مکن چیز": "ماکارونی با پنیر ذوب‌شده",
         آب: "آب معدنی",
       };
+
+
+
+
+
+
+  const OPTS = {
+  "ترک": { t: "قهوه ترک را چطور می‌خواهید؟", l: [
+    { l: "تلخ", p: 160 }, { l: "مدیوم", p: 160 }, { l: "شیرین", p: 160 } ] },
+  "سینگل": { t: "ترکیب قهوه (سینگل)", l: [
+    { l: "۱۰۰٪ روبوستا", p: 140 },
+    { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 160 },
+    { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 180 },
+    { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 200 },
+    { l: "۱۰۰٪ عربیکا", p: 250 } ] },
+  "دبل": { t: "ترکیب قهوه (دبل)", l: [
+    { l: "۱۰۰٪ روبوستا", p: 160 },
+    { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 180 },
+    { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 200 },
+    { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 250 },
+    { l: "۱۰۰٪ عربیکا", p: 280 } ] },
+};
+// کلید سبد: "id" برای آیتم معمولی، "id_شماره‌گزینه" برای آیتم‌های دارای گزینه
+const lineOf = (k) => {
+  const [i, o] = String(k).split("_"), m = MENU[i];
+  const op = o !== undefined && OPTS[m.n] ? OPTS[m.n].l[o] : null;
+  return { m, o, p: op ? op.p : m.p, n: op ? m.n + " – " + op.l : m.n };
+};
+const qtyOf = (id) => Object.keys(cart).filter((k) => k.split("_")[0] == id).reduce((a, k) => a + cart[k], 0);
+const priceTxt = (m) => OPTS[m.n] ? "از " + fa(Math.min(...OPTS[m.n].l.map((x) => x.p))) + " تومان" : fa(m.p) + " تومان";
+function openOpt(id) {
+  const m = MENU[id], c = OPTS[m.n];
+  $("#omt").textContent = c.t;
+  $("#omo").innerHTML = c.l.map((x, i) =>
+    `<button class="opt" data-oid="${id}" data-oi="${i}"><span>${x.l}</span><span class="pr">${fa(x.p)} تومان</span></button>`).join("");
+  $("#om").classList.add("show");
+}
+const closeOpt = () => $("#om").classList.remove("show");
+
+
+
+
+
+  
+  
       let CATS = ["همه", ...new Set(MENU.map((m) => m.c))];
       if(DB.menu){MENU=DB.menu.map((m,i)=>({...m,id:i}));CATS=["همه",...new Set(MENU.map(m=>m.c))]}
       const ST = ["جدید", "در حال آماده‌سازی", "آماده تحویل", "تحویل داده شد"],
@@ -824,13 +886,12 @@
           cnt = 0;
         $("#cart").innerHTML = ids.length
           ? ids
-              .map((id) => {
-                const m = MENU[id],
-                  q = cart[id];
-                sum += m.p * q;
-                cnt += q;
-                return `<div class="row"><span class="t">${m.n}<br><span class="mut">${fa(m.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
-              })
+.map((id) => {
+  const L = lineOf(id), q = cart[id];
+  sum += L.p * q;
+  cnt += q;
+  return `<div class="row"><span class="t">${L.n}<br><span class="mut">${fa(L.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
+})
               .join("")
           : '<div class="empty">آیتمی انتخاب نشده</div>';
         $("#sum").textContent = fa(sum) + " تومان";
@@ -886,11 +947,33 @@
       }
       document.addEventListener("click", (e) => {
         const it = e.target.closest(".item");
+
+
+
+
+
+
+
         if (it) {
-          cart[it.dataset.id] = (cart[it.dataset.id] || 0) + 1;
-          renderCart();
-          return;
-        }
+  const m = MENU[it.dataset.id];
+  if (OPTS[m.n]) { openOpt(m.id); return; }
+  cart[it.dataset.id] = (cart[it.dataset.id] || 0) + 1;
+  renderCart();
+  return;
+}
+const op = e.target.closest(".opt");
+if (op) {
+  const k = op.dataset.oid + "_" + op.dataset.oi;
+  cart[k] = (cart[k] || 0) + 1;
+  closeOpt();
+  renderCart();
+  return;
+}
+
+
+
+
+        
         const b = e.target.closest("button");
         if (!b) return;
         if (b.dataset.v) show(b.dataset.v);
@@ -917,12 +1000,22 @@
           const x = load().find((r) => r.id == b.dataset.ed);
           if (!x) return;
           cart = {};
-          x.items.forEach((i) => {
-            const m =
-              MENU.find((m) => m.id == i.id && m.n == i.n) ||
-              MENU.find((m) => m.n == i.n);
-            if (m) cart[m.id] = (cart[m.id] || 0) + i.q;
-          });
+
+
+          
+x.items.forEach((i) => {
+  if (i.o !== undefined && MENU[i.id]) {
+    const k = i.id + "_" + i.o;
+    cart[k] = (cart[k] || 0) + i.q;
+    return;
+  }
+  const m = MENU.find((m) => m.id == i.id && m.n == i.n) || MENU.find((m) => m.n == i.n);
+  if (m) cart[m.id] = (cart[m.id] || 0) + i.q;
+});
+
+
+
+          
           editing = x.id;
           setTyp(x.typ);
           $("#tbl").value = x.tbl || "";
@@ -960,12 +1053,18 @@
           $("#tbl").focus();
           return;
         }
-        const items = ids.map((id) => ({
-          id: +id,
-          n: MENU[id].n,
-          q: cart[id],
-          p: MENU[id].p,
-        }));
+
+
+        
+const items = ids.map((id) => {
+  const L = lineOf(id);
+  const it = { id: +id.split("_")[0], n: L.n, q: cart[id], p: L.p };
+  if (L.o !== undefined) it.o = +L.o;
+  return it;
+});
+
+
+        
         const sum = items.reduce((a, i) => a + i.p * i.q, 0);
         const note = $("#note").value.trim();
         const order = {
@@ -1022,6 +1121,13 @@
       setInterval(renderOrders, 30000);
       addEventListener("resize", renderCart);
       renderCats();
+
+
+  $("#omc").onclick = closeOpt;
+$("#om").addEventListener("click", (e) => { if (e.target.id == "om") closeOpt(); });
+addEventListener("keydown", (e) => { if (e.key == "Escape") closeOpt(); });
+
+  
       renderCart();
       renderOrders();
     });</script>
