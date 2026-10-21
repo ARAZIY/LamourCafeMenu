@@ -1,29 +1,29 @@
 {
-  "name": "نام کامل سایت",
-  "short_name": "نام کوتاه",
-  "description": "توضیح کوتاه درباره سایت",
+  "name": "منو کافه لامور",
+  "short_name": "منو لامور",
+  "description": "منوی کافه لامور سفارش رو برای شما راحت تر میکنه",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#6f4520",
+  "theme_color": "#6f4520",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "logolamour.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "logolamour.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "logolamour.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
