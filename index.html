@@ -7,13 +7,14 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>منوی کافه لامور</title>
+
     <link
       href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg: #faf5ee;
+        --bg: #ffecd1;
         --card: #fff;
         --tx: #2b1d14;
         --mut: #8a7766;
@@ -28,30 +29,12 @@
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --bg: #675347;
-          --card: #2a201a;
-          --tx: #f3e9dc;
-          --mut: #a8957f;
-          --pri: #d19a5c;
-          --pri2: #e6b27a;
-          --bd: #43352b;
-        }
-      }
-      :root[data-theme="dark"] {
-        --bg: #1c1511;
-        --card: #2a201a;
-        --tx: #f3e9dc;
-        --mut: #a8957f;
-        --pri: #d19a5c;
-        --pri2: #e6b27a;
-        --bd: #43352b;
-      }
+
       * {
         box-sizing: border-box;
         margin: 0;
       }
+
       html {
         -webkit-text-size-adjust: 100%;
       }
@@ -60,6 +43,40 @@
         color: var(--tx);
         font-family: Vazirmatn, Tahoma, sans-serif;
         overflow-x: hidden;
+      }
+      #beans {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .bean {
+        position: absolute;
+        top: 0;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 60'%3E%3Cellipse cx='20' cy='30' rx='17' ry='27' fill='%236f4520'/%3E%3Cpath d='M20 4C10 20 30 40 20 56' stroke='%232b1d14' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")
+          center / contain no-repeat;
+        opacity: 1;
+        will-change: transform;
+        animation: bean-fall var(--dur) linear var(--delay) infinite;
+      }
+      @keyframes bean-fall {
+        from {
+          transform: translate3d(0, -15vh, 0) rotate(0deg);
+        }
+        to {
+          transform: translate3d(var(--dx), 115vh, 0) rotate(var(--rot));
+        }
+      }
+      
+      main {
+        position: relative;
+        z-index: 1;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #beans {
+          display: none;
+        }
       }
       img,
       video {
@@ -73,7 +90,6 @@
         color: inherit;
         background: none;
       }
-      /* هدر دیگر fixed/sticky نیست و همراه صفحه اسکرول می‌شود */
       header {
         position: relative;
         overflow: hidden;
@@ -148,19 +164,19 @@
       .grid2 > div {
         min-width: 0;
       }
-      /* فقط دسته‌بندی‌ها هنگام اسکرول چسبیده می‌مانند */
       .cats {
         display: flex;
         gap: 6px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        padding: 8px 0;
+        padding: 8px 5px;
         margin-bottom: 6px;
         position: sticky;
         top: env(safe-area-inset-top, 0px);
         z-index: 50;
-        background: var(--bg);
+        background: var(--pri2);
         scrollbar-width: none;
+        border-radius: 100px;
       }
       .cats::-webkit-scrollbar {
         display: none;
@@ -364,8 +380,13 @@
         transition: 0.25s;
         z-index: 100;
       }
-      #toast.bad { background: var(--bad); }
-      #toast.show { opacity: 1; transform: translate(-50%, 0); }
+      #toast.bad {
+        background: var(--bad);
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
       .mut {
         color: var(--mut);
         font-size: 0.88rem;
@@ -472,16 +493,69 @@
         position: relative;
         z-index: 1;
       }
-      #om{position:fixed;inset:0;z-index:200;background:#0007;display:none;align-items:center;justify-content:center;padding:14px}
-      #om.show{display:flex}
-      #om .box{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:380px;padding:16px;max-height:90vh;overflow-y:auto}
-      #om h3{font-size:1.05rem;margin-bottom:4px}
-      #om .sub{color:var(--mut);font-size:.85rem;margin-bottom:10px}
-      #om .opt{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:12px;margin-top:8px;border:1px solid var(--bd);background:var(--bg);font-weight:600}
-      #om .opt:active{background:var(--pri);color:#fff}
-      #om .opt .pr{color:var(--pri);font-weight:800;white-space:nowrap}
-      #om .opt:active .pr{color:#fff}
-      #om .cl{width:100%;margin-top:12px;padding:10px;background:var(--bd)}
+      #om {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: #0007;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 14px;
+      }
+      #om.show {
+        display: flex;
+      }
+      #om .box {
+        background: var(--card);
+        color: var(--tx);
+        border: 1px solid var(--bd);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 380px;
+        padding: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      #om h3 {
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+      }
+      #om .sub {
+        color: var(--mut);
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+      }
+      #om .opt {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        border: 1px solid var(--bd);
+        background: var(--bg);
+        font-weight: 600;
+      }
+      #om .opt:active {
+        background: var(--pri);
+        color: #fff;
+      }
+      #om .opt .pr {
+        color: var(--pri);
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      #om .opt:active .pr {
+        color: #fff;
+      }
+      #om .cl {
+        width: 100%;
+        margin-top: 12px;
+        padding: 10px;
+        background: var(--bd);
+      }
       /* تبلت */
       @media (max-width: 1000px) {
         .grid2 {
@@ -673,463 +747,505 @@
         <button class="cl" id="omc">انصراف</button>
       </div>
     </div>
-    <script src="sheet-db.js">});</script>
-<script>DB.ready.then(()=>{
-      let MENU = [
-        { n: "سینگل", c: "قهوه", p: 140, i: "./single.jpg" },
-        { n: "دبل", c: "قهوه", p: 160, i: "./dobbel.jpg" },
-        { n: "ترک", c: "قهوه", p: 160, i: "./tork.jpg" },
-        { n: "آمریکانو", c: "گرم", p: 180, i: "./americano.jpg" },
-        { n: "آیس آمریکانو", c: "سرد", p: 190, i: "./ice americano.jpg" },
-        { n: "لاته", c: "گرم", p: 210, i: "./late.jpg" },
-        { n: "آیس لاته", c: "سرد", p: 230, i: "./ice latte.jpg" },
-        { n: "هات چاکلت", c: "گرم", p: 240, i: "./hot choclet.jpg" },
-        { n: "آلفردو", c: "غذا", p: 490, i: "alferedo.jpg" },
-        { n: "پیتزا", c: "غذا", p: 600, i: "" },
-        { n: "املت", c: "غذا", p: 270, i: "./omlet.jpg" },
-        { n: "ایرانی", c: "غذا", p: 600, i: "" },
-        { n: "نیمرو", c: "غذا", p: 200, i: "./nimroo.jpg" },
-        { n: "سوسیس تخم مرغ", c: "غذا", p: 270, i: "./sosistokhmmorg.jpg" },
-        { n: "قیساوا", c: "غذا", p: 270, i: "./geisava.jpg" },
-        { n: "سجوک", c: "غذا", p: 290, i: "./sojoktokhmmorg.jpg" },
-        { n: "موکا", c: "گرم", p: 230, i: "./moka.jpg" },
-        { n: "ماکیاتو", c: "گرم", p: 230, i: "./machiato.jpg" },
-        { n: "آیس ماکیاتو", c: "سرد", p: 250, i: "./machiato.jpg" },
-        { n: "چای ماسالا", c: "گرم", p: 230, i: "./msala.jpg" },
-        { n: "وایت چاکلت", c: "گرم", p: 240, i: "./white choclet.jpg" },
-        { n: "کاپوچینو", c: "گرم", p: 240, i: "./capochino.jpg" },
-        { n: "آیس موکا", c: "سرد", p: 250, i: "./ice moka.jpg" },
-        { n: "آفوگاتو", c: "سرد", p: 360, i: "./afogato.png" },
-        { n: "چای ویژه", c: "چایی", p: 250, i: "eavizhe.jpg" },
-        { n: "فنجانی", c: "چایی", p: 70, i: "./tea.jpg" },
-        { n: "دمنوش زنجبیل", c: "چایی", p: 250, i: "./teaZanjabil.jpg" },
-        { n: "دمنوش لیمو نعناع", c: "چایی", p: 250, i: "./teaLimonana.jpg" },
-        { n: "سرماخوردگی", c: "چایی", p: 250, i: "./teaSarma.jpg" },
-        { n: "گل گاوزبان", c: "چایی", p: 250, i: "./teaGawzaban.jpg" },
-        { n: "دمنوش میوه", c: "چایی", p: 290, i: "./teaFruit.jpg" },
-        { n: "شکلاتی", c: "شیک", p: 470, i: "./sheikChocolat.jpg" },
-        { n: "نوتلا", c: "شیک", p: 470, i: "./sheikNotela.jpg" },
-        { n: "موز", c: "شیک", p: 420, i: "./sheikMoz.jpg" },
-        { n: "بادام زمینی", c: "شیک", p: 420, i: "./sheikBadam.jpg" },
-        { n: "نسکافه", c: "شیک", p: 400, i: "./sheikNeskafe.jpg" },
-        { n: "کیک خیس", c: "خوراکی", p: 250, i: "./cake.jpg" },
-        { n: "باقلوا", c: "خوراکی", p: 50, i: "./baglava.jpg" },
-        { n: "پستو", c: "غذا", p: 620, i: "pestopasta.jpg" },
-        { n: "مکن چیز", c: "غذا", p: 400, i: "maken.png" },
-        { n: "آب", c: "نوشیدنی", p: 25, i: "water.jpg" },
-      ].map((m, i) => ({ ...m, id: i }));
-      const DESC = {
-        سینگل: "یک شات اسپرسو",
-        دبل: "دو شات اسپرسو غلیظ",
-        ترک: "قهوه ترک سنتی با فوم",
-        آمریکانو: "اسپرسو رقیق‌شده با آب داغ",
-        "آیس آمریکانو": "اسپرسو با آب سرد و یخ",
-        لاته: "اسپرسو با شیر بخار‌داده و فوم نرم",
-        "آیس لاته": "اسپرسو و شیر سرد با یخ",
-        "هات چاکلت": "شکلات داغ و غلیظ با شیر",
-        آلفردو: "پاستا با سس خامه و قارچ",
-        پیتزا: "پیتزای مخصوص با پنیر موزارلا",
-        املت: "تخم‌مرغ با گوجه و پیاز",
-        ایرانی: "غذای ایرانی مخصوص کافه",
-        نیمرو: "تخم‌مرغ سرخ‌شده ساده",
-        "سوسیس تخم مرغ": "سوسیس سرخ‌شده با تخم‌مرغ",
-        قیساوا: "تخم‌مرغ با قیسی (زردآلوی خشک)",
-        سجوک: "سوسیس سجوک با تخم‌مرغ",
-        موکا: "اسپرسو، شکلات و شیر",
-        ماکیاتو: "اسپرسو با کمی فوم شیر",
-        "آیس ماکیاتو": "اسپرسو و شیر سرد با یخ",
-        "چای ماسالا": "چای با شیر و ادویه‌های هندی",
-        "وایت چاکلت": "شکلات سفید شیرین و کِرِمی",
-        کاپوچینو: "اسپرسو، شیر و فوم غلیظ به نسبت مساوی",
-        "آیس موکا": "موکای سرد با یخ",
-        آفوگاتو: "بستنی وانیلی با شات اسپرسو داغ",
-        "چای ویژه": "چای دم‌کرده مخصوص کافه",
-        فنجانی: "چای ساده در فنجان",
-        "دمنوش زنجبیل": "دمنوش گرم زنجبیل تازه",
-        "دمنوش لیمو نعناع": "دمنوش خنک‌کننده لیمو و نعناع",
-        سرماخوردگی: "ترکیب گیاهی مخصوص سرماخوردگی",
-        "گل گاوزبان": "دمنوش آرامش‌بخش گل گاوزبان",
-        "دمنوش میوه": "ترکیب میوه‌های تازه و خشک",
-        شکلاتی: "شیک شیر، بستنی و شکلات",
-        نوتلا: "شیک شیر، بستنی و نوتلا",
-        موز: "شیک موز تازه با شیر و بستنی",
-        "بادام زمینی": "شیک کره بادام‌زمینی با بستنی",
-        نسکافه: "شیک نسکافه با شیر و بستنی",
-        "کیک خیس": "کیک شکلاتی نرم و خیس",
-        باقلوا: "شیرینی لایه‌ای با مغز و شربت",
-        پستو: "پاستا با سس پستوی ریحان",
-        "مکن چیز": "ماکارونی با پنیر ذوب‌شده",
-        آب: "آب معدنی",
-      };
+    <script src="sheet-db.js"></script>
+    <script>
+      DB.ready.then(() => {
+        let MENU = [
+          { n: "سینگل", c: "قهوه", p: 140, i: "./single.jpg" },
+          { n: "دبل", c: "قهوه", p: 160, i: "./dobbel.jpg" },
+          { n: "ترک", c: "قهوه", p: 160, i: "./tork.jpg" },
+          { n: "آمریکانو", c: "گرم", p: 180, i: "./americano.jpg" },
+          { n: "آیس آمریکانو", c: "سرد", p: 190, i: "./ice americano.jpg" },
+          { n: "لاته", c: "گرم", p: 210, i: "./late.jpg" },
+          { n: "آیس لاته", c: "سرد", p: 230, i: "./ice latte.jpg" },
+          { n: "هات چاکلت", c: "گرم", p: 240, i: "./hot choclet.jpg" },
+          { n: "آلفردو", c: "غذا", p: 490, i: "alferedo.jpg" },
+          { n: "پیتزا", c: "غذا", p: 600, i: "" },
+          { n: "املت", c: "غذا", p: 270, i: "./omlet.jpg" },
+          { n: "ایرانی", c: "غذا", p: 600, i: "" },
+          { n: "نیمرو", c: "غذا", p: 200, i: "./nimroo.jpg" },
+          { n: "سوسیس تخم مرغ", c: "غذا", p: 270, i: "./sosistokhmmorg.jpg" },
+          { n: "قیساوا", c: "غذا", p: 270, i: "./geisava.jpg" },
+          { n: "سجوک", c: "غذا", p: 290, i: "./sojoktokhmmorg.jpg" },
+          { n: "موکا", c: "گرم", p: 230, i: "./moka.jpg" },
+          { n: "ماکیاتو", c: "گرم", p: 230, i: "./machiato.jpg" },
+          { n: "آیس ماکیاتو", c: "سرد", p: 250, i: "./machiato.jpg" },
+          { n: "چای ماسالا", c: "گرم", p: 230, i: "./msala.jpg" },
+          { n: "وایت چاکلت", c: "گرم", p: 240, i: "./white choclet.jpg" },
+          { n: "کاپوچینو", c: "گرم", p: 240, i: "./capochino.jpg" },
+          { n: "آیس موکا", c: "سرد", p: 250, i: "./ice moka.jpg" },
+          { n: "آفوگاتو", c: "سرد", p: 360, i: "./afogato.png" },
+          { n: "چای ویژه", c: "چایی", p: 250, i: "eavizhe.jpg" },
+          { n: "فنجانی", c: "چایی", p: 70, i: "./tea.jpg" },
+          { n: "دمنوش زنجبیل", c: "چایی", p: 250, i: "./teaZanjabil.jpg" },
+          { n: "دمنوش لیمو نعناع", c: "چایی", p: 250, i: "./teaLimonana.jpg" },
+          { n: "سرماخوردگی", c: "چایی", p: 250, i: "./teaSarma.jpg" },
+          { n: "گل گاوزبان", c: "چایی", p: 250, i: "./teaGawzaban.jpg" },
+          { n: "دمنوش میوه", c: "چایی", p: 290, i: "./teaFruit.jpg" },
+          { n: "شکلاتی", c: "شیک", p: 470, i: "./sheikChocolat.jpg" },
+          { n: "نوتلا", c: "شیک", p: 470, i: "./sheikNotela.jpg" },
+          { n: "موز", c: "شیک", p: 420, i: "./sheikMoz.jpg" },
+          { n: "بادام زمینی", c: "شیک", p: 420, i: "./sheikBadam.jpg" },
+          { n: "نسکافه", c: "شیک", p: 400, i: "./sheikNeskafe.jpg" },
+          { n: "کیک خیس", c: "خوراکی", p: 250, i: "./cake.jpg" },
+          { n: "باقلوا", c: "خوراکی", p: 50, i: "./baglava.jpg" },
+          { n: "پستو", c: "غذا", p: 620, i: "pestopasta.jpg" },
+          { n: "مکن چیز", c: "غذا", p: 400, i: "maken.png" },
+          { n: "آب", c: "نوشیدنی", p: 25, i: "water.jpg" },
+        ].map((m, i) => ({ ...m, id: i }));
+        const DESC = {
+          سینگل: "یک شات اسپرسو",
+          دبل: "دو شات اسپرسو غلیظ",
+          ترک: "قهوه ترک سنتی با فوم",
+          آمریکانو: "اسپرسو رقیق‌شده با آب داغ",
+          "آیس آمریکانو": "اسپرسو با آب سرد و یخ",
+          لاته: "اسپرسو با شیر بخار‌داده و فوم نرم",
+          "آیس لاته": "اسپرسو و شیر سرد با یخ",
+          "هات چاکلت": "شکلات داغ و غلیظ با شیر",
+          آلفردو: "پاستا با سس خامه و قارچ",
+          پیتزا: "پیتزای مخصوص با پنیر موزارلا",
+          املت: "تخم‌مرغ با گوجه و پیاز",
+          ایرانی: "غذای ایرانی مخصوص کافه",
+          نیمرو: "تخم‌مرغ سرخ‌شده ساده",
+          "سوسیس تخم مرغ": "سوسیس سرخ‌شده با تخم‌مرغ",
+          قیساوا: "تخم‌مرغ با قیسی (زردآلوی خشک)",
+          سجوک: "سوسیس سجوک با تخم‌مرغ",
+          موکا: "اسپرسو، شکلات و شیر",
+          ماکیاتو: "اسپرسو با کمی فوم شیر",
+          "آیس ماکیاتو": "اسپرسو و شیر سرد با یخ",
+          "چای ماسالا": "چای با شیر و ادویه‌های هندی",
+          "وایت چاکلت": "شکلات سفید شیرین و کِرِمی",
+          کاپوچینو: "اسپرسو، شیر و فوم غلیظ به نسبت مساوی",
+          "آیس موکا": "موکای سرد با یخ",
+          آفوگاتو: "بستنی وانیلی با شات اسپرسو داغ",
+          "چای ویژه": "چای دم‌کرده مخصوص کافه",
+          فنجانی: "چای ساده در فنجان",
+          "دمنوش زنجبیل": "دمنوش گرم زنجبیل تازه",
+          "دمنوش لیمو نعناع": "دمنوش لیمو و نعناع",
+          سرماخوردگی: "ترکیب گیاهی مخصوص سرماخوردگی",
+          "گل گاوزبان": "دمنوش آرامش‌بخش گل گاوزبان",
+          "دمنوش میوه": "ترکیب میوه‌های تازه و خشک",
+          شکلاتی: "شیک شیر، بستنی و شکلات",
+          نوتلا: "شیک شیر، بستنی و نوتلا",
+          موز: "شیک موز تازه با شیر و بستنی",
+          "بادام زمینی": "شیک کره بادام‌زمینی با بستنی",
+          نسکافه: "شیک نسکافه با شیر و بستنی",
+          "کیک خیس": "کیک شکلاتی نرم و خیس",
+          باقلوا: "شیرینی لایه‌ای با مغز و شربت",
+          پستو: "پاستا با سس پستوی ریحان",
+          "مکن چیز": "ماکارونی با پنیر ذوب‌شده",
+          آب: "آب معدنی",
+        };
 
-
-
-
-
-
-  const OPTS = {
-  "ترک": { t: "قهوه ترک را چطور می‌خواهید؟", l: [
-    { l: "تلخ", p: 160 }, { l: "مدیوم", p: 160 }, { l: "شیرین", p: 160 } ] },
-  "سینگل": { t: "ترکیب قهوه (سینگل)", l: [
-    { l: "۱۰۰٪ روبوستا", p: 140 },
-    { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 160 },
-    { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 180 },
-    { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 200 },
-    { l: "۱۰۰٪ عربیکا", p: 250 } ] },
-  "دبل": { t: "ترکیب قهوه (دبل)", l: [
-    { l: "۱۰۰٪ روبوستا", p: 160 },
-    { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 180 },
-    { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 200 },
-    { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 250 },
-    { l: "۱۰۰٪ عربیکا", p: 280 } ] },
-};
-// کلید سبد: "id" برای آیتم معمولی، "id_شماره‌گزینه" برای آیتم‌های دارای گزینه
-const lineOf = (k) => {
-  const [i, o] = String(k).split("_"), m = MENU[i];
-  const op = o !== undefined && OPTS[m.n] ? OPTS[m.n].l[o] : null;
-  return { m, o, p: op ? op.p : m.p, n: op ? m.n + " – " + op.l : m.n };
-};
-const qtyOf = (id) => Object.keys(cart).filter((k) => k.split("_")[0] == id).reduce((a, k) => a + cart[k], 0);
-const priceTxt = (m) => OPTS[m.n] ? "از " + fa(Math.min(...OPTS[m.n].l.map((x) => x.p))) + " تومان" : fa(m.p) + " تومان";
-function openOpt(id) {
-  const m = MENU[id], c = OPTS[m.n];
-  $("#omt").textContent = c.t;
-  $("#omo").innerHTML = c.l.map((x, i) =>
-    `<button class="opt" data-oid="${id}" data-oi="${i}"><span>${x.l}</span><span class="pr">${fa(x.p)} تومان</span></button>`).join("");
-  $("#om").classList.add("show");
-}
-const closeOpt = () => $("#om").classList.remove("show");
-
-
-
-
-
-  
-  
-      let CATS = ["همه", ...new Set(MENU.map((m) => m.c))];
-      if(DB.menu){MENU=DB.menu.map((m,i)=>({...m,id:i}));CATS=["همه",...new Set(MENU.map(m=>m.c))]}
-      const ST = ["جدید", "در حال آماده‌سازی", "آماده تحویل", "تحویل داده شد"],
-        NX = ["شروع آماده‌سازی", "آماده شد", "تحویل داده شد ✓"];
-      const PHONE = "+989932675263";
-
-      /* ===== تاریخ و ساعت شمسی بر اساس وقت ایران (مستقل از دستگاه) ===== */
-      const TZ = "Asia/Tehran";
-      const irDate = (t) =>
-        new Date(t).toLocaleDateString("fa-IR-u-ca-persian", {
-          timeZone: TZ,
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      const irTime = (t) =>
-        new Date(t).toLocaleTimeString("fa-IR", {
-          timeZone: TZ,
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        });
-      // کلید روز بر اساس ایران (برای شمارش «سفارش امروز»)
-      const irDay = (t) =>
-        new Date(t).toLocaleDateString("en-CA", { timeZone: TZ });
-
-      const TOPIC = "lamour-ce97ecdd2624b89c6b5d";
-      const NTFY = "https://ntfy.sh/" + TOPIC;
-      const K = "cafe_orders_v1";
-      let mem = [];
-      const $ = (s) => document.querySelector(s),
-        fa = (n) => Number(n).toLocaleString("fa-IR");
-      const esc = (s) => String(s || "").replace(/[<>&"]/g, "");
-      const load = () => mem;
-      const save = (o) => {
-        mem = o;
-      };
-      const desc = (m) => m.d || DESC[m.n] || "";
-      let cart = {},
-        cat = "همه",
-        typ = "میز",
-        flt = -1,
-        editing = null;
-
-      function show(v) {
-        document
-          .querySelectorAll(".tab")
-          .forEach((t) => t.classList.toggle("on", t.dataset.v == v));
-        document
-          .querySelectorAll(".view")
-          .forEach((x) => x.classList.toggle("on", x.id == v));
-        if (v == "v2") renderOrders();
-      }
-      function setTyp(t) {
-        typ = t;
-        document
-          .querySelectorAll("#typ button")
-          .forEach((x) => x.classList.toggle("on", x.dataset.t == t));
-        $("#tbl").style.display = t == "میز" ? "" : "none";
-      }
-      function renderCats() {
-        $("#cats").innerHTML = CATS.map(
-          (c) =>
-            `<button class="chip ${c == cat ? "on" : ""}" data-c="${c}">${c}</button>`,
-        ).join("");
-      }
-      function renderMenu() {
-        $("#menu").innerHTML = MENU.filter((m) => cat == "همه" || m.c == cat)
-          .map(
-            (m) =>
-              `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
-          )
-          .join("");
-      }
-      function renderCart() {
-        const ids = Object.keys(cart);
-        let sum = 0,
-          cnt = 0;
-        $("#cart").innerHTML = ids.length
-          ? ids
-.map((id) => {
-  const L = lineOf(id), q = cart[id];
-  sum += L.p * q;
-  cnt += q;
-  return `<div class="row"><span class="t">${L.n}<br><span class="mut">${fa(L.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
-})
-              .join("")
-          : '<div class="empty">آیتمی انتخاب نشده</div>';
-        $("#sum").textContent = fa(sum) + " تومان";
-        $("#bs").textContent = fa(sum) + " تومان";
-        $("#bc").textContent = fa(cnt) + " آیتم";
-        $("#sub").disabled = !ids.length;
-        $("#sub").textContent = editing ? "ذخیره تغییرات ✓" : "ثبت سفارش ✓";
-        $("#eb").hidden = !editing;
-        if (editing) {
-          const o = load().find((r) => r.id == editing);
-          $("#et").textContent = "✎ ویرایش سفارش #" + fa(o ? o.no : 0);
+        const OPTS = {
+          ترک: {
+            t: "قهوه ترک را چطور می‌خواهید؟",
+            l: [
+              { l: "تلخ", p: 160 },
+              { l: "مدیوم", p: 160 },
+              { l: "شیرین", p: 160 },
+            ],
+          },
+          سینگل: {
+            t: "ترکیب قهوه (سینگل)",
+            l: [
+              { l: "۱۰۰٪ روبوستا", p: 140 },
+              { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 160 },
+              { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 180 },
+              { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 200 },
+              { l: "۱۰۰٪ عربیکا", p: 250 },
+            ],
+          },
+          دبل: {
+            t: "ترکیب قهوه (دبل)",
+            l: [
+              { l: "۱۰۰٪ روبوستا", p: 160 },
+              { l: "۷۰٪ روبوستا + ۳۰٪ عربیکا", p: 180 },
+              { l: "۵۰٪ روبوستا + ۵۰٪ عربیکا", p: 200 },
+              { l: "۳۰٪ روبوستا + ۷۰٪ عربیکا", p: 250 },
+              { l: "۱۰۰٪ عربیکا", p: 280 },
+            ],
+          },
+        };
+        const lineOf = (k) => {
+          const [i, o] = String(k).split("_"),
+            m = MENU[i];
+          const op = o !== undefined && OPTS[m.n] ? OPTS[m.n].l[o] : null;
+          return { m, o, p: op ? op.p : m.p, n: op ? m.n + " – " + op.l : m.n };
+        };
+        const qtyOf = (id) =>
+          Object.keys(cart)
+            .filter((k) => k.split("_")[0] == id)
+            .reduce((a, k) => a + cart[k], 0);
+        const priceTxt = (m) =>
+          OPTS[m.n]
+            ? "از " + fa(Math.min(...OPTS[m.n].l.map((x) => x.p))) + " تومان"
+            : fa(m.p) + " تومان";
+        function openOpt(id) {
+          const m = MENU[id],
+            c = OPTS[m.n];
+          $("#omt").textContent = c.t;
+          $("#omo").innerHTML = c.l
+            .map(
+              (x, i) =>
+                `<button class="opt" data-oid="${id}" data-oi="${i}"><span>${x.l}</span><span class="pr">${fa(x.p)} تومان</span></button>`,
+            )
+            .join("");
+          $("#om").classList.add("show");
         }
-        $("#bar").style.display =
-          ids.length && innerWidth <= 800 ? "flex" : "none";
-        renderMenu();
-      }
-      function renderOrders() {
-        const all = load(),
-          today = irDay(Date.now()),
-          td = all.filter((o) => irDay(o.t) == today);
-        $("#s1").textContent = fa(td.length);
-        $("#s2").textContent = fa(all.filter((o) => o.s < 3).length);
-        $("#s3").textContent = fa(
-          td.filter((o) => o.s == 3).reduce((a, o) => a + o.sum, 0),
-        );
-        const nw = all.filter((o) => o.s == 0).length;
-        $("#bd").hidden = !nw;
-        $("#bd").textContent = fa(nw);
-        $("#fl").innerHTML = ["همه", ...ST]
-          .map(
-            (s, i) =>
-              `<button class="chip ${flt == i - 1 ? "on" : ""}" data-f="${i - 1}">${s}</button>`,
-          )
-          .join("");
-        const list = all
-          .filter((o) => flt < 0 || o.s == flt)
-          .sort((a, b) => (a.s == 3) - (b.s == 3) || a.t - b.t);
-        $("#ol").innerHTML = list.length
-          ? list
-              .map(
-                (o) =>
-                  `<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ == "میز" ? "میز " + (esc(o.tbl) || "؟") : "بیرون‌بر"}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map((i) => `<li>${fa(i.q)} × ${i.n}</li>`).join("")}</ul>${o.note ? `<div class="note">${esc(o.note)}</div>` : ""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s < 3 ? `<button class="go" data-adv="${o.id}">${NX[o.s]}</button>` : ""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`,
-              )
-              .join("")
-          : '<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
-      }
-      function resetForm() {
-        cart = {};
-        editing = null;
-        $("#tbl").value = "";
-        $("#note").value = "";
-        setTyp("میز");
-      }
-      document.addEventListener("click", (e) => {
-        const it = e.target.closest(".item");
+        const closeOpt = () => $("#om").classList.remove("show");
 
+        let CATS = ["همه", ...new Set(MENU.map((m) => m.c))];
+        if (DB.menu) {
+          MENU = DB.menu.map((m, i) => ({ ...m, id: i }));
+          CATS = ["همه", ...new Set(MENU.map((m) => m.c))];
+        }
+        const ST = [
+            "جدید",
+            "در حال آماده‌سازی",
+            "آماده تحویل",
+            "تحویل داده شد",
+          ],
+          NX = ["شروع آماده‌سازی", "آماده شد", "تحویل داده شد ✓"];
+        const PHONE = "+989932675263";
+        // وقتی موبایل رو آوردن اینجا شماره رو میزارم
+        const TZ = "Asia/Tehran";
+        const irDate = (t) =>
+          new Date(t).toLocaleDateString("fa-IR-u-ca-persian", {
+            timeZone: TZ,
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        const irTime = (t) =>
+          new Date(t).toLocaleTimeString("fa-IR", {
+            timeZone: TZ,
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        const irDay = (t) =>
+          new Date(t).toLocaleDateString("en-CA", { timeZone: TZ });
 
+        const TOPIC = "lamour-ce97ecdd2624b89c6b5d";
+        const NTFY = "https://ntfy.sh/" + TOPIC;
+        const K = "cafe_orders_v1";
+        let mem = [];
+        const $ = (s) => document.querySelector(s),
+          fa = (n) => Number(n).toLocaleString("fa-IR");
+        const esc = (s) => String(s || "").replace(/[<>&"]/g, "");
+        const load = () => mem;
+        const save = (o) => {
+          mem = o;
+        };
+        const desc = (m) => m.d || DESC[m.n] || "";
+        let cart = {},
+          cat = "همه",
+          typ = "میز",
+          flt = -1,
+          editing = null;
 
-
-
-
-
-        if (it) {
-  const m = MENU[it.dataset.id];
-  if (OPTS[m.n]) { openOpt(m.id); return; }
-  cart[it.dataset.id] = (cart[it.dataset.id] || 0) + 1;
-  renderCart();
-  return;
-}
-const op = e.target.closest(".opt");
-if (op) {
-  const k = op.dataset.oid + "_" + op.dataset.oi;
-  cart[k] = (cart[k] || 0) + 1;
-  closeOpt();
-  renderCart();
-  return;
-}
-
-
-
-
-        
-        const b = e.target.closest("button");
-        if (!b) return;
-        if (b.dataset.v) show(b.dataset.v);
-        else if (b.dataset.c) {
-          cat = b.dataset.c;
-          renderCats();
+        function show(v) {
+          document
+            .querySelectorAll(".tab")
+            .forEach((t) => t.classList.toggle("on", t.dataset.v == v));
+          document
+            .querySelectorAll(".view")
+            .forEach((x) => x.classList.toggle("on", x.id == v));
+          if (v == "v2") renderOrders();
+        }
+        function setTyp(t) {
+          typ = t;
+          document
+            .querySelectorAll("#typ button")
+            .forEach((x) => x.classList.toggle("on", x.dataset.t == t));
+          $("#tbl").style.display = t == "میز" ? "" : "none";
+        }
+        function renderCats() {
+          $("#cats").innerHTML = CATS.map(
+            (c) =>
+              `<button class="chip ${c == cat ? "on" : ""}" data-c="${c}">${c}</button>`,
+          ).join("");
+        }
+        function renderMenu() {
+          $("#menu").innerHTML = MENU.filter((m) => cat == "همه" || m.c == cat)
+            .map(
+              (m) =>
+                `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
+            )
+            .join("");
+        }
+        function renderCart() {
+          const ids = Object.keys(cart);
+          let sum = 0,
+            cnt = 0;
+          $("#cart").innerHTML = ids.length
+            ? ids
+                .map((id) => {
+                  const L = lineOf(id),
+                    q = cart[id];
+                  sum += L.p * q;
+                  cnt += q;
+                  return `<div class="row"><span class="t">${L.n}<br><span class="mut">${fa(L.p * q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`;
+                })
+                .join("")
+            : '<div class="empty">آیتمی انتخاب نشده</div>';
+          $("#sum").textContent = fa(sum) + " تومان";
+          $("#bs").textContent = fa(sum) + " تومان";
+          $("#bc").textContent = fa(cnt) + " آیتم";
+          $("#sub").disabled = !ids.length;
+          $("#sub").textContent = editing ? "ذخیره تغییرات ✓" : "ثبت سفارش ✓";
+          $("#eb").hidden = !editing;
+          if (editing) {
+            const o = load().find((r) => r.id == editing);
+            $("#et").textContent = "✎ ویرایش سفارش #" + fa(o ? o.no : 0);
+          }
+          $("#bar").style.display =
+            ids.length && innerWidth <= 800 ? "flex" : "none";
           renderMenu();
-        } else if (b.dataset.d) {
-          const id = b.dataset.id;
-          cart[id] = (cart[id] || 0) + +b.dataset.d;
-          if (cart[id] <= 0) delete cart[id];
-          renderCart();
-        } else if (b.dataset.t) setTyp(b.dataset.t);
-        else if (b.dataset.f !== undefined) {
-          flt = +b.dataset.f;
-          renderOrders();
-        } else if (b.dataset.adv) {
-          const o = load(),
-            x = o.find((r) => r.id == b.dataset.adv);
-          if (x) x.s++;
-          save(o);
-          renderOrders();
-        } else if (b.dataset.ed) {
-          const x = load().find((r) => r.id == b.dataset.ed);
-          if (!x) return;
+        }
+        function renderOrders() {
+          const all = load(),
+            today = irDay(Date.now()),
+            td = all.filter((o) => irDay(o.t) == today);
+          $("#s1").textContent = fa(td.length);
+          $("#s2").textContent = fa(all.filter((o) => o.s < 3).length);
+          $("#s3").textContent = fa(
+            td.filter((o) => o.s == 3).reduce((a, o) => a + o.sum, 0),
+          );
+          const nw = all.filter((o) => o.s == 0).length;
+          $("#bd").hidden = !nw;
+          $("#bd").textContent = fa(nw);
+          $("#fl").innerHTML = ["همه", ...ST]
+            .map(
+              (s, i) =>
+                `<button class="chip ${flt == i - 1 ? "on" : ""}" data-f="${i - 1}">${s}</button>`,
+            )
+            .join("");
+          const list = all
+            .filter((o) => flt < 0 || o.s == flt)
+            .sort((a, b) => (a.s == 3) - (b.s == 3) || a.t - b.t);
+          $("#ol").innerHTML = list.length
+            ? list
+                .map(
+                  (o) =>
+                    `<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ == "میز" ? "میز " + (esc(o.tbl) || "؟") : "بیرون‌بر"}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map((i) => `<li>${fa(i.q)} × ${i.n}</li>`).join("")}</ul>${o.note ? `<div class="note">${esc(o.note)}</div>` : ""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s < 3 ? `<button class="go" data-adv="${o.id}">${NX[o.s]}</button>` : ""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`,
+                )
+                .join("")
+            : '<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+        }
+        function resetForm() {
           cart = {};
+          editing = null;
+          $("#tbl").value = "";
+          $("#note").value = "";
+          setTyp("میز");
+        }
+        document.addEventListener("click", (e) => {
+          const it = e.target.closest(".item");
 
-
-          
-x.items.forEach((i) => {
-  if (i.o !== undefined && MENU[i.id]) {
-    const k = i.id + "_" + i.o;
-    cart[k] = (cart[k] || 0) + i.q;
-    return;
-  }
-  const m = MENU.find((m) => m.id == i.id && m.n == i.n) || MENU.find((m) => m.n == i.n);
-  if (m) cart[m.id] = (cart[m.id] || 0) + i.q;
-});
-
-
-
-          
-          editing = x.id;
-          setTyp(x.typ);
-          $("#tbl").value = x.tbl || "";
-          $("#note").value = x.note || "";
-          show("v1");
-          renderCart();
-          scrollTo({ top: 0, behavior: "smooth" });
-        } else if (b.dataset.ce !== undefined) {
-          resetForm();
-          renderCart();
-        } else if (b.dataset.del) {
-          if (confirm("این سفارش حذف شود؟")) {
-            save(load().filter((r) => r.id != b.dataset.del));
-            if (editing == b.dataset.del) {
-              resetForm();
-              renderCart();
+          if (it) {
+            const m = MENU[it.dataset.id];
+            if (OPTS[m.n]) {
+              openOpt(m.id);
+              return;
             }
+            cart[it.dataset.id] = (cart[it.dataset.id] || 0) + 1;
+            renderCart();
+            return;
+          }
+          const op = e.target.closest(".opt");
+          if (op) {
+            const k = op.dataset.oid + "_" + op.dataset.oi;
+            cart[k] = (cart[k] || 0) + 1;
+            closeOpt();
+            renderCart();
+            return;
+          }
+
+          const b = e.target.closest("button");
+          if (!b) return;
+          if (b.dataset.v) show(b.dataset.v);
+          else if (b.dataset.c) {
+            cat = b.dataset.c;
+            renderCats();
+            renderMenu();
+          } else if (b.dataset.d) {
+            const id = b.dataset.id;
+            cart[id] = (cart[id] || 0) + +b.dataset.d;
+            if (cart[id] <= 0) delete cart[id];
+            renderCart();
+          } else if (b.dataset.t) setTyp(b.dataset.t);
+          else if (b.dataset.f !== undefined) {
+            flt = +b.dataset.f;
+            renderOrders();
+          } else if (b.dataset.adv) {
+            const o = load(),
+              x = o.find((r) => r.id == b.dataset.adv);
+            if (x) x.s++;
+            save(o);
+            renderOrders();
+          } else if (b.dataset.ed) {
+            const x = load().find((r) => r.id == b.dataset.ed);
+            if (!x) return;
+            cart = {};
+
+            x.items.forEach((i) => {
+              if (i.o !== undefined && MENU[i.id]) {
+                const k = i.id + "_" + i.o;
+                cart[k] = (cart[k] || 0) + i.q;
+                return;
+              }
+              const m =
+                MENU.find((m) => m.id == i.id && m.n == i.n) ||
+                MENU.find((m) => m.n == i.n);
+              if (m) cart[m.id] = (cart[m.id] || 0) + i.q;
+            });
+
+            editing = x.id;
+            setTyp(x.typ);
+            $("#tbl").value = x.tbl || "";
+            $("#note").value = x.note || "";
+            show("v1");
+            renderCart();
+            scrollTo({ top: 0, behavior: "smooth" });
+          } else if (b.dataset.ce !== undefined) {
+            resetForm();
+            renderCart();
+          } else if (b.dataset.del) {
+            if (confirm("این سفارش حذف شود؟")) {
+              save(load().filter((r) => r.id != b.dataset.del));
+              if (editing == b.dataset.del) {
+                resetForm();
+                renderCart();
+              }
+              renderOrders();
+            }
+          }
+        });
+        const toast = (t, bad) => {
+          const el = $("#toast");
+          el.textContent = t;
+          el.className = "show" + (bad ? " bad" : "");
+          clearTimeout(toast.t);
+          toast.t = setTimeout(() => (el.className = ""), 3500);
+        };
+        $("#sub").onclick = async () => {
+          const ids = Object.keys(cart);
+          if (!ids.length) return;
+          const tbl = $("#tbl").value.trim();
+          if (typ == "میز" && !tbl) {
+            alert("لطفاً شماره میز را وارد کنید");
+            $("#tbl").focus();
+            return;
+          }
+
+          const items = ids.map((id) => {
+            const L = lineOf(id);
+            const it = { id: +id.split("_")[0], n: L.n, q: cart[id], p: L.p };
+            if (L.o !== undefined) it.o = +L.o;
+            return it;
+          });
+
+          const sum = items.reduce((a, i) => a + i.p * i.q, 0);
+          const note = $("#note").value.trim();
+          const order = {
+            id:
+              Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            t: Date.now(),
+            typ,
+            tbl,
+            note,
+            items,
+            sum,
+          };
+          const btn = $("#sub");
+          btn.disabled = true;
+          btn.textContent = "در حال ارسال…";
+          try {
+            const r = await fetch(NTFY, {
+              method: "POST",
+              body: JSON.stringify(order),
+            });
+            if (!r.ok) throw new Error("bad status");
+            resetForm();
+            renderCart();
+            toast("✓ سفارش شما ثبت شد");
+          } catch (e) {
+            renderCart();
+            if (confirm("ارسال اینترنتی انجام نشد. با پیامک ارسال شود؟")) {
+              const msg =
+                "سفارش جدید\n" +
+                irDate(order.t) +
+                " - " +
+                irTime(order.t) +
+                "\n" +
+                (typ == "میز" ? "میز " + tbl : "بیرون‌بر") +
+                "\n\n" +
+                items.map((i) => "• " + i.q + " × " + i.n).join("\n") +
+                (note ? "\n\n" + note : "") +
+                "\n\nجمع: " +
+                sum +
+                " تومان";
+              try {
+                navigator.clipboard.writeText(msg);
+              } catch (e2) {}
+              location.href =
+                "sms:" + PHONE + "?body=" + encodeURIComponent(msg);
+            }
+          }
+        };
+        $("#clr").onclick = () => {
+          if (confirm("همه سفارش‌های تحویل‌شده پاک شوند؟")) {
+            save(load().filter((o) => o.s < 3));
             renderOrders();
           }
-        }
-      });
-      const toast = (t, bad) => {
-        const el = $("#toast");
-        el.textContent = t;
-        el.className = "show" + (bad ? " bad" : "");
-        clearTimeout(toast.t);
-        toast.t = setTimeout(() => (el.className = ""), 3500);
-      };
-      $("#sub").onclick = async () => {
-        const ids = Object.keys(cart);
-        if (!ids.length) return;
-        const tbl = $("#tbl").value.trim();
-        if (typ == "میز" && !tbl) {
-          alert("لطفاً شماره میز را وارد کنید");
-          $("#tbl").focus();
-          return;
-        }
-
-
-        
-const items = ids.map((id) => {
-  const L = lineOf(id);
-  const it = { id: +id.split("_")[0], n: L.n, q: cart[id], p: L.p };
-  if (L.o !== undefined) it.o = +L.o;
-  return it;
-});
-
-
-        
-        const sum = items.reduce((a, i) => a + i.p * i.q, 0);
-        const note = $("#note").value.trim();
-        const order = {
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-          t: Date.now(),
-          typ,
-          tbl,
-          note,
-          items,
-          sum,
         };
-        const btn = $("#sub");
-        btn.disabled = true;
-        btn.textContent = "در حال ارسال…";
-        try {
-          const r = await fetch(NTFY, {
-            method: "POST",
-            body: JSON.stringify(order),
-          });
-          if (!r.ok) throw new Error("bad status");
-          resetForm();
-          renderCart();
-          toast("✓ سفارش شما ثبت شد");
-        } catch (e) {
-          renderCart();
-          if (confirm("ارسال اینترنتی انجام نشد. با پیامک ارسال شود؟")) {
-            const msg =
-              "سفارش جدید\n" +
-              irDate(order.t) +
-              " - " +
-              irTime(order.t) +
-              "\n" +
-              (typ == "میز" ? "میز " + tbl : "بیرون‌بر") +
-              "\n\n" +
-              items.map((i) => "• " + i.q + " × " + i.n).join("\n") +
-              (note ? "\n\n" + note : "") +
-              "\n\nجمع: " + sum + " تومان";
-            try {
-              navigator.clipboard.writeText(msg);
-            } catch (e2) {}
-            location.href = "sms:" + PHONE + "?body=" + encodeURIComponent(msg);
-          }
-        }
-      };
-      $("#clr").onclick = () => {
-        if (confirm("همه سفارش‌های تحویل‌شده پاک شوند؟")) {
-          save(load().filter((o) => o.s < 3));
-          renderOrders();
-        }
-      };
-      addEventListener("storage", (e) => {
-        if (e.key == K) renderOrders();
+        addEventListener("storage", (e) => {
+          if (e.key == K) renderOrders();
+        });
+        setInterval(renderOrders, 30000);
+        addEventListener("resize", renderCart);
+        renderCats();
+
+        $("#omc").onclick = closeOpt;
+        $("#om").addEventListener("click", (e) => {
+          if (e.target.id == "om") closeOpt();
+        });
+        addEventListener("keydown", (e) => {
+          if (e.key == "Escape") closeOpt();
+        });
+
+        renderCart();
+        renderOrders();
       });
-      setInterval(renderOrders, 30000);
-      addEventListener("resize", renderCart);
-      renderCats();
 
+      (function () {
+        const box = document.createElement("div");
+        box.id = "beans";
+        box.setAttribute("aria-hidden", "true");
+        document.body.prepend(box);
 
-  $("#omc").onclick = closeOpt;
-$("#om").addEventListener("click", (e) => { if (e.target.id == "om") closeOpt(); });
-addEventListener("keydown", (e) => { if (e.key == "Escape") closeOpt(); });
+        const count = innerWidth < 800 ? 12 : 22;
+        const r = (a, b) => a + Math.random() * (b - a);
 
-  
-      renderCart();
-      renderOrders();
-    });</script>
+        for (let i = 0; i < count; i++) {
+          const b = document.createElement("span");
+          b.className = "bean";
+          const size = r(16, 34);
+          b.style.width = size + "px";
+          b.style.height = size * 1.5 + "px";
+          b.style.left = r(0, 100) + "%";
+          b.style.setProperty("--dur", r(9, 18) + "s");
+          b.style.setProperty(
+            "--delay",
+            -r(0, 18) + "s",
+          ); 
+          b.style.setProperty("--dx", r(-80, 80) + "px");
+          b.style.setProperty("--rot", r(-540, 540) + "deg");
+          box.appendChild(b);
+        }
+      })();
+    </script>
   </body>
 </html>
