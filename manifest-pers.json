@@ -1,0 +1,16 @@
+{
+  "id": "pers",
+  "name": "صورت حساب پرسنل - کافه لامور",
+  "short_name": "پرسنل",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "pers.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf5ee",
+  "theme_color": "#8b5a2b",
+  "icons": [
+    { "src": "logopers.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logopers.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

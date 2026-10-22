@@ -1,0 +1,16 @@
+{
+  "id": "factor",
+  "name": "فاکتور - کافه لامور",
+  "short_name": "فاکتور",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "factor.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf5ee",
+  "theme_color": "#8b5a2b",
+  "icons": [
+    { "src": "logofactor.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logofactor.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

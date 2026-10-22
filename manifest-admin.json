@@ -1,0 +1,16 @@
+{
+  "id": "admin",
+  "name": "پنل مدیریت - کافه لامور",
+  "short_name": "مدیریت",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf5ee",
+  "theme_color": "#8b5a2b",
+  "icons": [
+    { "src": "logoadmin.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logoadmin.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
