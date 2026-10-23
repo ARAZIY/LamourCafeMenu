@@ -149,6 +149,12 @@ function addOrder(o){
   o.s=0;o.no=nextNo();const all=ld(K);all.push(o);sv(K,all);return true;
 }
 function archive(o){const a=ld(A);if(ld("cafe_inv_del_v1").includes(o.id))return;if(!a.some(x=>x.id==o.id)){a.push({...o,dt:Date.now()});sv(A,a)}}
+/* ویرایش سفارش تحویل‌شده: فاکتور قبلی حذف و فاکتور جدید با اطلاعات اصلاح‌شده ثبت می‌شود */
+function reinvoice(o){
+  const all=ld(A),old=all.find(x=>x.id==o.id),a=all.filter(x=>x.id!=o.id);
+  a.push({...o,dt:old&&old.dt?old.dt:Date.now()});sv(A,a);
+  const del=ld("cafe_inv_del_v1");if(del.includes(o.id))sv("cafe_inv_del_v1",del.filter(i=>i!=o.id));
+}
 const toast=(t,bad)=>{const el=$("#toast");el.textContent=t;el.style.background=bad?"var(--bad)":"";el.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>el.className="",3000)};
 
 /* دریافت سفارش مشتری‌ها از ntfy */
@@ -184,7 +190,7 @@ function renderOrders(){
   const nw=all.filter(o=>o.s==0).length;$("#bd").hidden=!nw;$("#bd").textContent=fa(nw);
   $("#fl").innerHTML=["همه",...ST].map((s,i)=>`<button class="chip ${flt==i-1?"on":""}" data-f="${i-1}">${s}</button>`).join("");
   const list=all.filter(o=>flt<0||o.s==flt).sort((a,b)=>(a.s==3)-(b.s==3)||a.t-b.t);
-  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button><button class="ed" data-ed="${o.id}">✎</button>`:""}<button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div><div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
 }
 function resetForm(){cart={};editing=null;$("#tbl").value="";$("#note").value="";setTyp("میز")}
 
@@ -219,7 +225,7 @@ $("#sub").onclick=()=>{
   const sum=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
   if(editing){
     const all=ld(K),x=all.find(r=>r.id==editing);
-    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum});sv(K,all)}
+    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum});sv(K,all);if(x.s==3)reinvoice(x)}
     toast("✓ تغییرات ذخیره شد");
   }else{
     addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter"});
