@@ -1,162 +1,363 @@
- <!doctype html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>فاکتورهای کافه لامور</title>
-  <link rel="icon" type="image/png" href="logofactor.png">
-  <link rel="apple-touch-icon" href="logofactor.png">
-  <link rel="manifest" href="manifest-factor.json">
+  <link rel="icon" type="image/png" href="logoadmin.png">
+  <link rel="apple-touch-icon" href="logoadmin.png">
+  <link rel="manifest" href="manifest-admin.json">
+<title>مدیریت کافه لامور</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
 <style>
-:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--bad:#b3392f}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--warn:#c27a10;--bad:#b3392f;--blue:#2b6cb0;--sh:0 1px 2px rgba(60,40,20,.05),0 8px 20px rgba(60,40,20,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.25)}}
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
-button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
-input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);min-width:0;width:100%}
-header{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none;transition:transform .12s,opacity .12s}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+header{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg);box-shadow:0 2px 10px rgba(60,40,20,.05)}
 header h1{font-size:1.05rem;flex:1}
-a.lnk,button.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:6px}
+.tab{padding:8px 14px;font-weight:600;color:var(--mut);position:relative;border:1px solid var(--bd);background:var(--card)}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.badge{position:absolute;top:-6px;left:-4px;background:var(--bad);color:#fff;border-radius:99px;font-size:.7rem;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px;font-style:normal}
+a.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:8px;border-radius:10px}
+a.lnk:hover{background:var(--bd)}
 main{max-width:1100px;margin:auto;padding:14px}
-#lock{max-width:320px;margin:18vh auto;padding:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;text-align:center}
-#lock input{margin:12px 0}
-#go{width:100%;padding:11px;background:var(--pri);color:#fff;font-weight:800}
-#err{color:var(--bad);font-size:.88rem;min-height:1.2em}
-.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px}
-.filters>label,.filters>div{font-size:.78rem;color:var(--mut);display:grid;gap:3px;align-content:start}
-.d3{display:grid;grid-template-columns:1.2fr 1.6fr 1fr;gap:4px}
-.d3 select{padding:9px 4px}
-.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.sum div{flex:1;min-width:120px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
-.sum b{display:block;color:var(--pri)}
-.mut{color:var(--mut);font-size:.85rem}
-.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.chip{padding:7px 13px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.88rem}
-.chip.bad{color:var(--bad)}
-.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.92rem;white-space:nowrap}
-th{background:var(--bg);color:var(--mut);font-weight:600}
-.tag{padding:2px 10px;border-radius:99px;background:var(--bd);font-size:.8rem}
-.del{color:var(--bad);background:var(--bd);padding:5px 10px}
-.empty{text-align:center;color:var(--mut);padding:30px}
-@media(max-width:700px){
-  .wrap{border:0;background:none}
-  thead{display:none}
-  table,tbody,tr,td{display:block;width:100%}
-  tr{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;padding:6px 10px}
-  td{display:flex;justify-content:space-between;align-items:center;gap:10px;border:0;padding:5px 0;white-space:normal}
-  td[data-l]::before{content:attr(data-l);color:var(--mut)}
-}
+.view{display:none}.view.on{display:block}
+.cats{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none}
+.chip{white-space:nowrap;flex:0 0 auto;padding:7px 13px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.9rem}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 8px;text-align:center;position:relative;cursor:pointer;user-select:none;box-shadow:var(--sh)}
+.item:active{transform:scale(.96)}
+.item b{display:block;font-size:.95rem}.item span{color:var(--mut);font-size:.8rem}
+.item i{position:absolute;top:6px;right:6px;background:var(--pri);color:#fff;border-radius:99px;min-width:22px;height:22px;line-height:22px;font-size:.78rem;font-style:normal}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;position:sticky;top:64px;box-shadow:var(--sh)}
+.panel h2{font-size:1rem;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--bd)}
+.row .t{flex:1;font-size:.92rem}
+.qb{display:flex;align-items:center;gap:6px}.qb button{width:32px;height:32px;background:var(--bd);font-weight:800}
+input,textarea,select{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-top:8px}
+textarea{resize:vertical;min-height:4rem}
+.seg{display:flex;gap:6px;margin-top:8px}.seg button{flex:1;padding:8px;border:1px solid var(--bd)}.seg .on{background:var(--pri);color:#fff}
+.tot{display:flex;justify-content:space-between;font-weight:800;margin:12px 0}
+.big{width:100%;padding:13px;background:var(--ok);color:#fff;font-weight:800}.big:disabled{opacity:.4}
+.mut{color:var(--mut);font-size:.88rem}.empty{text-align:center;color:var(--mut);padding:30px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;box-shadow:var(--sh)}.stat b{display:block;color:var(--pri)}
+.strip{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:.85rem;display:flex;gap:6px 14px;flex-wrap:wrap;box-shadow:var(--sh)}
+.strip b{color:var(--pri)}
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.oc{background:var(--card);border:1px solid var(--bd);border-top:5px solid var(--blue);border-radius:14px;padding:12px;box-shadow:var(--sh)}
+.oc.s1{border-top-color:var(--warn)}.oc.s2{border-top-color:var(--ok)}.oc.s3{border-top-color:var(--mut)}
+.oc.s3 ul,.oc.s3 .h{opacity:.7}
+.oc .h{display:flex;justify-content:space-between;gap:8px;font-weight:800;margin-bottom:6px}
+.oc ul{list-style:none;padding:0;font-size:.93rem}
+.note{background:var(--bg);border-radius:8px;padding:6px 8px;margin-top:6px;font-size:.85rem}
+.acts{display:flex;gap:6px;margin-top:10px}.acts .go{flex:1;padding:9px;background:var(--pri);color:#fff;font-weight:600}
+.acts .ed,.acts .x{padding:9px 12px;background:var(--bd)}.acts .x{color:var(--bad)}
+.pay{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd)}
+.pst{padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--bd)}
+.pst.paid{background:rgba(46,125,79,.15);color:var(--ok)}
+.pst.part{background:rgba(194,122,16,.16);color:var(--warn)}
+.pst.none{background:rgba(179,57,47,.12);color:var(--bad)}
+.pst.claim{background:rgba(43,108,176,.16);color:var(--blue)}
+.pb{padding:6px 10px;border:1px solid var(--bd);border-radius:10px;font-size:.82rem;margin-inline-start:auto;background:var(--bg)}
+#toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:var(--ok);color:#fff;padding:12px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:30}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+#mdl[hidden]{display:none}
+#mdl .box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;width:100%;max-width:380px;display:grid;gap:8px;max-height:90vh;overflow-y:auto}
+#mdl .box h3{font-size:1rem;margin-bottom:4px}
+#mdl .op{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;text-align:right}
+#mdl .op:active{transform:scale(.98)}
+#mdl .x{color:var(--bad);background:var(--bd);padding:4px 9px}
+#mdl select,#mdl input{margin-top:0}
+.pbx{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--bd)}
+.claim{background:rgba(43,108,176,.1);border:1px solid var(--blue);border-radius:10px;padding:10px;font-size:.88rem;display:grid;gap:6px}
+.prow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:.9rem}
+.prow>span{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.three .op{justify-content:center;padding:10px 4px;font-size:.85rem}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.panel{position:static}.menu{grid-template-columns:repeat(2,1fr)}.qb button{width:38px;height:38px}}
 </style>
 </head>
 <body>
-<div id="lock">
-  <h2>🔒 ورود به فاکتورها</h2>
-  <input id="pw" type="password" placeholder="رمز عبور" autocomplete="current-password" />
-  <div id="err"></div>
-  <button id="go">ورود</button>
-</div>
-<div id="app" hidden>
-  <header><h1>🧾 فاکتورهای تحویل‌شده</h1><a class="lnk" href="admin.html">← مدیریت</a><button class="lnk" id="out">خروج</button></header>
-  <main>
-    <div class="filters">
-      <label>جستجو (محصول / میز / شمارهٔ سفارش)<input id="q" type="search" placeholder="جستجو…" /></label>
-      <label>نوع سفارش<select id="ty"><option value="">همه</option><option>میز</option><option>بیرون‌بر</option></select></label>
-      <div>از تاریخ (شمسی)<div class="d3" id="f1"></div></div>
-      <div>تا تاریخ (شمسی)<div class="d3" id="f2"></div></div>
-      <label>نمایش<select id="so"><option value="new">جدیدترین فاکتورها</option><option value="old">قدیمی‌ترین فاکتورها</option><option value="top">پرفروش‌ترین محصولات</option><option value="low">کم‌فروش‌ترین محصولات</option></select></label>
-      <label>معیار رتبه‌بندی<select id="mt"><option value="qty">تعداد کل فروش</option><option value="ord">تعداد سفارش‌های جداگانه</option><option value="avg">میانگین تعداد در هر سفارش</option></select></label>
+<header>
+  <h1>مدیریت کافه لامور</h1>
+  <button class="tab on" data-v="v2">📖 سفارش‌ها <i class="badge" id="bd" hidden>0</i></button>
+  <button class="tab" data-v="v1">➕ ثبت سفارش (گارسون)</button>
+  <a class="lnk" href="factor.html">🧾 فاکتورها</a>
+  <a class="lnk" href="index.html">🛎️ منوی مشتری</a>
+</header>
+<main>
+  <section class="view on" id="v2">
+    <div class="stats">
+      <div class="stat"><b id="s1">۰</b><span class="mut">سفارش امروز</span></div>
+      <div class="stat"><b id="s2">۰</b><span class="mut">در جریان</span></div>
+      <div class="stat"><b id="s3">۰</b><span class="mut">فروش امروز (تومان)</span></div>
     </div>
-    <div class="bar"><button class="chip" id="cd">✕ پاک‌کردن فیلتر تاریخ</button><button class="chip bad" id="da">🗑️ حذف فاکتورهای نمایش‌داده‌شده</button></div>
-    <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div></div>
-    <div class="wrap"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
-  </main>
-</div>
+    <div class="strip" id="pstrip"></div>
+    <div class="cats" id="fl"></div>
+    <div class="cats" id="fl2"></div>
+    <div class="orders" id="ol"></div>
+    <div style="margin-top:16px;text-align:center"><button class="chip" id="clr">🗑️ پاک‌کردن سفارش‌های تحویل‌شده از این صفحه</button></div>
+    <p class="mut" style="text-align:center;margin-top:6px">فاکتورها با پاک‌کردن حذف نمی‌شوند و در صفحهٔ فاکتور می‌مانند.</p>
+  </section>
+  <section class="view" id="v1">
+    <div class="grid2">
+      <div><div class="cats" id="cats"></div><div class="menu" id="menu"></div></div>
+      <div class="panel">
+        <div id="eb" hidden class="mut" style="margin-bottom:6px"><span id="et"></span> <button data-ce style="color:var(--bad)">لغو ویرایش</button></div>
+        <h2>سفارش سر میز</h2>
+        <div id="cart"></div>
+        <div class="seg" id="typ"><button class="on" data-t="میز">سالن</button><button data-t="بیرون‌بر">بیرون‌بر</button></div>
+        <input id="tbl" type="text" inputmode="numeric" placeholder="شماره میز" />
+        <textarea id="note" placeholder="توضیحات (مثلاً بدون شکر)"></textarea>
+        <div class="tot"><span>جمع کل</span><span id="sum">۰</span></div>
+        <button class="big" id="sub" disabled>ثبت سفارش ✓</button>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="mdl" hidden><div class="box" id="mbox"></div></div>
+<div id="toast" role="status"></div>
 <script src="sheet-db.js" data-auth="1">});</script>
 <script>DB.ready.then(()=>{
-const PASS="lamour2023mns",A="cafe_invoices_v1",DEL="cafe_inv_del_v1",TZ="Asia/Tehran";
-const MONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
-const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR");
-const esc=s=>String(s||"").replace(/[<>&"]/g,"");
+let MENU=[["سینگل","قهوه",140],["دبل","قهوه",160],["ترک","قهوه",160],["آمریکانو","گرم",180],["آیس آمریکانو","سرد",190],["لاته","گرم",210],["آیس لاته","سرد",230],["هات چاکلت","گرم",240],["آلفردو","غذا",490],["پیتزا","غذا",600],["املت","غذا",270],["ایرانی","غذا",600],["نیمرو","غذا",200],["سوسیس تخم مرغ","غذا",270],["قیساوا","غذا",270],["سجوک","غذا",290],["موکا","گرم",230],["ماکیاتو","گرم",230],["آیس ماکیاتو","سرد",250],["چای ماسالا","گرم",230],["وایت چاکلت","گرم",240],["کاپوچینو","گرم",240],["آیس موکا","سرد",250],["آفوگاتو","سرد",360],["چای ویژه","چایی",250],["فنجانی","چایی",70],["دمنوش زنجبیل","چایی",250],["دمنوش لیمو نعناع","چایی",250],["سرماخوردگی","چایی",250],["گل گاوزبان","چایی",250],["دمنوش میوه","چایی",290],["شکلاتی","شیک",470],["نوتلا","شیک",470],["موز","شیک",420],["بادام زمینی","شیک",420],["نسکافه","شیک",400],["کیک خیس","خوراکی",250],["باقلوا","خوراکی",50],["پستو","غذا",620],["مکن چیز","غذا",400],["آب","نوشیدنی",25]].map((m,i)=>({n:m[0],c:m[1],p:m[2],id:i}));
+let CATS=["همه",...new Set(MENU.map(m=>m.c))];
+if(DB.menu){MENU=DB.menu.map((m,i)=>({...m,id:i}));CATS=["همه",...new Set(MENU.map(m=>m.c))]}
+
+/* گزینه‌های آیتم‌هایی که چند حالت دارند (بر اساس نام آیتم) */
+const OPTS={
+  "ترک":{t:"قهوه ترک را چطور می‌خواهید؟",l:[{l:"تلخ",p:160},{l:"مدیوم",p:160},{l:"شیرین",p:160}]},
+  "سینگل":{t:"ترکیب قهوه (سینگل)",l:[{l:"۱۰۰٪ روبوستا",p:140},{l:"۷۰٪ روبوستا + ۳۰٪ عربیکا",p:160},{l:"۵۰٪ روبوستا + ۵۰٪ عربیکا",p:180},{l:"۳۰٪ روبوستا + ۷۰٪ عربیکا",p:200},{l:"۱۰۰٪ عربیکا",p:250}]},
+  "دبل":{t:"ترکیب قهوه (دبل)",l:[{l:"۱۰۰٪ روبوستا",p:160},{l:"۷۰٪ روبوستا + ۳۰٪ عربیکا",p:180},{l:"۵۰٪ روبوستا + ۵۰٪ عربیکا",p:200},{l:"۳۰٪ روبوستا + ۷۰٪ عربیکا",p:250},{l:"۱۰۰٪ عربیکا",p:280}]}
+};
+const hasOpt=m=>!!(m&&Object.prototype.hasOwnProperty.call(OPTS,m.n));
+
+const ST=["جدید","در حال آماده‌سازی","آماده تحویل","تحویل داده شد"],NX=["شروع آماده‌سازی","آماده شد","تحویل داده شد ✓"];
+const NTFY="https://ntfy.sh/lamour-ce97ecdd2624b89c6b5d";
+const K="cafe_orders_v1",A="cafe_invoices_v1",SEEN="cafe_seen_v1",CNT="cafe_no_v1",PYK="cafe_pay_v1",WK="cafe_inv_person_v1";
+const TZ="Asia/Tehran";
 const irDate=t=>new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"long",day:"numeric"});
 const irTime=t=>new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
-const ld=(k=A)=>{try{return JSON.parse(DB.get(k))||[]}catch(e){return[]}};
+const irDay=t=>new Date(t).toLocaleDateString("en-CA",{timeZone:TZ});
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR");
+const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const ld=k=>{try{return JSON.parse(DB.get(k))||[]}catch(e){return[]}};
+const ldo=k=>{try{return JSON.parse(DB.get(k))||{}}catch(e){return{}}};
 const sv=(k,v)=>{try{DB.set(k,JSON.stringify(v))}catch(e){}};
+let cart={},cat="همه",typ="میز",flt=-1,flt2="",editing=null,payId=null;
 
-/* کلید تاریخ شمسی (سال*10000+ماه*100+روز) بر اساس وقت تهران */
-const jf=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{timeZone:TZ,year:"numeric",month:"numeric",day:"numeric"});
-function jKey(t){const p={};jf.formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);return (+p.year)*10000+(+p.month)*100+(+p.day)}
-const curY=Math.floor(jKey(Date.now())/10000);
-function buildDate(box,p){
-  const o=a=>a.map(([v,t])=>`<option value="${v}">${t}</option>`).join("");
-  const ys=[],ds=[];for(let y=curY;y>=curY-5;y--)ys.push([y,fa(y).replace(/٬/g,"")]);
-  for(let d=1;d<=31;d++)ds.push([d,fa(d)]);
-  $(box).innerHTML=`<select id="${p}y"><option value="">سال</option>${o(ys)}</select><select id="${p}m"><option value="">ماه</option>${o(MONTHS.map((m,i)=>[i+1,m]))}</select><select id="${p}d"><option value="">روز</option>${o(ds)}</select>`;
+/* ---------- پرداخت و تسویه ---------- */
+const MN={cash:"نقدی",pos:"کارتخوان",c2c:"کارت به کارت",unk:"نامشخص (قبلی)"},MI={cash:"💵",pos:"💳",c2c:"🏦",unk:"❔"};
+const getPY=()=>ldo(PYK),setPY=v=>sv(PYK,v);
+function payInfo(o,PY){
+  const e=PY[o.id]||{},ps=e.ps||[],paid=ps.reduce((s,x)=>s+(+x.a||0),0),sum=o.sum||0,by={};
+  ps.forEach(x=>by[x.m]=(by[x.m]||0)+(+x.a||0));
+  return{e,ps,paid,rem:Math.max(0,sum-paid),by,st:paid<=0?"none":paid>=sum?"paid":"part",cl:e.cl&&e.cl.st=="p"?e.cl:null};
 }
-buildDate("#f1","a");buildDate("#f2","b");
-function selKey(p){const y=$("#"+p+"y").value,m=$("#"+p+"m").value,d=$("#"+p+"d").value;return y&&m&&d?(+y)*10000+(+m)*100+(+d):null}
+const bySum=by=>Object.keys(by).map(k=>(MI[k]||"")+" "+(MN[k]||k)+" "+fa(by[k])).join(" + ");
+const claimTxt=c=>c.pl.map(x=>(MI[x.m]||"")+" "+(MN[x.m]||x.m)+" "+fa(x.a)+(x.m=="c2c"?"":" (در کافه)")).join(" + ");
+function payBox(o,PY){
+  const f=payInfo(o,PY),e=f.e;
+  const t=f.st=="paid"?"✅ تسویه شد":f.st=="part"?"🟡 نیمه‌پرداخت ("+fa(f.paid)+" از "+fa(o.sum)+")":"⏳ تسویه نشده";
+  let h=`<div class="pay"><span class="pst ${f.st}">${t}</span>`;
+  if(f.paid)h+=`<span class="mut">${bySum(f.by)}</span>`;
+  if(f.cl)h+=`<span class="pst claim">🔔 رسید مشتری در انتظار تأیید</span>`;
+  else if(e.cl&&e.cl.st=="info")h+=`<span class="mut">🧾 مشتری: ${claimTxt(e.cl)}</span>`;
+  return h+`<button class="pb" data-pay="${o.id}">💰 پرداخت</button></div>`;
+}
+function openPay(id){
+  const o=ld(K).find(r=>r.id==id);if(!o)return;payId=id;
+  const PY=getPY(),f=payInfo(o,PY),c=f.cl,e=f.e;
+  let h=`<h3>💰 پرداخت سفارش #${fa(o.no||0)}</h3><div class="pbx"><span>جمع سفارش</span><b>${fa(o.sum)}</b></div><div class="pbx"><span>دریافت‌شده</span><b style="color:var(--ok)">${fa(f.paid)}</b></div><div class="pbx"><span>مانده</span><b style="color:${f.rem?"var(--bad)":"var(--ok)"}">${fa(f.rem)}</b></div>`;
+  if(c)h+=`<div class="claim">🔔 اعلام مشتری: ${claimTxt(c)}${c.ref?`<br>شمارهٔ پیگیری: ${esc(c.ref)}`:""}${c.last4?`<br>۴ رقم آخر کارت: ${esc(c.last4)}`:""}<span class="mut">پس از چک کردن واریز در اپ بانک، تأیید کن. فقط بخش «کارت به کارت» ثبت می‌شود.</span><div class="two"><button class="op" data-pok style="justify-content:center">✔ تأیید رسید</button><button class="op" data-pno style="justify-content:center">✖ رد</button></div></div>`;
+  else if(e.cl&&e.cl.st=="info")h+=`<div class="claim">🧾 روش انتخابی مشتری: ${claimTxt(e.cl)}</div>`;
+  if(f.ps.length)h+=f.ps.map((x,i)=>`<div class="prow"><span>${MI[x.m]||""} ${MN[x.m]||x.m}${x.r?` · پیگیری ${esc(x.r)}`:""}${x.v?" ✔":""}<br><span class="mut">${irDate(x.t)} · ${irTime(x.t)}</span></span><b>${fa(x.a)}</b><button class="x" data-pdel="${i}">✕</button></div>`).join("");
+  if(f.rem>0)h+=`<div class="mut">تسویهٔ کامل مانده (${fa(f.rem)}) با:</div><div class="three"><button class="op" data-pq="cash">💵 نقدی</button><button class="op" data-pq="pos">💳 کارتخوان</button><button class="op" data-pq="c2c">🏦 کارت‌به‌کارت</button></div>`;
+  h+=`<div class="mut">پرداخت بخشی یا ترکیبی (مثلاً نیمی کارت، نیمی نقدی):</div><select id="pm"><option value="cash">💵 نقدی</option><option value="pos">💳 کارتخوان</option><option value="c2c">🏦 کارت به کارت</option></select><input id="pa" type="number" min="1" placeholder="مبلغ" value="${f.rem||""}"><input id="pr" placeholder="شمارهٔ پیگیری (اختیاری)"><button class="op" data-padd style="justify-content:center;background:var(--ok);color:#fff">➕ ثبت پرداخت</button><button class="op" data-mc style="justify-content:center">بستن</button>`;
+  $("#mbox").innerHTML=h;$("#mdl").hidden=false;
+}
+function payAct(a,b){
+  const o=ld(K).find(r=>r.id==payId);if(!o)return;
+  const PY=getPY(),e=PY[payId]=PY[payId]||{ps:[]};e.ps=e.ps||[];const f=payInfo(o,PY);
+  if(a=="padd"){
+    const m=$("#pm").value,x=Math.round(+$("#pa").value*100)/100,r=esc($("#pr").value).trim().slice(0,40);
+    if(!(x>0))return alert("مبلغ را وارد کنید");
+    if(x>f.rem&&!confirm("مبلغ از مانده ("+fa(f.rem)+") بیشتر است. ثبت شود؟"))return;
+    e.ps.push({i:uid(),m,a:x,r,t:Date.now()});
+  }else if(a=="pq"){if(f.rem>0)e.ps.push({i:uid(),m:b.dataset.pq,a:f.rem,r:"",t:Date.now()})}
+  else if(a=="pdel"){if(!confirm("این پرداخت حذف شود؟"))return;e.ps.splice(+b.dataset.pdel,1)}
+  else if(a=="pok"&&e.cl){e.cl.pl.filter(x=>x.m=="c2c").forEach(x=>e.ps.push({i:uid(),m:"c2c",a:x.a,r:e.cl.ref||"",t:Date.now(),v:1}));e.cl.st="ok"}
+  else if(a=="pno"&&e.cl){e.cl.st="no"}
+  setPY(PY);openPay(payId);renderOrders();
+}
+/* انتقال تسویه‌های قدیمی (علامت «تسویه شد» نسخهٔ قبل) به سیستم جدید */
+(function mig(){
+  const W=ldo(WK),PY=getPY(),inv=ld(A);let ch=false;
+  Object.keys(W).forEach(id=>{const w=W[id];if(w&&w.s&&!PY[id]){const o=inv.find(x=>x.id==id);if(o){PY[id]={ps:[{i:uid(),m:"unk",a:o.sum,r:"",t:w.t||o.dt||o.t}]};w.s=0;ch=true}}});
+  if(ch){setPY(PY);sv(WK,W)}
+})();
 
-function unlock(){$("#lock").hidden=true;$("#app").hidden=false;render()}
-function tryLogin(){
-  if($("#pw").value===PASS){try{sessionStorage.setItem("fok","1")}catch(e){}unlock()}
-  else{$("#err").textContent="رمز اشتباه است";$("#pw").value="";$("#pw").focus()}
-}
-$("#go").onclick=tryLogin;
-$("#pw").onkeydown=e=>{if(e.key=="Enter")tryLogin()};
-$("#out").onclick=()=>{try{sessionStorage.removeItem("fok")}catch(e){}location.reload()};
-
-let cur=[];
-function removeInvoices(ids){
-  const del=ld(DEL);ids.forEach(i=>{if(!del.includes(i))del.push(i)});sv(DEL,del);
-  sv(A,ld().filter(o=>!ids.includes(o.id)));render();
-}
-function render(){
-  const q=$("#q").value.trim(),ty=$("#ty").value,k1=selKey("a"),k2=selKey("b"),so=$("#so").value,mt=$("#mt").value;
-  const inv=ld().filter(o=>{const k=jKey(o.t);return(!ty||o.typ==ty)&&(!k1||k>=k1)&&(!k2||k<=k2)
-    &&(!q||o.items.some(i=>i.n.includes(q))||String(o.tbl||"").includes(q)||String(o.no||"").includes(q))});
-  cur=inv;
-  let qty=0,total=0;inv.forEach(o=>{o.items.forEach(i=>qty+=i.q);total+=o.sum});
-  $("#c1").textContent=fa(inv.length);$("#c2").textContent=fa(qty);$("#c3").textContent=fa(total);
-  $("#mt").parentElement.style.display=(so=="top"||so=="low")?"":"none";
-
-  if(so=="top"||so=="low"){
-    const m={};
-    inv.forEach(o=>{
-      const textHit=String(o.tbl||"").includes(q)||String(o.no||"").includes(q);
-      o.items.forEach(i=>{
-        if(q&&!i.n.includes(q)&&!textHit)return;
-        const r=m[i.n]||(m[i.n]={n:i.n,q:0,s:0,o:0});
-        r.q+=i.q;r.s+=i.q*i.p;r.o++;   /* هر فاکتور یک سفارش جداگانه است */
-      });
-    });
-    const rows=Object.values(m).map(r=>({...r,a:r.q/r.o}));
-    const val=r=>mt=="ord"?r.o:mt=="avg"?r.a:r.q;
-    rows.sort((a,b)=>(so=="top"?val(b)-val(a):val(a)-val(b))||(so=="top"?b.q-a.q:a.q-b.q));
-    $("#th").innerHTML="<tr><th>رتبه</th><th>نام محصول</th><th>تعداد کل فروش</th><th>تعداد سفارش‌های جداگانه</th><th>میانگین تعداد در هر سفارش</th><th>مجموع فروش (تومان)</th></tr>";
-    $("#tb").innerHTML=rows.length?rows.map((r,i)=>`<tr><td data-l="رتبه">${fa(i+1)}</td><td data-l="نام محصول">${esc(r.n)}</td><td data-l="تعداد کل فروش">${fa(r.q)}</td><td data-l="سفارش‌های جداگانه">${fa(r.o)}</td><td data-l="میانگین در هر سفارش">${fa(Math.round(r.a*100)/100)}</td><td data-l="مجموع فروش">${fa(r.s)}</td></tr>`).join(""):'<tr><td class="empty" colspan="6">موردی یافت نشد</td></tr>';
-    return;
-  }
-  const list=[...inv].sort((a,b)=>so=="old"?a.t-b.t:b.t-a.t);
-  $("#th").innerHTML="<tr><th>سفارش</th><th>نام محصول</th><th>تعداد</th><th>قیمت واحد</th><th>قیمت کل</th><th>تاریخ و ساعت</th><th>نوع</th><th>حذف</th></tr>";
-  const rows=[];
-  list.forEach(o=>o.items.forEach(i=>rows.push(`<tr><td data-l="سفارش">#${fa(o.no||0)}</td><td data-l="نام محصول">${esc(i.n)}</td><td data-l="تعداد">${fa(i.q)}</td><td data-l="قیمت واحد">${fa(i.p)}</td><td data-l="قیمت کل">${fa(i.p*i.q)}</td><td data-l="تاریخ و ساعت">${irDate(o.t)} · ${irTime(o.t)}</td><td data-l="نوع"><span class="tag">${o.typ=="میز"?"داخل سالن"+(o.tbl?" (میز "+esc(o.tbl)+")":""):"بیرون‌بر"}</span></td><td><button class="del" data-del="${o.id}">🗑️ حذف فاکتور</button></td></tr>`)));
-  $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="8">فاکتوری یافت نشد</td></tr>';
-}
-document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-del]");if(!b)return;
-  const o=ld().find(x=>x.id==b.dataset.del);if(!o)return;
-  if(confirm("کل فاکتور سفارش #"+fa(o.no||0)+" ("+o.items.length+" قلم) حذف شود؟"))removeInvoices([o.id]);
-});
-$("#da").onclick=()=>{
-  if(!cur.length)return;
-  if(confirm(fa(cur.length)+" فاکتور نمایش‌داده‌شده (طبق فیلترهای فعلی) برای همیشه حذف شود؟"))removeInvoices(cur.map(o=>o.id));
+/* کلید سبد: "شماره آیتم" یا "شماره آیتم|شماره گزینه" */
+const parse=k=>{
+  const [id,o]=String(k).split("|"),m=MENU[+id];
+  if(o===undefined||!hasOpt(m))return{id:+id,n:m.n,p:m.p};
+  const op=OPTS[m.n].l[+o];
+  if(!op)return{id:+id,n:m.n,p:m.p};
+  return{id:+id,o:+o,n:m.n+" ("+op.l+")",p:op.p};
 };
-$("#cd").onclick=()=>{["a","b"].forEach(p=>["y","m","d"].forEach(s=>$("#"+p+s).value=""));render()};
-document.querySelectorAll(".filters input,.filters select").forEach(el=>el.addEventListener("input",render));
-addEventListener("storage",e=>{if(e.key==A&&!$("#app").hidden)render()});
-try{if(sessionStorage.getItem("fok")==="1")unlock()}catch(e){}
+const cnt=id=>Object.keys(cart).filter(k=>k.split("|")[0]==id).reduce((a,k)=>a+cart[k],0);
+function openOpts(id){
+  const m=MENU[id],op=OPTS[m.n];
+  $("#mbox").innerHTML=`<h3>${op.t}</h3>`+op.l.map((x,i)=>`<button class="op" data-k="${id}|${i}"><span>${x.l}</span><b>${fa(x.p)}</b></button>`).join("")+`<button class="op" data-mc style="justify-content:center;color:var(--bad)">انصراف</button>`;
+  $("#mdl").hidden=false;
+}
+
+/* شماره سفارش: هر روز (به وقت تهران، از ساعت ۰۰:۰۰) از ۱ شروع می‌شود */
+function nextNo(){
+  const day=irDay(Date.now());let c=null;
+  try{c=JSON.parse(DB.get(CNT))}catch(e){}
+  const n=(c&&typeof c=="object"&&c.d==day?c.n:0)+1;
+  try{DB.set(CNT,JSON.stringify({d:day,n}))}catch(e){}
+  return n;
+}
+/* یک‌بار: شماره‌گذاری مجدد سفارش‌های موجود (و فاکتورها) بر اساس ساعت ثبت در هر روز */
+(function renumber(){
+  const F="cafe_no_reset_v2";let done=null;try{done=DB.get(F)}catch(e){}
+  if(done)return;
+  const ord=ld(K),inv=ld(A),seen=new Map();
+  ord.concat(inv).forEach(o=>{if(o&&o.id&&!seen.has(o.id))seen.set(o.id,o.t)});
+  const byDay={},num=new Map();
+  [...seen.entries()].sort((a,b)=>a[1]-b[1]).forEach(([id,t])=>{const d=irDay(t);byDay[d]=(byDay[d]||0)+1;num.set(id,byDay[d])});
+  ord.forEach(o=>{if(num.has(o.id))o.no=num.get(o.id)});
+  inv.forEach(o=>{if(num.has(o.id))o.no=num.get(o.id)});
+  sv(K,ord);sv(A,inv);
+  const today=irDay(Date.now());
+  try{DB.set(CNT,JSON.stringify({d:today,n:byDay[today]||0}));DB.set(F,"1")}catch(e){}
+})();
+
+function addOrder(o){
+  const seen=ld(SEEN);if(seen.includes(o.id))return false;
+  seen.push(o.id);sv(SEEN,seen.slice(-500));
+  const pay=o.pay;delete o.pay;
+  o.s=0;o.no=nextNo();const all=ld(K);all.push(o);sv(K,all);
+  /* اعلام روش پرداخت از طرف مشتری (صفحهٔ index) */
+  if(pay&&Array.isArray(pay.pl)){
+    const pl=pay.pl.map(x=>({m:["pos","c2c","cash"].includes(x.m)?x.m:null,a:Math.round(+x.a*100)/100})).filter(x=>x.m&&x.a>0);
+    if(pl.length){
+      const PY=getPY();
+      PY[o.id]={ps:[],cl:{pl,ref:esc(pay.ref).slice(0,40),last4:esc(pay.last4).slice(0,4),t:Date.now(),st:pl.some(x=>x.m=="c2c")?"p":"info"}};
+      setPY(PY);
+    }
+  }
+  return true;
+}
+/* ویرایش سفارش تحویل‌شده: فاکتور قبلی حذف و فاکتور جدید با اطلاعات اصلاح‌شده ثبت می‌شود */
+function reinvoice(o){
+  const all=ld(A),old=all.find(x=>x.id==o.id),a=all.filter(x=>x.id!=o.id);
+  a.push({...o,dt:old&&old.dt?old.dt:Date.now(),e:Date.now()});sv(A,a);
+  const del=ld("cafe_inv_del_v1");if(del.includes(o.id))sv("cafe_inv_del_v1",del.filter(i=>i!=o.id));
+}
+function archive(o){const a=ld(A);if(ld("cafe_inv_del_v1").includes(o.id))return;if(!a.some(x=>x.id==o.id)){a.push({...o,dt:Date.now()});sv(A,a)}}
+const toast=(t,bad)=>{const el=$("#toast");el.textContent=t;el.style.background=bad?"var(--bad)":"";el.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>el.className="",3000)};
+
+/* دریافت سفارش مشتری‌ها از ntfy */
+try{
+  const es=new EventSource(NTFY+"/sse?since=6h");
+  es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event!="message")return;const o=JSON.parse(m.message);
+    if(o&&o.id&&Array.isArray(o.items)&&addOrder(o)){renderOrders();toast("🔔 سفارش جدید رسید")}}catch(x){}};
+}catch(e){}
+
+function show(v){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.v==v));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==v));if(v=="v2")renderOrders()}
+function setTyp(t){typ=t;document.querySelectorAll("#typ button").forEach(x=>x.classList.toggle("on",x.dataset.t==t));$("#tbl").style.display=t=="میز"?"":"none"}
+function renderCats(){$("#cats").innerHTML=CATS.map(c=>`<button class="chip ${c==cat?"on":""}" data-c="${c}">${c}</button>`).join("")}
+function renderMenu(){
+  $("#menu").innerHTML=MENU.filter(m=>cat=="همه"||m.c==cat).map(m=>{
+    const c=cnt(m.id),o=hasOpt(m),price=o?Math.min(...OPTS[m.n].l.map(x=>x.p)):m.p;
+    return `<div class="item" data-id="${m.id}">${c?`<i>${fa(c)}</i>`:""}<b>${m.n}</b><span>${o?"از ":""}${fa(price)} تومان</span></div>`}).join("");
+}
+function renderCart(){
+  const ids=Object.keys(cart);let sum=0;
+  $("#cart").innerHTML=ids.length?ids.map(id=>{const m=parse(id),q=cart[id];sum+=m.p*q;return `<div class="row"><span class="t">${m.n}<br><span class="mut">${fa(m.p*q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`}).join(""):'<div class="empty">آیتمی انتخاب نشده</div>';
+  $("#sum").textContent=fa(sum)+" تومان";
+  $("#sub").disabled=!ids.length;
+  $("#sub").textContent=editing?"ذخیره تغییرات ✓":"ثبت سفارش ✓";
+  $("#eb").hidden=!editing;
+  if(editing){const o=ld(K).find(r=>r.id==editing);$("#et").textContent="✎ ویرایش سفارش #"+fa(o?o.no:0)}
+  renderMenu();
+}
+const P2=[["","همه پرداخت‌ها"],["none","⏳ تسویه‌نشده"],["part","🟡 نیمه‌پرداخت"],["paid","✅ تسویه‌شده"],["claim","🔔 رسید در انتظار"]];
+function renderOrders(){
+  const all=ld(K),PY=getPY(),today=irDay(Date.now()),td=all.filter(o=>irDay(o.t)==today);
+  $("#s1").textContent=fa(td.length);
+  $("#s2").textContent=fa(all.filter(o=>o.s<3).length);
+  $("#s3").textContent=fa(td.filter(o=>o.s==3).reduce((a,o)=>a+o.sum,0));
+  const nw=all.filter(o=>o.s==0).length;$("#bd").hidden=!nw;$("#bd").textContent=fa(nw);
+  /* دریافتی‌های امروز به تفکیک روش */
+  const tp={};Object.values(PY).forEach(e=>(e.ps||[]).forEach(x=>{if(irDay(x.t)==today)tp[x.m]=(tp[x.m]||0)+(+x.a||0)}));
+  const un=td.filter(o=>o.s==3).reduce((a,o)=>a+payInfo(o,PY).rem,0);
+  $("#pstrip").innerHTML="<span>دریافتی امروز:</span>"+["cash","pos","c2c","unk"].filter(k=>k!="unk"||tp[k]).map(k=>`<span>${MI[k]} ${MN[k]}: <b>${fa(tp[k]||0)}</b></span>`).join("")+`<span>⏳ دریافت‌نشده (تحویل‌شده‌های امروز): <b style="color:var(--bad)">${fa(un)}</b></span>`;
+  $("#fl").innerHTML=["همه",...ST].map((s,i)=>`<button class="chip ${flt==i-1?"on":""}" data-f="${i-1}">${s}</button>`).join("");
+  $("#fl2").innerHTML=P2.map(([v,l])=>`<button class="chip ${flt2==v?"on":""}" data-pfl="${v}">${l}</button>`).join("");
+  const ok=o=>{if(!flt2)return true;const f=payInfo(o,PY);return flt2=="claim"?!!f.cl:f.st==flt2};
+  const list=all.filter(o=>(flt<0||o.s==flt)&&ok(o)).sort((a,b)=>(a.s==3)-(b.s==3)||a.t-b.t);
+  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div>${payBox(o,PY)}<div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+}
+function resetForm(){cart={};editing=null;$("#tbl").value="";$("#note").value="";setTyp("میز")}
+
+document.addEventListener("click",e=>{
+  if(e.target.id=="mdl"){$("#mdl").hidden=true;return}
+  const it=e.target.closest(".item");
+  if(it){const id=it.dataset.id;if(hasOpt(MENU[id]))return openOpts(id);cart[id]=(cart[id]||0)+1;renderCart();return}
+  const b=e.target.closest("button");if(!b)return;
+  const pa=["padd","pq","pdel","pok","pno"].find(k=>b.dataset[k]!==undefined);
+  if(pa){payAct(pa,b);return}
+  if(b.dataset.pay){openPay(b.dataset.pay);return}
+  if(b.dataset.pfl!==undefined){flt2=b.dataset.pfl;renderOrders();return}
+  if(b.dataset.v)show(b.dataset.v);
+  else if(b.dataset.k){cart[b.dataset.k]=(cart[b.dataset.k]||0)+1;$("#mdl").hidden=true;renderCart()}
+  else if(b.dataset.mc!==undefined){$("#mdl").hidden=true}
+  else if(b.dataset.c){cat=b.dataset.c;renderCats();renderMenu()}
+  else if(b.dataset.d){const id=b.dataset.id;cart[id]=(cart[id]||0)+ +b.dataset.d;if(cart[id]<=0)delete cart[id];renderCart()}
+  else if(b.dataset.t)setTyp(b.dataset.t);
+  else if(b.dataset.f!==undefined){flt=+b.dataset.f;renderOrders()}
+  else if(b.dataset.adv){const o=ld(K),x=o.find(r=>r.id==b.dataset.adv);if(x){x.s++;if(x.s==3)archive(x)}sv(K,o);renderOrders()}
+  else if(b.dataset.ed){
+    const x=ld(K).find(r=>r.id==b.dataset.ed);if(!x)return;
+    cart={};x.items.forEach(i=>{let k=null;if(i.o!==undefined&&i.id!==undefined)k=i.id+"|"+i.o;else{const m=MENU.find(m=>m.n==i.n);if(m)k=String(m.id)}if(k!==null)cart[k]=(cart[k]||0)+i.q});
+    editing=x.id;setTyp(x.typ);$("#tbl").value=x.tbl||"";$("#note").value=x.note||"";show("v1");renderCart();scrollTo({top:0,behavior:"smooth"});
+  }
+  else if(b.dataset.ce!==undefined){resetForm();renderCart()}
+  else if(b.dataset.del){if(confirm("این سفارش حذف شود؟")){save2(ld(K).filter(r=>r.id!=b.dataset.del));if(editing==b.dataset.del){resetForm();renderCart()}renderOrders()}}
+});
+const save2=o=>sv(K,o);
+
+$("#sub").onclick=()=>{
+  const ids=Object.keys(cart);if(!ids.length)return;
+  const tbl=$("#tbl").value.trim();
+  if(typ=="میز"&&!tbl){alert("لطفاً شماره میز را وارد کنید");$("#tbl").focus();return}
+  const items=ids.map(k=>{const r=parse(k);return{id:r.id,o:r.o,n:r.n,q:cart[k],p:r.p}});
+  const sum=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
+  if(editing){
+    const all=ld(K),x=all.find(r=>r.id==editing);
+    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum});sv(K,all);if(x.s==3)reinvoice(x)}
+    toast("✓ تغییرات ذخیره شد");
+  }else{
+    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter"});
+    toast("✓ سفارش ثبت شد");
+  }
+  resetForm();renderCart();renderOrders();
+};
+$("#clr").onclick=()=>{if(confirm("سفارش‌های تحویل‌شده از این صفحه پاک شوند؟ (فاکتورها حفظ می‌شوند)")){const all=ld(K);all.filter(o=>o.s==3).forEach(archive);sv(K,all.filter(o=>o.s<3));renderOrders()}};
+addEventListener("storage",e=>{if(e.key==K||e.key==PYK)renderOrders()});
+setInterval(()=>{if($("#mdl").hidden)renderOrders()},30000);
+renderCats();renderCart();renderOrders();
 });</script>
 </body>
 </html>
