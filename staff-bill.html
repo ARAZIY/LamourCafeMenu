@@ -102,7 +102,10 @@ $("#go").onclick=()=>{
 function calc(p){
   const food=p.food.filter(x=>inM(x.t)),cash=p.cash.filter(x=>inM(x.t)),tips=p.tips.filter(x=>inM(x.t)),fr=p.fr.filter(x=>inM(x.t));
   const F=sum(food,x=>x.q*x.p),C=sum(cash,x=>x.a),T=sum(tips,x=>x.a),FR=sum(fr,x=>x.a),com=FR*RATE,debt=F+C;
-  return{food,cash,tips,fr,F,C,T,FR,com,debt,net:debt-T-com,
+  const closed=!!(p.set||{})[M];
+  return{food,cash,tips,fr,F,C,T,FR,com,closed,
+    debt:closed?0:debt,
+    net:closed?0:debt-T-com,
     att:p.att.filter(x=>inM(x.i)),lv:p.lv.filter(x=>Math.floor(x.d/100)==M)};
 }
 const T_=(h,rows)=>rows.length?`<div class="wrap"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td data-l="${h[i]}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:'<div class="empty">موردی ثبت نشده</div>';
