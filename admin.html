@@ -142,7 +142,28 @@ function openOpts(id){
   $("#mdl").hidden=false;
 }
 
-function nextNo(){let n=(+DB.get(CNT)||0)+1;try{DB.set(CNT,n)}catch(e){}return n}
+/* شماره سفارش: هر روز (به وقت تهران، از ساعت ۰۰:۰۰) از ۱ شروع می‌شود */
+function nextNo(){
+  const day=irDay(Date.now());let c=null;
+  try{c=JSON.parse(DB.get(CNT))}catch(e){}
+  const n=(c&&typeof c=="object"&&c.d==day?c.n:0)+1;
+  try{DB.set(CNT,JSON.stringify({d:day,n}))}catch(e){}
+  return n;
+}
+/* یک‌بار: شماره‌گذاری مجدد سفارش‌های موجود (و فاکتورها) بر اساس ساعت ثبت در هر روز */
+(function renumber(){
+  const F="cafe_no_reset_v2";let done=null;try{done=DB.get(F)}catch(e){}
+  if(done)return;
+  const ord=ld(K),inv=ld(A),seen=new Map();
+  ord.concat(inv).forEach(o=>{if(o&&o.id&&!seen.has(o.id))seen.set(o.id,o.t)});
+  const byDay={},num=new Map();
+  [...seen.entries()].sort((a,b)=>a[1]-b[1]).forEach(([id,t])=>{const d=irDay(t);byDay[d]=(byDay[d]||0)+1;num.set(id,byDay[d])});
+  ord.forEach(o=>{if(num.has(o.id))o.no=num.get(o.id)});
+  inv.forEach(o=>{if(num.has(o.id))o.no=num.get(o.id)});
+  sv(K,ord);sv(A,inv);
+  const today=irDay(Date.now());
+  try{DB.set(CNT,JSON.stringify({d:today,n:byDay[today]||0}));DB.set(F,"1")}catch(e){}
+})();
 function addOrder(o){
   const seen=ld(SEEN);if(seen.includes(o.id))return false;
   seen.push(o.id);sv(SEEN,seen.slice(-500));
