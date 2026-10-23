@@ -1057,6 +1057,7 @@
           cm = "cash",
           curSum = 0;
 
+        /* تبدیل ارقام فارسی/عربی به انگلیسی */
         const toEn = (s) =>
           String(s || "")
             .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
