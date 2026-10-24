@@ -70,7 +70,7 @@
           transform: translate3d(var(--dx), 115vh, 0) rotate(var(--rot));
         }
       }
-      
+
       main {
         position: relative;
         z-index: 1;
@@ -969,11 +969,12 @@
             ],
           },
         };
+        /* نام آیتم چندحالته مثل صفحهٔ ادمین: «سینگل (۱۰۰٪ روبوستا)» */
         const lineOf = (k) => {
           const [i, o] = String(k).split("_"),
             m = MENU[i];
           const op = o !== undefined && OPTS[m.n] ? OPTS[m.n].l[o] : null;
-          return { m, o, p: op ? op.p : m.p, n: op ? m.n + " – " + op.l : m.n };
+          return { m, o, p: op ? op.p : m.p, n: op ? m.n + " (" + op.l + ")" : m.n };
         };
         const qtyOf = (id) =>
           Object.keys(cart)
@@ -1125,10 +1126,10 @@
         }
         function renderMenu() {
           $("#menu").innerHTML = MENU.filter((m) => cat == "همه" || m.c == cat)
-            .map(
-              (m) =>
-                `<div class="item" data-id="${m.id}">${cart[m.id] ? `<span class="q">${fa(cart[m.id])}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${fa(m.p)} تومان</div></div>`,
-            )
+            .map((m) => {
+              const q = qtyOf(m.id);
+              return `<div class="item" data-id="${m.id}">${q ? `<span class="q">${fa(q)}</span>` : ""}${m.i ? `<img class="th" src="${encodeURI(m.i)}" alt="${m.n}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<div class="n">${m.n}</div>${desc(m) ? `<div class="ds">${esc(desc(m))}</div>` : ""}<div class="p">${priceTxt(m)}</div></div>`;
+            })
             .join("");
         }
         function renderCart() {
@@ -1462,10 +1463,7 @@
           b.style.height = size * 1.5 + "px";
           b.style.left = r(0, 100) + "%";
           b.style.setProperty("--dur", r(9, 18) + "s");
-          b.style.setProperty(
-            "--delay",
-            -r(0, 18) + "s",
-          ); 
+          b.style.setProperty("--delay", -r(0, 18) + "s");
           b.style.setProperty("--dx", r(-80, 80) + "px");
           b.style.setProperty("--rot", r(-540, 540) + "deg");
           box.appendChild(b);
