@@ -1,5 +1,5 @@
 (function () {
-  const API = 'https://script.google.com/macros/s/AKfycbx-JQXOBlBGeXCWTnAaTlHZa0cSY5PVorB0hHmmvyyFCrwrZZ5FequtCdLGHTuOSXnKiA/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbxfgrHy_6LXinLMw_skIIimvnG5n9LCGMffgjdTjjVbFyLheSBrw6HdUg03jYy7ylw9uA/exec';
 
   // همهٔ کلیدهایی که صفحه‌ها استفاده می‌کنند
   const KEYS = [
