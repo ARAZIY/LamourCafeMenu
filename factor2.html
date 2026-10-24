@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>فاکتورهای کافه لامور ۲</title>
+  <link rel="icon" type="image/png" href="logofactor.png">
+  <link rel="apple-touch-icon" href="logofactor.png">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--warn:#c27a10;--bad:#b3392f;--blue:#2b6cb0;--sh:0 1px 2px rgba(60,40,20,.05),0 8px 20px rgba(60,40,20,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.25)}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none;transition:transform .12s,opacity .12s}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);min-width:0;width:100%}
+header{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg);box-shadow:0 2px 10px rgba(60,40,20,.05)}
+header h1{font-size:1.05rem;flex:1}
+a.lnk,button.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:6px 8px;border-radius:10px}
+a.lnk:hover,button.lnk:hover{background:var(--bd)}
+main{max-width:1250px;margin:auto;padding:14px}
+#lock{max-width:320px;margin:18vh auto;padding:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;text-align:center;box-shadow:var(--sh)}
+#lock input{margin:12px 0}
+#go{width:100%;padding:11px;background:var(--pri);color:#fff;font-weight:800}
+#err{color:var(--bad);font-size:.88rem;min-height:1.2em}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px}
+.filters>label,.filters>div{font-size:.78rem;color:var(--mut);display:grid;gap:3px;align-content:start}
+.d3{display:grid;grid-template-columns:1.2fr 1.6fr 1fr;gap:4px}
+.d3 select{padding:9px 4px}
+.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sum div{flex:1;min-width:120px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;box-shadow:var(--sh)}
+.sum b{display:block;color:var(--pri)}
+.sum .dbt b{color:var(--bad)}
+.mut{color:var(--mut);font-size:.85rem}
+.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.chip{padding:7px 13px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.88rem}
+.chip.bad{color:var(--bad)}
+.chip.ok{color:var(--ok)}
+.chip[hidden]{display:none}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.92rem;white-space:nowrap}
+th{background:var(--bg);color:var(--mut);font-weight:600}
+.tag{padding:2px 10px;border-radius:99px;background:var(--bd);font-size:.8rem}
+.tag.ed{background:var(--pri);color:#fff}
+.del{color:var(--bad);background:var(--bd);padding:5px 10px}
+.empty{text-align:center;color:var(--mut);padding:30px}
+.pc{display:grid;gap:4px;min-width:150px}
+.pc select{padding:6px}
+.pst{padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--bd);display:inline-block}
+.pst.paid{background:rgba(46,125,79,.15);color:var(--ok)}
+.pst.part{background:rgba(194,122,16,.16);color:var(--warn)}
+.pst.none{background:rgba(179,57,47,.12);color:var(--bad)}
+.pst.claim{background:rgba(43,108,176,.16);color:var(--blue)}
+.pb{padding:5px 10px;border:1px solid var(--bd);border-radius:10px;font-size:.8rem;background:var(--bg)}
+#mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+#mdl[hidden]{display:none}
+#mdl .box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;width:100%;max-width:380px;display:grid;gap:8px;max-height:90vh;overflow-y:auto}
+#mdl .box h3{font-size:1rem;margin-bottom:4px}
+#mdl .op{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;text-align:right}
+#mdl .op:active{transform:scale(.98)}
+#mdl .x{color:var(--bad);background:var(--bd);padding:4px 9px}
+.pbx{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--bd)}
+.claim{background:rgba(43,108,176,.1);border:1px solid var(--blue);border-radius:10px;padding:10px;font-size:.88rem;display:grid;gap:6px}
+.prow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:.9rem}
+.prow>span{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.three .op{justify-content:center;padding:10px 4px;font-size:.85rem}
+@media(max-width:700px){
+  .wrap{border:0;background:none;box-shadow:none}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tr{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;padding:6px 10px}
+  td{display:flex;justify-content:space-between;align-items:center;gap:10px;border:0;padding:5px 0;white-space:normal}
+  td[data-l]::before{content:attr(data-l);color:var(--mut)}
+}
+</style>
+</head>
+<body>
+<div id="lock">
+  <h2>🔒 ورود به فاکتورها (لامور ۲)</h2>
+  <input id="pw" type="password" placeholder="رمز عبور" autocomplete="current-password" />
+  <div id="err"></div>
+  <button id="go">ورود</button>
+</div>
+<div id="app" hidden>
+  <header><h1>🧾 فاکتورهای تحویل‌شده — لامور ۲</h1><a class="lnk" href="admin2.html">← مدیریت</a><a class="lnk" href="index2.html">🛎️ منوی مشتری</a><button class="lnk" id="out">خروج</button></header>
+  <main>
+    <div class="filters">
+      <label>جستجو (محصول / میز / شمارهٔ سفارش / شخص / پیگیری)<input id="q" type="search" placeholder="جستجو…" /></label>
+      <label>نوع سفارش<select id="ty"><option value="">همه</option><option>میز</option><option>بیرون‌بر</option></select></label>
+      <label>شخص (حساب دفتری)<select id="pf"></select></label>
+      <label>وضعیت تسویه<select id="sf"><option value="">همه</option><option value="none">تسویه‌نشده</option><option value="part">نیمه‌پرداخت</option><option value="paid">تسویه‌شده</option><option value="claim">رسید در انتظار تأیید</option></select></label>
+      <label>روش پرداخت<select id="mf"><option value="">همه</option><option value="cash">💵 نقدی</option><option value="pos">💳 کارتخوان</option><option value="c2c">🏦 کارت به کارت</option><option value="mix">🔀 ترکیبی (چند روش)</option></select></label>
+      <div>از تاریخ (شمسی)<div class="d3" id="f1"></div></div>
+      <div>تا تاریخ (شمسی)<div class="d3" id="f2"></div></div>
+      <label>نمایش<select id="so"><option value="new">جدیدترین فاکتورها</option><option value="old">قدیمی‌ترین فاکتورها</option><option value="ppl">حساب اشخاص (مانده بدهی)</option><option value="top">پرفروش‌ترین محصولات</option><option value="low">کم‌فروش‌ترین محصولات</option></select></label>
+      <label>معیار رتبه‌بندی<select id="mt"><option value="qty">تعداد کل فروش</option><option value="ord">تعداد سفارش‌های جداگانه</option><option value="avg">میانگین تعداد در هر سفارش</option></select></label>
+    </div>
+    <div class="bar">
+      <button class="chip" id="cd">✕ پاک‌کردن فیلتر تاریخ</button>
+      <button class="chip ok" id="sa" hidden>✅ تسویهٔ گروهی نمایش‌داده‌شده‌ها</button>
+      <button class="chip bad" id="dp" hidden>✕ حذف این شخص از لیست</button>
+      <button class="chip" id="xc">📊 دانلود اکسل (CSV)</button>
+      <button class="chip" id="xd">📄 دانلود ورد (DOC)</button>
+      <button class="chip bad" id="da">🗑️ حذف فاکتورهای نمایش‌داده‌شده</button>
+    </div>
+    <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div><div><b id="c4">۰</b><span class="mut">دریافت‌شده (تومان)</span></div><div class="dbt"><b id="c5">۰</b><span class="mut">مانده دریافت‌نشده (تومان)</span></div><span id="msum" style="display:contents"></span></div>
+    <div class="wrap"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+    <p class="mut" style="margin-top:8px">فایل خروجی (اکسل/ورد) طبق فیلترهای فعلی ساخته می‌شود؛ برای خروجی کامل، فیلترها را پاک کن.</p>
+  </main>
+</div>
+<div id="mdl" hidden><div class="box" id="mbox"></div></div>
+<script src="sheet-db.js" data-auth="1" data-prefix="l2_"></script>
+<script>DB.ready.then(()=>{
+const PASS="lamour2023mns",A="cafe_invoices_v1",DEL="cafe_inv_del_v1",PK="cafe_people_v1",WK="cafe_inv_person_v1",PYK="cafe_pay_v1",TZ="Asia/Tehran",FOK="fok2";
+const MONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR");
+const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const irDate=t=>new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"long",day:"numeric"});
+const irTime=t=>new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false});
+const ld=(k=A)=>{try{return JSON.parse(DB.get(k))||[]}catch(e){return[]}};
+const ldo=k=>{try{return JSON.parse(DB.get(k))||{}}catch(e){return{}}};
+const sv=(k,v)=>{try{DB.set(k,JSON.stringify(v))}catch(e){}};
+
+/* ---------- پرداخت و تسویه ---------- */
+const MN={cash:"نقدی",pos:"کارتخوان",c2c:"کارت به کارت",unk:"نامشخص (قبلی)"},MI={cash:"💵",pos:"💳",c2c:"🏦",unk:"❔"};
+const getPY=()=>ldo(PYK),setPY=v=>sv(PYK,v);
+function payInfo(o,PY){
+  const e=PY[o.id]||{},ps=e.ps||[],paid=ps.reduce((s,x)=>s+(+x.a||0),0),sum=o.sum||0,by={};
+  ps.forEach(x=>by[x.m]=(by[x.m]||0)+(+x.a||0));
+  return{e,ps,paid,rem:Math.max(0,sum-paid),by,st:paid<=0?"none":paid>=sum?"paid":"part",cl:e.cl&&e.cl.st=="p"?e.cl:null};
+}
+const bySum=by=>Object.keys(by).map(k=>(MI[k]||"")+" "+(MN[k]||k)+" "+fa(by[k])).join(" + ");
+const bySumPlain=by=>Object.keys(by).map(k=>(MN[k]||k)+" "+by[k]).join(" + ");
+const claimTxt=c=>c.pl.map(x=>(MI[x.m]||"")+" "+(MN[x.m]||x.m)+" "+fa(x.a)+(x.m=="c2c"?"":" (در کافه)")).join(" + ");
+function payCell(o,f){
+  const t=f.st=="paid"?"✅ تسویه شد":f.st=="part"?"🟡 نیمه‌پرداخت ("+fa(f.paid)+" از "+fa(o.sum)+")":"⏳ تسویه نشده";
+  return `<div class="pc"><span class="pst ${f.st}">${t}</span>${f.paid?`<span class="mut">${bySum(f.by)}</span>`:""}${f.cl?`<span class="pst claim">🔔 رسید در انتظار تأیید</span>`:""}<button class="pb" data-pay="${o.id}">💰 پرداخت</button></div>`;
+}
+let payId=null;
+function openPay(id){
+  const o=ld(A).find(r=>r.id==id);if(!o)return;payId=id;
+  const PY=getPY(),f=payInfo(o,PY),c=f.cl,e=f.e;
+  let h=`<h3>💰 پرداخت فاکتور #${fa(o.no||0)}</h3><div class="pbx"><span>جمع فاکتور</span><b>${fa(o.sum)}</b></div><div class="pbx"><span>دریافت‌شده</span><b style="color:var(--ok)">${fa(f.paid)}</b></div><div class="pbx"><span>مانده</span><b style="color:${f.rem?"var(--bad)":"var(--ok)"}">${fa(f.rem)}</b></div>`;
+  if(c)h+=`<div class="claim">🔔 اعلام مشتری: ${claimTxt(c)}${c.ref?`<br>شمارهٔ پیگیری: ${esc(c.ref)}`:""}${c.last4?`<br>۴ رقم آخر کارت: ${esc(c.last4)}`:""}<span class="mut">پس از چک کردن واریز در اپ بانک، تأیید کن. فقط بخش «کارت به کارت» ثبت می‌شود.</span><div class="two"><button class="op" data-pok style="justify-content:center">✔ تأیید رسید</button><button class="op" data-pno style="justify-content:center">✖ رد</button></div></div>`;
+  else if(e.cl&&e.cl.st=="info")h+=`<div class="claim">🧾 روش انتخابی مشتری: ${claimTxt(e.cl)}</div>`;
+  if(f.ps.length)h+=f.ps.map((x,i)=>`<div class="prow"><span>${MI[x.m]||""} ${MN[x.m]||x.m}${x.r?` · پیگیری ${esc(x.r)}`:""}${x.v?" ✔":""}<br><span class="mut">${irDate(x.t)} · ${irTime(x.t)}</span></span><b>${fa(x.a)}</b><button class="x" data-pdel="${i}">✕</button></div>`).join("");
+  if(f.rem>0)h+=`<div class="mut">تسویهٔ کامل مانده (${fa(f.rem)}) با:</div><div class="three"><button class="op" data-pq="cash">💵 نقدی</button><button class="op" data-pq="pos">💳 کارتخوان</button><button class="op" data-pq="c2c">🏦 کارت‌به‌کارت</button></div>`;
+  h+=`<div class="mut">پرداخت بخشی یا ترکیبی (مثلاً نیمی کارت، نیمی نقدی):</div><select id="pm"><option value="cash">💵 نقدی</option><option value="pos">💳 کارتخوان</option><option value="c2c">🏦 کارت به کارت</option></select><input id="pa" type="number" min="1" placeholder="مبلغ" value="${f.rem||""}"><input id="pr" placeholder="شمارهٔ پیگیری (اختیاری)"><button class="op" data-padd style="justify-content:center;background:var(--ok);color:#fff">➕ ثبت پرداخت</button><button class="op" data-mc style="justify-content:center">بستن</button>`;
+  $("#mbox").innerHTML=h;$("#mdl").hidden=false;
+}
+function payAct(a,b){
+  const o=ld(A).find(r=>r.id==payId);if(!o)return;
+  const PY=getPY(),e=PY[payId]=PY[payId]||{ps:[]};e.ps=e.ps||[];const f=payInfo(o,PY);
+  if(a=="padd"){
+    const m=$("#pm").value,x=Math.round(+$("#pa").value*100)/100,r=esc($("#pr").value).trim().slice(0,40);
+    if(!(x>0))return alert("مبلغ را وارد کنید");
+    if(x>f.rem&&!confirm("مبلغ از مانده ("+fa(f.rem)+") بیشتر است. ثبت شود؟"))return;
+    e.ps.push({i:uid(),m,a:x,r,t:Date.now()});
+  }else if(a=="pq"){if(f.rem>0)e.ps.push({i:uid(),m:b.dataset.pq,a:f.rem,r:"",t:Date.now()})}
+  else if(a=="pdel"){if(!confirm("این پرداخت حذف شود؟"))return;e.ps.splice(+b.dataset.pdel,1)}
+  else if(a=="pok"&&e.cl){e.cl.pl.filter(x=>x.m=="c2c").forEach(x=>e.ps.push({i:uid(),m:"c2c",a:x.a,r:e.cl.ref||"",t:Date.now(),v:1}));e.cl.st="ok"}
+  else if(a=="pno"&&e.cl){e.cl.st="no"}
+  setPY(PY);openPay(payId);render();
+}
+function openBulk(){
+  const PY=getPY(),todo=cur.filter(o=>payInfo(o,PY).rem>0),sum=todo.reduce((a,o)=>a+payInfo(o,PY).rem,0);
+  if(!todo.length)return alert("فاکتور تسویه‌نشده‌ای نمایش داده نمی‌شود");
+  $("#mbox").innerHTML=`<h3>✅ تسویهٔ گروهی</h3><div class="mut">${fa(todo.length)} فاکتور · مانده کل ${fa(sum)} تومان. مانده هر فاکتور با روش زیر ثبت می‌شود:</div><div class="three"><button class="op" data-bulk="cash">💵 نقدی</button><button class="op" data-bulk="pos">💳 کارتخوان</button><button class="op" data-bulk="c2c">🏦 کارت‌به‌کارت</button></div><button class="op" data-mc style="justify-content:center">انصراف</button>`;
+  $("#mdl").hidden=false;
+}
+function bulk(m){
+  const PY=getPY(),todo=cur.filter(o=>payInfo(o,PY).rem>0);
+  if(!todo.length||!confirm(fa(todo.length)+" فاکتور با روش «"+MN[m]+"» تسویه شود؟"))return;
+  todo.forEach(o=>{const e=PY[o.id]=PY[o.id]||{ps:[]};e.ps=e.ps||[];e.ps.push({i:uid(),m,a:payInfo(o,PY).rem,r:"",t:Date.now()})});
+  setPY(PY);$("#mdl").hidden=true;render();
+}
+/* انتقال تسویه‌های قدیمی (علامت «تسویه شد» نسخهٔ قبل) به سیستم جدید */
+(function mig(){
+  const W=ldo(WK),PY=getPY(),inv=ld(A);let ch=false;
+  Object.keys(W).forEach(id=>{const w=W[id];if(w&&w.s&&!PY[id]){const o=inv.find(x=>x.id==id);if(o){PY[id]={ps:[{i:uid(),m:"unk",a:o.sum,r:"",t:w.t||o.dt||o.t}]};w.s=0;ch=true}}});
+  if(ch){setPY(PY);sv(WK,W)}
+})();
+
+/* کلید تاریخ شمسی (سال*10000+ماه*100+روز) بر اساس وقت تهران */
+const jf=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{timeZone:TZ,year:"numeric",month:"numeric",day:"numeric"});
+function jKey(t){const p={};jf.formatToParts(new Date(t)).forEach(x=>p[x.type]=x.value);return (+p.year)*10000+(+p.month)*100+(+p.day)}
+const curY=Math.floor(jKey(Date.now())/10000);
+function buildDate(box,p){
+  const o=a=>a.map(([v,t])=>`<option value="${v}">${t}</option>`).join("");
+  const ys=[],ds=[];for(let y=curY;y>=curY-5;y--)ys.push([y,fa(y).replace(/٬/g,"")]);
+  for(let d=1;d<=31;d++)ds.push([d,fa(d)]);
+  $(box).innerHTML=`<select id="${p}y"><option value="">سال</option>${o(ys)}</select><select id="${p}m"><option value="">ماه</option>${o(MONTHS.map((m,i)=>[i+1,m]))}</select><select id="${p}d"><option value="">روز</option>${o(ds)}</select>`;
+}
+buildDate("#f1","a");buildDate("#f2","b");
+function selKey(p){const y=$("#"+p+"y").value,m=$("#"+p+"m").value,d=$("#"+p+"d").value;return y&&m&&d?(+y)*10000+(+m)*100+(+d):null}
+
+/* اشخاص (مشتری‌های ثابت با حساب دفتری) */
+function people(){
+  const P=ld(PK),W=ldo(WK),set=new Set(P);
+  Object.values(W).forEach(w=>{if(w&&w.n)set.add(w.n)});
+  return [...set].sort((a,b)=>a.localeCompare(b,"fa"));
+}
+function fillFilter(){
+  const sel=$("#pf"),old=sel.value;
+  sel.innerHTML='<option value="">همه</option><option value="__none">بدون شخص</option>'+people().map(n=>`<option value="${n}">${n}</option>`).join("");
+  if([...sel.options].some(o=>o.value==old))sel.value=old;
+}
+function addPerson(n){const P=ld(PK);if(!P.includes(n)){P.push(n);sv(PK,P)}}
+
+function unlock(){$("#lock").hidden=true;$("#app").hidden=false;fillFilter();render()}
+function tryLogin(){
+  if($("#pw").value===PASS){try{sessionStorage.setItem(FOK,"1")}catch(e){}unlock()}
+  else{$("#err").textContent="رمز اشتباه است";$("#pw").value="";$("#pw").focus()}
+}
+$("#go").onclick=tryLogin;
+$("#pw").onkeydown=e=>{if(e.key=="Enter")tryLogin()};
+$("#out").onclick=()=>{try{sessionStorage.removeItem(FOK)}catch(e){}location.reload()};
+
+let cur=[];
+function removeInvoices(ids){
+  const del=ld(DEL);ids.forEach(i=>{if(!del.includes(i))del.push(i)});sv(DEL,del);
+  const W=ldo(WK);ids.forEach(i=>delete W[i]);sv(WK,W);
+  const PY=getPY();ids.forEach(i=>delete PY[i]);setPY(PY);
+  sv(A,ld().filter(o=>!ids.includes(o.id)));render();
+}
+function pplStats(inv,W,PY){
+  const m={};
+  inv.forEach(o=>{const w=W[o.id];if(!w)return;const f=payInfo(o,PY),r=m[w.n]||(m[w.n]={n:w.n,c:0,t:0,p:0,u:0});r.c++;r.t+=o.sum;r.p+=Math.min(f.paid,o.sum);r.u+=f.rem});
+  return Object.values(m).sort((a,b)=>b.u-a.u||b.t-a.t);
+}
+function render(){
+  const q=$("#q").value.trim(),ty=$("#ty").value,k1=selKey("a"),k2=selKey("b"),so=$("#so").value,mt=$("#mt").value,pf=$("#pf").value,sf=$("#sf").value,mf=$("#mf").value;
+  const W=ldo(WK),PY=getPY();
+  const inv=ld().filter(o=>{const k=jKey(o.t),w=W[o.id],f=payInfo(o,PY);
+    if(ty&&o.typ!=ty)return false;
+    if(k1&&k<k1)return false;
+    if(k2&&k>k2)return false;
+    if(pf=="__none"){if(w)return false}else if(pf){if(!w||w.n!=pf)return false}
+    if(sf){if(sf=="claim"){if(!f.cl)return false}else if(f.st!=sf)return false}
+    if(mf){if(mf=="mix"){if(Object.keys(f.by).length<2)return false}else if(!(f.by[mf]>0))return false}
+    return !q||o.items.some(i=>i.n.includes(q))||String(o.tbl||"").includes(q)||String(o.no||"").includes(q)||(w&&w.n.includes(q))||f.ps.some(x=>String(x.r||"").includes(q));
+  });
+  cur=inv;
+  let qty=0,total=0,paid=0,rem=0;const bm={};
+  inv.forEach(o=>{o.items.forEach(i=>qty+=i.q);total+=o.sum;const f=payInfo(o,PY);paid+=f.paid;rem+=f.rem;Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k])});
+  $("#c1").textContent=fa(inv.length);$("#c2").textContent=fa(qty);$("#c3").textContent=fa(total);$("#c4").textContent=fa(paid);$("#c5").textContent=fa(rem);
+  $("#msum").innerHTML=["cash","pos","c2c","unk"].filter(k=>bm[k]>0).map(k=>`<div><b>${fa(bm[k])}</b><span class="mut">${MI[k]} ${MN[k]}</span></div>`).join("");
+  $("#mt").parentElement.style.display=(so=="top"||so=="low")?"":"none";
+  const onePerson=!!pf&&pf!="__none";
+  $("#sa").hidden=!(rem>0);$("#dp").hidden=!onePerson;
+
+  if(so=="ppl"){
+    const rows=pplStats(inv,W,PY);
+    $("#th").innerHTML="<tr><th>شخص</th><th>تعداد فاکتور</th><th>جمع کل (تومان)</th><th>پرداخت‌شده (تومان)</th><th>مانده بدهی (تومان)</th></tr>";
+    $("#tb").innerHTML=rows.length?rows.map(r=>`<tr><td data-l="شخص">${esc(r.n)}</td><td data-l="تعداد فاکتور">${fa(r.c)}</td><td data-l="جمع کل">${fa(r.t)}</td><td data-l="پرداخت‌شده">${fa(r.p)}</td><td data-l="مانده بدهی"><b style="color:${r.u?"var(--bad)":"var(--ok)"}">${fa(r.u)}</b></td></tr>`).join(""):'<tr><td class="empty" colspan="5">فاکتوری برای اشخاص ثبت نشده</td></tr>';
+    return;
+  }
+  if(so=="top"||so=="low"){
+    const m={};
+    inv.forEach(o=>{
+      const textHit=String(o.tbl||"").includes(q)||String(o.no||"").includes(q);
+      o.items.forEach(i=>{
+        if(q&&!i.n.includes(q)&&!textHit)return;
+        const r=m[i.n]||(m[i.n]={n:i.n,q:0,s:0,o:0});
+        r.q+=i.q;r.s+=i.q*i.p;r.o++;   /* هر فاکتور یک سفارش جداگانه است */
+      });
+    });
+    const rows=Object.values(m).map(r=>({...r,a:r.q/r.o}));
+    const val=r=>mt=="ord"?r.o:mt=="avg"?r.a:r.q;
+    rows.sort((a,b)=>(so=="top"?val(b)-val(a):val(a)-val(b))||(so=="top"?b.q-a.q:a.q-b.q));
+    $("#th").innerHTML="<tr><th>رتبه</th><th>نام محصول</th><th>تعداد کل فروش</th><th>تعداد سفارش‌های جداگانه</th><th>میانگین تعداد در هر سفارش</th><th>مجموع فروش (تومان)</th></tr>";
+    $("#tb").innerHTML=rows.length?rows.map((r,i)=>`<tr><td data-l="رتبه">${fa(i+1)}</td><td data-l="نام محصول">${esc(r.n)}</td><td data-l="تعداد کل فروش">${fa(r.q)}</td><td data-l="سفارش‌های جداگانه">${fa(r.o)}</td><td data-l="میانگین در هر سفارش">${fa(Math.round(r.a*100)/100)}</td><td data-l="مجموع فروش">${fa(r.s)}</td></tr>`).join(""):'<tr><td class="empty" colspan="6">موردی یافت نشد</td></tr>';
+    return;
+  }
+  const list=[...inv].sort((a,b)=>so=="old"?a.t-b.t:b.t-a.t),P=people();
+  $("#th").innerHTML="<tr><th>سفارش</th><th>نام محصول</th><th>تعداد</th><th>قیمت واحد</th><th>قیمت کل</th><th>تاریخ و ساعت</th><th>شخص</th><th>تسویه</th><th>نوع</th><th>حذف</th></tr>";
+  const rows=[];
+  list.forEach(o=>{
+    const w=W[o.id],f=payInfo(o,PY);
+    const ctl=`<div class="pc"><select class="pp" data-id="${o.id}"><option value="">— بدون شخص —</option>${P.map(n=>`<option value="${n}" ${w&&w.n==n?"selected":""}>${n}</option>`).join("")}<option value="__new">➕ شخص جدید…</option></select></div>`;
+    o.items.forEach((i,idx)=>rows.push(`<tr><td data-l="سفارش">#${fa(o.no||0)}${o.e?` <span class="tag ed" title="ویرایش در ${irDate(o.e)} ${irTime(o.e)}">✎ ویرایش‌شده</span>`:""}</td><td data-l="نام محصول">${esc(i.n)}</td><td data-l="تعداد">${fa(i.q)}</td><td data-l="قیمت واحد">${fa(i.p)}</td><td data-l="قیمت کل">${fa(i.p*i.q)}</td><td data-l="تاریخ و ساعت">${irDate(o.t)} · ${irTime(o.t)}</td><td data-l="شخص">${idx==0?ctl:`<span class="mut">${w?esc(w.n):"—"}</span>`}</td><td data-l="تسویه">${idx==0?payCell(o,f):`<span class="mut">${f.st=="paid"?"✅":f.st=="part"?"🟡":"⏳"}</span>`}</td><td data-l="نوع"><span class="tag">${o.typ=="میز"?"داخل سالن"+(o.tbl?" (میز "+esc(o.tbl)+")":""):"بیرون‌بر"}</span></td><td><button class="del" data-del="${o.id}">🗑️ حذف فاکتور</button></td></tr>`));
+  });
+  $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="10">فاکتوری یافت نشد</td></tr>';
+}
+
+/* خروجی اکسل / ورد */
+function exportData(){
+  const W=ldo(WK),PY=getPY(),list=[...cur].sort((a,b)=>a.t-b.t);
+  const det={t:"فاکتورها",h:["شمارهٔ سفارش","تاریخ","ساعت","شخص","وضعیت تسویه","روش پرداخت","شمارهٔ پیگیری","نوع","میز","محصول","تعداد","قیمت واحد (تومان)","قیمت کل (تومان)","جمع فاکتور (تومان)","دریافت‌شده (تومان)","مانده (تومان)"],r:[]};
+  let qty=0,total=0,paid=0,rem=0;const bm={};
+  list.forEach(o=>{
+    const w=W[o.id],f=payInfo(o,PY);total+=o.sum;paid+=f.paid;rem+=f.rem;
+    Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k]);
+    const st=f.st=="paid"?"تسویه شده":f.st=="part"?"نیمه‌پرداخت":"تسویه نشده";
+    const refs=f.ps.map(x=>x.r).filter(Boolean).join("، ");
+    o.items.forEach((i,idx)=>{qty+=i.q;const first=idx==0;det.r.push([o.no||"",irDate(o.t),irTime(o.t),w?w.n:"",st,first?bySumPlain(f.by):"",first?refs:"",o.typ=="میز"?"داخل سالن":"بیرون‌بر",o.typ=="میز"?(o.tbl||""):"",i.n,i.q,i.p,i.p*i.q,first?o.sum:"",first?f.paid:"",first?f.rem:""])});
+  });
+  const sumRows=[["تعداد فاکتور",list.length],["تعداد اقلام فروخته‌شده",qty],["جمع فروش (تومان)",total],["دریافت‌شده (تومان)",paid],["مانده دریافت‌نشده (تومان)",rem]];
+  ["cash","pos","c2c","unk"].forEach(k=>{if(bm[k]>0)sumRows.push(["دریافتی "+MN[k]+" (تومان)",bm[k]])});
+  const S=[det,{t:"خلاصه",h:["شرح","مقدار"],r:sumRows}];
+  const ps=pplStats(list,W,PY);
+  if(ps.length)S.push({t:"حساب اشخاص",h:["شخص","تعداد فاکتور","جمع کل (تومان)","پرداخت‌شده (تومان)","مانده بدهی (تومان)"],r:ps.map(r=>[r.n,r.c,r.t,r.p,r.u])});
+  return S;
+}
+function dl(name,type,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function exportAs(f){
+  if(!cur.length)return alert("فاکتوری برای خروجی وجود ندارد");
+  const S=exportData(),base="invoices-lamour2-"+new Date().toLocaleDateString("en-CA",{timeZone:TZ});
+  if(f=="csv")dl(base+".csv","text/csv;charset=utf-8","\ufeff"+S.map(s=>s.t+"\n"+[s.h,...s.r].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n")).join("\n\n"));
+  else dl(base+".doc","application/msword","<html dir=\"rtl\"><head><meta charset=\"utf-8\"></head><body style=\"font-family:Tahoma\"><h1>فاکتورهای کافه لامور ۲</h1>"+S.map(s=>`<h2>${s.t}</h2><table border="1" cellpadding="4" style="border-collapse:collapse"><tr>${s.h.map(h=>`<th>${h}</th>`).join("")}</tr>${s.r.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table>`).join("")+"</body></html>");
+}
+
+const PA=["padd","pq","pdel","pok","pno"];
+document.addEventListener("click",e=>{
+  if(e.target.id=="mdl"){$("#mdl").hidden=true;return}
+  const b=e.target.closest("button");if(!b)return;
+  const pa=PA.find(k=>b.dataset[k]!==undefined);
+  if(pa){payAct(pa,b);return}
+  if(b.dataset.pay){openPay(b.dataset.pay);return}
+  if(b.dataset.bulk){bulk(b.dataset.bulk);return}
+  if(b.dataset.mc!==undefined){$("#mdl").hidden=true;render();return}
+  if(b.dataset.del){
+    const o=ld().find(x=>x.id==b.dataset.del);if(!o)return;
+    if(confirm("کل فاکتور سفارش #"+fa(o.no||0)+" ("+o.items.length+" قلم) حذف شود؟"))removeInvoices([o.id]);
+  }
+});
+document.addEventListener("change",e=>{
+  const s=e.target.closest(".pp");if(!s)return;
+  const id=s.dataset.id,W=ldo(WK);let v=s.value;
+  if(v=="__new"){
+    const n=esc(prompt("نام شخص (مشتری ثابت با حساب دفتری):")||"").trim();
+    if(!n){render();return}
+    v=n;addPerson(n);
+  }
+  if(!v)delete W[id];
+  else W[id]={n:v,s:0};
+  sv(WK,W);fillFilter();render();
+});
+$("#da").onclick=()=>{
+  if(!cur.length)return;
+  if(confirm(fa(cur.length)+" فاکتور نمایش‌داده‌شده (طبق فیلترهای فعلی) برای همیشه حذف شود؟"))removeInvoices(cur.map(o=>o.id));
+};
+$("#sa").onclick=openBulk;
+$("#dp").onclick=()=>{
+  const n=$("#pf").value;if(!n||n=="__none")return;
+  if(!confirm("«"+n+"» از لیست اشخاص حذف شود؟ فاکتورهای او به حالت «بدون شخص» برمی‌گردند (خود فاکتورها حذف نمی‌شوند)."))return;
+  sv(PK,ld(PK).filter(x=>x!=n));
+  const W=ldo(WK);Object.keys(W).forEach(k=>{if(W[k].n==n)delete W[k]});sv(WK,W);
+  $("#pf").value="";fillFilter();render();
+};
+$("#xc").onclick=()=>exportAs("csv");
+$("#xd").onclick=()=>exportAs("doc");
+$("#cd").onclick=()=>{["a","b"].forEach(p=>["y","m","d"].forEach(s=>$("#"+p+s).value=""));render()};
+document.querySelectorAll(".filters input,.filters select").forEach(el=>el.addEventListener("input",render));
+addEventListener("storage",e=>{if(!$("#app").hidden&&(e.key==A||e.key==WK||e.key==PK||e.key==PYK)){fillFilter();render()}});
+/* به‌روزرسانی خودکار (وقتی پنجرهٔ پرداخت یا منوی انتخاب شخص باز است انجام نمی‌شود) */
+const refresh=()=>{
+  if($("#app").hidden||document.hidden||!$("#mdl").hidden)return;
+  const ae=document.activeElement;if(ae&&ae.classList&&ae.classList.contains("pp"))return;
+  fillFilter();render();
+};
+document.addEventListener("visibilitychange",refresh);
+addEventListener("focus",refresh);
+setInterval(refresh,15000);
+try{if(sessionStorage.getItem(FOK)==="1")unlock()}catch(e){}
+});</script>
+</body>
+</html>
