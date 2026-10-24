@@ -12,6 +12,12 @@
 
   const me = document.currentScript;
   const needAuth = me && me.dataset.auth === '1';
+  // شعبه: data-prefix="l2_" یعنی همهٔ کلیدها در شیت با پیشوند l2_ ذخیره می‌شوند (شعبهٔ اصلی بدون پیشوند)
+  const PFX = (me && me.dataset.prefix) || '';
+  // منوی شعبه: data-menu="Menu2" یعنی منو از تب Menu2 خوانده شود (اگر نبود، از Menu)
+  const MENU_SHEET = (me && me.dataset.menu) || '';
+  const R = k => PFX + k;
+
   const cache = {}, pending = {}, timers = {}, seenVer = {};
   let token = '', offline = false, lastV = null, refreshing = false;
   try { token = localStorage.getItem('sheet_token') || ''; } catch (e) {}
@@ -25,8 +31,8 @@
     const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
     return r.json();
   }
-  const mirror = (k, v) => { try { localStorage.setItem('db:' + k, v); } catch (e) {} };
-  const val = (data, k) => (data[k] == null ? undefined : String(data[k]));   // شیت گاهی "1" را عدد می‌کند
+  const mirror = (k, v) => { try { localStorage.setItem('db:' + R(k), v); } catch (e) {} };
+  const val = (data, k) => (data[R(k)] == null ? undefined : String(data[R(k)]));   // شیت گاهی "1" را عدد می‌کند
 
   async function load() {
     if (!needAuth) return;
@@ -36,15 +42,16 @@
         if (!token) break;
       }
       try {
-        const res = await call({ action: 'all', token });
+        const res = await call({ action: 'all', token, p: PFX });
         if (res.error === 'auth') { token = ''; try { localStorage.removeItem('sheet_token'); } catch (e) {} alert('کلید دسترسی اشتباه است'); continue; }
         try { localStorage.setItem('sheet_token', token); } catch (e) {}
         if (res.v !== undefined) lastV = res.v;
         KEYS.forEach(k => {
           const v = res.data ? val(res.data, k) : undefined;
           if (v !== undefined) { cache[k] = v; seenVer[k] = v; mirror(k, v); }
-          else {
-            let old = null; try { old = localStorage.getItem(k); } catch (e) {}   // انتقال داده‌های قبلی مرورگر به شیت
+          else if (!PFX) {
+            // فقط شعبهٔ اصلی: انتقال داده‌های قبلی مرورگر به شیت
+            let old = null; try { old = localStorage.getItem(k); } catch (e) {}
             if (old == null) { try { old = localStorage.getItem('db:' + k); } catch (e) {} }
             if (old != null) { cache[k] = old; DB.set(k, old); }
           }
@@ -53,12 +60,13 @@
       } catch (e) { break; }
     }
     offline = true; note('اتصال به شیت برقرار نیست');
-    KEYS.forEach(k => { try { const v = localStorage.getItem('db:' + k); if (v != null) cache[k] = v; } catch (e) {} });
+    KEYS.forEach(k => { try { const v = localStorage.getItem('db:' + R(k)); if (v != null) cache[k] = v; } catch (e) {} });
   }
 
   async function menu() {
     try {
-      const r = await fetch(API + '?action=menu', { signal: AbortSignal.timeout(6000) });
+      const url = API + '?action=menu' + (MENU_SHEET ? '&sheet=' + encodeURIComponent(MENU_SHEET) : '');
+      const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
       const rows = await r.json();
       if (!Array.isArray(rows) || !rows.length) return null;
       return rows.filter(x => x.name).map(x => ({
@@ -73,7 +81,7 @@
     timers[k] = setTimeout(async () => {
       const v = cache[k];
       try {
-        const res = await call({ action: 'set', key: k, value: v, token });
+        const res = await call({ action: 'set', key: R(k), value: v, token });
         if (!res.ok) throw 0;
         seenVer[k] = v;
         if (cache[k] === v) delete pending[k];   // اگر در حین ارسال تغییر کرده، pending بماند
@@ -88,10 +96,10 @@
     try {
       // اول فقط شمارندهٔ نسخه (سبک)؛ اگر عوض نشده بود چیزی دانلود نمی‌شود
       try {
-        const vr = await call({ action: 'ver', token });
+        const vr = await call({ action: 'ver', token, p: PFX });
         if (vr && vr.ok && vr.v === lastV) { if (offline) { offline = false; note(''); } return; }
       } catch (e) { return; }
-      const res = await call({ action: 'all', token });
+      const res = await call({ action: 'all', token, p: PFX });
       if (!res.data || Object.keys(pending).length) return;
       if (res.v !== undefined) lastV = res.v;
       KEYS.forEach(k => {
