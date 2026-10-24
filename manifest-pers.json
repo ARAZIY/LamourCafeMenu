@@ -4,7 +4,7 @@
   "short_name": "پرسنل",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "pers.html",
+  "start_url": "staff-bill.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#faf5ee",
