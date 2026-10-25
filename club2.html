@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>کلوپ مشتریان لامور ۲</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--bad:#b3392f}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
+input{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx)}
+header{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg)}
+header h1{font-size:1.05rem;flex:1}
+a.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:6px 8px}
+main{max-width:1000px;margin:auto;padding:14px}
+.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sum div{flex:1;min-width:120px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
+.sum b{display:block;color:var(--pri)}
+.mut{color:var(--mut);font-size:.85rem}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-top:10px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.9rem;white-space:nowrap}
+th{background:var(--bg);color:var(--mut);font-weight:600}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--bg)}
+#mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+#mdl[hidden]{display:none}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;width:100%;max-width:400px;display:grid;gap:8px;max-height:90vh;overflow-y:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{padding:10px;background:var(--pri);color:#fff;font-weight:600}
+.btn.g{background:var(--bd);color:var(--tx)}
+.lg{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed var(--bd);font-size:.85rem}
+.empty{text-align:center;color:var(--mut);padding:30px}
+</style>
+</head>
+<body>
+<header><h1>⭐ کلوپ مشتریان — لامور ۲</h1><a class="lnk" href="admin2.html">← مدیریت</a></header>
+<main>
+  <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد اعضا</span></div><div><b id="c2">۰</b><span class="mut">مجموع امتیاز فعال</span></div><div><b id="c3">۰</b><span class="mut">بدهی امتیازها (تومان)</span></div></div>
+  <input id="q" type="search" placeholder="جستجو با نام یا شماره…" />
+  <div class="wrap"><table><thead><tr><th>نام</th><th>شماره</th><th>سطح</th><th>امتیاز</th><th>مجموع خرید</th><th>دفعات</th><th>انقضای نزدیک‌ترین</th><th>آخرین مراجعه</th></tr></thead><tbody id="tb"></tbody></table></div>
+</main>
+<div id="mdl" hidden><div class="box" id="mbox"></div></div>
+<script src="sheet-db.js" data-auth="1" data-prefix="l2_"></script>
+<script>DB.ready.then(()=>{
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR"),TZ="Asia/Tehran";
+const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
+const toEn=s=>String(s||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+const dt=t=>t?new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"short",day:"numeric"}):"—";
+const TY={settle:"سفارش",reverse:"لغو/اصلاح سفارش",adjust:"اصلاح دستی"};
+let M=[],CF={ptv:1};
+async function load(){
+  try{const r=await DB.club({action:"clubList"});if(!r||!r.ok)throw 0;M=r.members;CF=r.cfg||CF;render()}
+  catch(e){$("#tb").innerHTML='<tr><td class="empty" colspan="8">دریافت اطلاعات ممکن نشد (کلید دسترسی یا اینترنت را بررسی کن)</td></tr>'}
+}
+function render(){
+  const q=toEn($("#q").value).trim();
+  const L=M.filter(m=>!q||m.phone.includes(q)||m.name.includes(q)).sort((a,b)=>b.last-a.last);
+  const pts=M.reduce((a,m)=>a+m.bal,0);
+  $("#c1").textContent=fa(M.length);$("#c2").textContent=fa(pts);$("#c3").textContent=fa(Math.floor(pts*CF.ptv));
+  $("#tb").innerHTML=L.length?L.map(m=>`<tr data-ph="${m.phone}"><td>${esc(m.name)||"—"}</td><td dir="ltr">${m.phone}</td><td>${m.lv}</td><td><b>${fa(m.bal)}</b></td><td>${fa(m.spent)}</td><td>${fa(m.visits)}</td><td>${dt(m.exp)}</td><td>${dt(m.last)}</td></tr>`).join(""):'<tr><td class="empty" colspan="8">عضوی یافت نشد</td></tr>';
+}
+async function openM(ph){
+  const m=M.find(x=>x.phone==ph);if(!m)return;
+  $("#mbox").innerHTML=`<h3>${esc(m.name)||"بدون نام"} <span class="mut" dir="ltr">${m.phone}</span></h3><div class="mut">سطح ${m.lv} · ${fa(m.bal)} امتیاز · مجموع خرید ${fa(m.spent)}</div>
+  <input id="nm" placeholder="نام" value="${esc(m.name)}"><button class="btn g" data-sn>ذخیرهٔ نام</button>
+  <div class="mut">اصلاح دستی امتیاز (عدد منفی = کم کردن):</div><div class="two"><input id="dl" type="number" placeholder="مثلاً 20 یا -20"><input id="nt" placeholder="دلیل"></div><button class="btn" data-ad>ثبت اصلاح</button>
+  <div class="mut">تاریخچه:</div><div id="lg" class="mut">…</div><button class="btn g" data-x>بستن</button>`;
+  $("#mdl").hidden=false;$("#mbox").dataset.ph=ph;
+  try{const r=await DB.club({action:"clubLog",phone:ph});$("#lg").innerHTML=r.log&&r.log.length?r.log.map(x=>`<div class="lg"><span>${TY[x.type]||x.type} · ${dt(x.t)}</span><b style="color:${x.pts<0?"var(--bad)":"var(--ok)"}">${x.pts>0?"+":""}${fa(x.pts)}</b></div>`).join(""):"موردی نیست"}catch(e){$("#lg").textContent="دریافت نشد"}
+}
+async function act(body){
+  try{const r=await DB.club(body);if(!r||!r.ok)throw 0;await load();openM($("#mbox").dataset.ph)}catch(e){alert("انجام نشد؛ دوباره تلاش کن")}
+}
+document.addEventListener("click",e=>{
+  if(e.target.id=="mdl"||e.target.closest("[data-x]")){$("#mdl").hidden=true;return}
+  const tr=e.target.closest("tr[data-ph]");if(tr){openM(tr.dataset.ph);return}
+  const ph=$("#mbox").dataset.ph;
+  if(e.target.closest("[data-sn]"))act({action:"clubAdjust",phone:ph,delta:0,name:$("#nm").value.trim(),note:"ویرایش نام"});
+  if(e.target.closest("[data-ad]")){const d=Math.round(+toEn($("#dl").value));if(!d)return alert("عدد را وارد کن");act({action:"clubAdjust",phone:ph,delta:d,note:$("#nt").value.trim()})}
+});
+$("#q").addEventListener("input",render);
+setInterval(()=>{if($("#mdl").hidden&&!document.hidden)load()},30000);
+load();
+});</script>
+</body>
+</html>
