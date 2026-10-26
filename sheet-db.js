@@ -1,7 +1,6 @@
 (function () {
   const API = 'https://script.google.com/macros/s/AKfycbxfgrHy_6LXinLMw_skIIimvnG5n9LCGMffgjdTjjVbFyLheSBrw6HdUg03jYy7ylw9uA/exec';
 
-  // همهٔ کلیدهایی که صفحه‌ها استفاده می‌کنند
   const KEYS = [
     'cafe_orders_v1', 'cafe_invoices_v1', 'cafe_seen_v1', 'cafe_no_v1', 'cafe_inv_del_v1', 'cafe_staff_v1',
     'cafe_pay_v1',          // پرداخت‌ها و رسیدهای مشتری
@@ -118,6 +117,9 @@
     get: k => (k in cache ? cache[k] : null),
     set(k, v) { cache[k] = String(v); mirror(k, cache[k]); pending[k] = 1; push(k); }
   };
+  // کلوپ مشتریان: فراخوانی با کلید (ادمین و صفحهٔ اعضا) و فراخوانی عمومی بدون کلید (صفحهٔ مشتری)
+  DB.club = b => call(Object.assign({ token, p: PFX }, b));
+  DB.pub = b => call(b);
   DB.ready = Promise.all([load(), menu()]).then(([, m]) => {
     DB.menu = m;
     setInterval(refresh, 8000);
