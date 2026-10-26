@@ -80,6 +80,10 @@ textarea{resize:vertical;min-height:4rem}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .three .op{justify-content:center;padding:10px 4px;font-size:.85rem}
+.club{margin-top:10px;padding-top:8px;border-top:1px dashed var(--bd);display:grid;gap:0}
+.club .ck{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.85rem}
+.club .ck[hidden]{display:none}
+.club .ck input{width:auto;margin:0}
 @media(max-width:800px){.grid2{grid-template-columns:1fr}.panel{position:static}.menu{grid-template-columns:repeat(2,1fr)}.qb button{width:38px;height:38px}}
 </style>
 </head>
@@ -89,6 +93,7 @@ textarea{resize:vertical;min-height:4rem}
   <button class="tab on" data-v="v2">📖 سفارش‌ها <i class="badge" id="bd" hidden>0</i></button>
   <button class="tab" data-v="v1">➕ ثبت سفارش (گارسون)</button>
   <a class="lnk" href="factor2.html">🧾 فاکتورها</a>
+  <a class="lnk" href="club2.html">⭐ کلوپ</a>
   <a class="lnk" href="index2.html">🛎️ منوی مشتری</a>
 </header>
 <main>
@@ -115,6 +120,16 @@ textarea{resize:vertical;min-height:4rem}
         <div class="seg" id="typ"><button class="on" data-t="میز">سالن</button><button data-t="بیرون‌بر">بیرون‌بر</button></div>
         <input id="tbl" type="text" inputmode="numeric" placeholder="شماره میز" />
         <textarea id="note" placeholder="توضیحات (مثلاً بدون شکر)"></textarea>
+        <div class="club">
+          <div class="mut">⭐ کلوپ مشتریان</div>
+          <div class="mut" style="font-size:.78rem">🔒 شمارهٔ موبایل شما فقط برای کلوپ مشتریان و اطلاع‌رسانی کافه نگهداری می‌شود و به کسی داده نمی‌شود.</div>
+          <input id="cph" type="text" inputmode="numeric" placeholder="شمارهٔ موبایل (اختیاری)" />
+          <input id="cnm" type="text" placeholder="نام مشتری (اختیاری)" />
+          <div class="mut" id="cinfo" style="margin-top:6px"></div>
+          <label class="ck" id="cconw" hidden><input type="checkbox" id="ccon"> مشتری پیام بالا را دید و موافق است</label>
+          <label class="ck" id="cusew" hidden><input type="checkbox" id="cuse"> <span id="cusel"></span></label>
+        </div>
+        <div class="mut" id="cdisc" style="margin-top:8px"></div>
         <div class="tot"><span>جمع کل</span><span id="sum">۰</span></div>
         <button class="big" id="sub" disabled>ثبت سفارش ✓</button>
       </div>
@@ -287,7 +302,7 @@ function sanitize(o){
   const sum=items.reduce((a,i)=>a+i.p*i.q,0);
   const t=Math.abs(Date.now()-(+o.t||0))<864e5?+o.t:Date.now();
   const pay=o.pay&&Array.isArray(o.pay.pl)?{pl:o.pay.pl.slice(0,3),ref:o.pay.ref,last4:o.pay.last4}:undefined;
-  return{id,t,typ,tbl:typ=="میز"?esc(o.tbl).slice(0,10):"",note:esc(o.note).slice(0,300),items,sum,pay};
+  return{id,t,typ,tbl:typ=="میز"?esc(o.tbl).slice(0,10):"",note:esc(o.note).slice(0,300),items,sum,pay,ph:normPh(o.ph),cn:o.cn?1:0,cnm:esc(o.cnm).slice(0,40),ruse:o.ruse?1:0};
 }
 
 /* دریافت سفارش مشتری‌ها از ntfy */
@@ -295,7 +310,7 @@ try{
   const es=new EventSource(NTFY+"/sse?since=6h");
   es.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event!="message")return;const o=JSON.parse(m.message);
     const c=sanitize(o);
-    if(c&&addOrder(c)){renderOrders();toast("🔔 سفارش جدید رسید")}}catch(x){}};
+    if(c&&addOrder(c)){renderOrders();toast("🔔 سفارش جدید رسید");clubIncoming(c.id)}}catch(x){}};
 }catch(e){}
 
 function show(v){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.v==v));document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on",x.id==v));if(v=="v2")renderOrders()}
@@ -311,7 +326,7 @@ function renderCart(){
   $("#cart").innerHTML=ids.length?ids.map(id=>{const m=parse(id),q=cart[id];sum+=m.p*q;return `<div class="row"><span class="t">${m.n}<br><span class="mut">${fa(m.p*q)}</span></span><span class="qb"><button data-d="1" data-id="${id}">+</button><b>${fa(q)}</b><button data-d="-1" data-id="${id}">−</button></span></div>`}).join(""):'<div class="empty">آیتمی انتخاب نشده</div>';
   $("#sum").textContent=fa(sum)+" تومان";
   $("#sub").disabled=!ids.length;
-  $("#sub").textContent=editing?"ذخیره تغییرات ✓":"ثبت سفارش ✓";
+  $("#sub").textContent=editing?"ذخیره تغییرات ✓":"ثبت سفارش ✓";G=sum;clubSync();
   $("#eb").hidden=!editing;
   if(editing){const o=ld(K).find(r=>r.id==editing);$("#et").textContent="✎ ویرایش سفارش #"+fa(o?o.no:0)}
   renderMenu();
@@ -331,9 +346,9 @@ function renderOrders(){
   $("#fl2").innerHTML=P2.map(([v,l])=>`<button class="chip ${flt2==v?"on":""}" data-pfl="${v}">${l}</button>`).join("");
   const ok=o=>{if(!flt2)return true;const f=payInfo(o,PY);return flt2=="claim"?!!f.cl:f.st==flt2};
   const list=all.filter(o=>(flt<0||o.s==flt)&&ok(o)).sort((a,b)=>(a.s==3)-(b.s==3)||a.t-b.t);
-  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div>${payBox(o,PY)}<div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div>${payBox(o,PY)}${clubLine(o)}<div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
 }
-function resetForm(){cart={};editing=null;$("#tbl").value="";$("#note").value="";setTyp("میز")}
+function resetForm(){cart={};editing=null;clubReset();$("#tbl").value="";$("#note").value="";setTyp("میز")}
 
 document.addEventListener("click",e=>{
   if(e.target.id=="mdl"){$("#mdl").hidden=true;return}
@@ -342,6 +357,9 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const pa=["padd","pq","pdel","pok","pno"].find(k=>b.dataset[k]!==undefined);
   if(pa){payAct(pa,b);return}
+  if(b.dataset.capp){clubApprove(b.dataset.capp,1);return}
+  if(b.dataset.crej){clubApprove(b.dataset.crej,0);return}
+  if(b.dataset.cretry){clubSettle(b.dataset.cretry);return}
   if(b.dataset.pay){openPay(b.dataset.pay);return}
   if(b.dataset.pfl!==undefined){flt2=b.dataset.pfl;renderOrders();return}
   if(b.dataset.v)show(b.dataset.v);
@@ -351,44 +369,18 @@ document.addEventListener("click",e=>{
   else if(b.dataset.d){const id=b.dataset.id;cart[id]=(cart[id]||0)+ +b.dataset.d;if(cart[id]<=0)delete cart[id];renderCart()}
   else if(b.dataset.t)setTyp(b.dataset.t);
   else if(b.dataset.f!==undefined){flt=+b.dataset.f;renderOrders()}
-  else if(b.dataset.adv){const o=ld(K),x=o.find(r=>r.id==b.dataset.adv);if(x){x.s++;if(x.s==3)archive(x)}sv(K,o);renderOrders()}
+  else if(b.dataset.adv){const o=ld(K),x=o.find(r=>r.id==b.dataset.adv);if(x){x.s++;if(x.s==3)archive(x)}sv(K,o);renderOrders();if(x&&x.s==3)clubSettle(x.id)}
   else if(b.dataset.ed){
     const x=ld(K).find(r=>r.id==b.dataset.ed);if(!x)return;
     cart={};x.items.forEach(i=>{let k=null;if(i.o!==undefined&&i.id!==undefined)k=i.id+"|"+i.o;else{const m=MENU.find(m=>m.n==i.n);if(m)k=String(m.id)}if(k!==null)cart[k]=(cart[k]||0)+i.q});
-    editing=x.id;setTyp(x.typ);$("#tbl").value=x.tbl||"";$("#note").value=x.note||"";show("v1");renderCart();scrollTo({top:0,behavior:"smooth"});
+    editing=x.id;setTyp(x.typ);$("#tbl").value=x.tbl||"";$("#note").value=x.note||"";clubLoad(x);show("v1");renderCart();scrollTo({top:0,behavior:"smooth"});
   }
   else if(b.dataset.ce!==undefined){resetForm();renderCart()}
-  else if(b.dataset.del){if(confirm("این سفارش حذف شود؟")){save2(ld(K).filter(r=>r.id!=b.dataset.del));if(editing==b.dataset.del){resetForm();renderCart()}renderOrders()}}
+  else if(b.dataset.del){if(confirm("این سفارش حذف شود؟")){clubReverse(b.dataset.del);save2(ld(K).filter(r=>r.id!=b.dataset.del));if(editing==b.dataset.del){resetForm();renderCart()}renderOrders()}}
 });
 const save2=o=>sv(K,o);
 
-$("#sub").onclick=()=>{
-  const ids=Object.keys(cart);if(!ids.length)return;
-  const tbl=$("#tbl").value.trim();
-  if(typ=="میز"&&!tbl){alert("لطفاً شماره میز را وارد کنید");$("#tbl").focus();return}
-  const items=ids.map(k=>{const r=parse(k);return{id:r.id,o:r.o,n:r.n,q:cart[k],p:r.p}});
-  const sum=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
-  if(editing){
-    const all=ld(K),x=all.find(r=>r.id==editing);
-    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum});sv(K,all);if(x.s==3)reinvoice(x)}
-    toast("✓ تغییرات ذخیره شد");
-  }else{
-    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter"});
-    toast("✓ سفارش ثبت شد");
-  }
-  resetForm();renderCart();renderOrders();
-};
-$("#clr").onclick=()=>{if(confirm("سفارش‌های تحویل‌شده از این صفحه پاک شوند؟ (فاکتورها حفظ می‌شوند)")){const all=ld(K);all.filter(o=>o.s==3).forEach(archive);sv(K,all.filter(o=>o.s<3));renderOrders()}};
-addEventListener("storage",e=>{if(e.key==K||e.key==PYK)renderOrders()});
-setInterval(()=>{if($("#mdl").hidden)renderOrders()},30000);
-renderCats();renderCart();renderOrders();
-});
-
-
-
-
-
-  /* ===== کلوپ مشتریان (بلوک جدید؛ زیر خط const save2=o=>sv(K,o); در admin2.html قرار بده) ===== */
+/* ===== کلوپ مشتریان ===== */
 const toEn=s=>String(s||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
 const normPh=s=>{let d=toEn(s).replace(/\D/g,"");if(d.startsWith("0098"))d=d.slice(4);else if(d.length==12&&d.startsWith("98"))d=d.slice(2);if(d.length==10&&d[0]=="9")d="0"+d;return /^09\d{9}$/.test(d)?d:""};
 let G=0,CQ=null,CSEQ=0,CT=null;
@@ -447,9 +439,56 @@ async function clubSettle(id){
     renderOrders();toast(diff?"⚠️ تخفیف کلوپ با موجودی فعلی اصلاح شد":"⭐ "+fa(r.earn)+" امتیاز ثبت شد",diff);
   }catch(e){toast("ثبت امتیاز انجام نشد؛ دکمهٔ «ثبت امتیاز» را بزن",true);renderOrders()}
 }
-const clubLine=o=>!o.ph?"":`<div class="pay"><span class="pst ${o.cs?"paid":"none"}">⭐ ${esc(o.ph)}</span>${(o.dl||0)+(o.dp||0)?`<span class="mut">تخفیف کلوپ ${fa((o.dl||0)+(o.dp||0))}</span>`:""}${o.cs?`<span class="mut">+${fa(o.ep||0)} امتیاز</span>`:o.s==3?`<button class="pb" data-cretry="${o.id}">🔄 ثبت امتیاز</button>`:`<span class="mut">پس از تحویل ثبت می‌شود</span>`}</div>`;
 $("#cph").addEventListener("input",clubSync);
 $("#cuse").addEventListener("change",clubQuote);
-</script>
+
+async function clubIncoming(id){
+  const o=ld(K).find(r=>r.id==id);if(!o||!o.ph||o.gross)return;
+  let r=null;try{r=await DB.club({action:"clubQuote",phone:o.ph,gross:o.sum,want:0})}catch(e){}
+  const all=ld(K),x=all.find(q=>q.id==id);if(!x)return;
+  x.gross=x.sum;x.dp=0;x.rp=0;x.cs=0;
+  if(r&&r.ok){x.dl=r.q.dl;x.lv=r.q.lv;x.sum=x.gross-x.dl}else x.dl=0;
+  sv(K,all);renderOrders();
+}
+/* تأیید یا ردِ «درخواست استفاده از امتیاز» مشتری (فقط با تأیید گارسون اعمال می‌شود) */
+async function clubApprove(id,ok){
+  const all=ld(K),x=all.find(r=>r.id==id);if(!x)return;
+  if(ok){
+    let r=null;try{r=await DB.club({action:"clubQuote",phone:x.ph,gross:x.gross||x.sum,want:1e9})}catch(e){}
+    if(!r||!r.ok){toast("ارتباط با کلوپ برقرار نیست",true);return}
+    const y=ld(K).find(q=>q.id==id);if(!y)return;
+    if(r.q.pts>0){y.dl=r.q.dl;y.dp=r.q.dp;y.rp=r.q.pts;y.sum=(y.gross||y.sum)-y.dl-y.dp;toast("✓ تخفیف امتیاز اعمال شد")}
+    else toast("امتیاز قابل استفاده‌ای نیست",true);
+    y.ruse=0;sv(K,ld(K).map(q=>q.id==id?y:q));
+  }else{x.ruse=0;sv(K,all)}
+  renderOrders();
+}
+const clubLine=o=>!o.ph?"":`<div class="pay"><span class="pst ${o.cs?"paid":"none"}">⭐ ${esc(o.ph)}</span>${(o.dl||0)+(o.dp||0)?`<span class="mut">تخفیف کلوپ ${fa((o.dl||0)+(o.dp||0))}</span>`:""}${o.cs?`<span class="mut">+${fa(o.ep||0)} امتیاز</span>`:o.s==3?`<button class="pb" data-cretry="${o.id}">🔄 ثبت امتیاز</button>`:`<span class="mut">پس از تحویل ثبت می‌شود</span>`}${o.ruse&&!o.cs?`<span class="pst claim">🔔 مشتری می‌خواهد امتیاز مصرف کند</span><button class="pb" data-capp="${o.id}">✔ تأیید</button><button class="pb" data-crej="${o.id}">✖ رد</button>`:""}</div>`;
+
+
+$("#sub").onclick=async()=>{
+  const ids=Object.keys(cart);if(!ids.length)return;
+  const tbl=$("#tbl").value.trim();
+  if(typ=="میز"&&!tbl){alert("لطفاً شماره میز را وارد کنید");$("#tbl").focus();return}
+  const items=ids.map(k=>{const r=parse(k);return{id:r.id,o:r.o,n:r.n,q:cart[k],p:r.p}});
+  const gross=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
+  const cf=await clubFields(gross);if(cf===false)return;
+  const sum=gross-cf.dl-cf.dp;
+  if(editing){const ox=ld(K).find(r=>r.id==editing);if(ox&&ox.cs){const rr=await clubReverseP(ox.id);if(!rr||!rr.ok){alert("لغو امتیاز قبلی انجام نشد؛ دوباره تلاش کن");return}}}
+  if(editing){
+    const all=ld(K),x=all.find(r=>r.id==editing);
+    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum},cf,{cs:0});sv(K,all);if(x.s==3){reinvoice(x);clubSettle(x.id)}}
+    toast("✓ تغییرات ذخیره شد");
+  }else{
+    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter",...cf,cs:0});
+    toast("✓ سفارش ثبت شد");
+  }
+  resetForm();renderCart();renderOrders();
+};
+$("#clr").onclick=()=>{if(confirm("سفارش‌های تحویل‌شده از این صفحه پاک شوند؟ (فاکتورها حفظ می‌شوند)")){const all=ld(K);all.filter(o=>o.s==3).forEach(archive);sv(K,all.filter(o=>o.s<3));renderOrders()}};
+addEventListener("storage",e=>{if(e.key==K||e.key==PYK)renderOrders()});
+setInterval(()=>{if($("#mdl").hidden)renderOrders()},30000);
+renderCats();renderCart();renderOrders();
+});</script>
 </body>
 </html>
