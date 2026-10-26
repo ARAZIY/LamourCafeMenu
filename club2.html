@@ -3,86 +3,300 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>کلوپ مشتریان لامور ۲</title>
+<title>مدیریت کلوپ مشتریان لامور ۲</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
 <style>
-:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--bad:#b3392f}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b}}
+:root{--bg:#faf5ee;--card:#fff;--tx:#2b1d14;--mut:#8a7766;--pri:#8b5a2b;--bd:#e8dccb;--ok:#2e7d4f;--warn:#c27a10;--bad:#b3392f;--blue:#2b6cb0;--sh:0 1px 2px rgba(60,40,20,.05),0 8px 20px rgba(60,40,20,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1511;--card:#2a201a;--tx:#f3e9dc;--mut:#a8957f;--pri:#d19a5c;--bd:#43352b;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 20px rgba(0,0,0,.25)}}
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
-input{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx)}
-header{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg)}
-header h1{font-size:1.05rem;flex:1}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+input,select{font:inherit;width:100%;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx)}
+header{position:sticky;top:0;z-index:5;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--bg)}
+header h1{font-size:1.05rem;flex:1;min-width:160px}
 a.lnk{color:var(--pri);font-weight:600;text-decoration:none;padding:6px 8px}
-main{max-width:1000px;margin:auto;padding:14px}
-.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.sum div{flex:1;min-width:120px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
-.sum b{display:block;color:var(--pri)}
+.hb{padding:7px 12px;background:var(--card);border:1px solid var(--bd);font-size:.88rem}
+.hb.p{background:var(--pri);color:#fff;border-color:var(--pri)}
+main{max-width:1150px;margin:auto;padding:14px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.sum div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;box-shadow:var(--sh)}
+.sum b{display:block;color:var(--pri);font-size:1.05rem}
 .mut{color:var(--mut);font-size:.85rem}
-.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-top:10px}
+.rep{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-bottom:10px}
+.rep>div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;font-size:.85rem;box-shadow:var(--sh)}
+.rep h4{font-size:.9rem;margin-bottom:6px;color:var(--pri);display:flex;justify-content:space-between;align-items:center;gap:6px}
+.lg{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed var(--bd);font-size:.85rem}
+.tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{padding:6px 12px;background:var(--card);border:1px solid var(--bd);border-radius:99px;font-size:.85rem}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.bulk{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;margin-bottom:8px;background:rgba(43,108,176,.1);border:1px solid var(--blue);border-radius:12px}
+.bulk[hidden]{display:none}
+.bulk b{margin-inline-end:auto}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh)}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.9rem;white-space:nowrap}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--bd);font-size:.88rem;white-space:nowrap}
 th{background:var(--bg);color:var(--mut);font-weight:600}
+td.ck,th.ck{width:34px;padding-inline:6px}
+td input[type=checkbox],th input[type=checkbox]{width:auto}
 tbody tr{cursor:pointer}tbody tr:hover{background:var(--bg)}
-#mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+tr.blk td{opacity:.55}
+.tag{padding:2px 9px;border-radius:99px;background:var(--bd);font-size:.75rem}
+.tag.r{background:rgba(179,57,47,.14);color:var(--bad)}
+.tag.g{background:rgba(46,125,79,.15);color:var(--ok)}
+.empty{text-align:center;color:var(--mut);padding:30px}
+#mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:12px}
 #mdl[hidden]{display:none}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;width:100%;max-width:400px;display:grid;gap:8px;max-height:90vh;overflow-y:auto}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;width:100%;max-width:460px;display:grid;gap:8px;max-height:92vh;overflow-y:auto}
+.box h3{font-size:1.02rem}.box h4{font-size:.9rem;color:var(--pri);margin-top:6px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fg label,.box>label{display:grid;gap:3px;font-size:.78rem;color:var(--mut)}
+.fg .w{grid-column:1/-1}
+.ck2{display:flex;align-items:center;gap:6px;font-size:.85rem}
+.ck2 input{width:auto}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .btn{padding:10px;background:var(--pri);color:#fff;font-weight:600}
 .btn.g{background:var(--bd);color:var(--tx)}
-.lg{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed var(--bd);font-size:.85rem}
-.empty{text-align:center;color:var(--mut);padding:30px}
+.btn.bad{background:var(--bad);color:#fff}
+.btn.ok{background:var(--ok);color:#fff}
+.lvr{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:6px;align-items:center}
+.lvr button{padding:8px;background:var(--bd);color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ok);color:#fff;padding:11px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:30}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.bad{background:var(--bad)}
+@media(max-width:700px){.tools{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><h1>⭐ کلوپ مشتریان — لامور ۲</h1><a class="lnk" href="admin2.html">← مدیریت</a></header>
+<header>
+  <h1>⭐ کلوپ مشتریان — لامور ۲</h1>
+  <button class="hb p" data-a="add">➕ افزودن عضو</button>
+  <button class="hb" data-a="cfg">⚙️ تنظیمات</button>
+  <button class="hb" data-a="csv">📥 خروجی CSV</button>
+  <button class="hb" data-a="reload">🔄</button>
+  <a class="lnk" href="admin2.html">← مدیریت</a>
+</header>
 <main>
-  <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد اعضا</span></div><div><b id="c2">۰</b><span class="mut">مجموع امتیاز فعال</span></div><div><b id="c3">۰</b><span class="mut">بدهی امتیازها (تومان)</span></div></div>
-  <input id="q" type="search" placeholder="جستجو با نام یا شماره…" />
-  <div class="wrap"><table><thead><tr><th>نام</th><th>شماره</th><th>سطح</th><th>امتیاز</th><th>مجموع خرید</th><th>دفعات</th><th>انقضای نزدیک‌ترین</th><th>آخرین مراجعه</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <div class="sum" id="sum"></div>
+  <div class="rep" id="rep"></div>
+  <div class="tools">
+    <input id="q" type="search" placeholder="جستجو با نام، شماره یا یادداشت…" />
+    <select id="lvf"></select>
+    <select id="so">
+      <option value="last">آخرین مراجعه</option><option value="bal">بیشترین امتیاز</option><option value="spent">بیشترین خرید</option>
+      <option value="visits">بیشترین دفعات</option><option value="joined">جدیدترین عضو</option><option value="name">نام (الفبا)</option>
+    </select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="bulk" id="bulk" hidden>
+    <b id="bsel"></b>
+    <button class="hb" data-a="bpts">🎁 افزودن/کسر امتیاز</button>
+    <button class="hb" data-a="bcopy">📋 کپی شماره‌ها</button>
+    <button class="hb" data-a="bdel" style="color:var(--bad)">🗑️ حذف انتخاب‌شده‌ها</button>
+    <button class="hb" data-a="bclr">✕</button>
+  </div>
+  <div class="wrap"><table>
+    <thead><tr><th class="ck"><input type="checkbox" id="all"></th><th>نام</th><th>شماره</th><th>سطح</th><th>امتیاز</th><th>مجموع خرید</th><th>دفعات</th><th>انقضای نزدیک‌ترین</th><th>آخرین مراجعه</th><th>تولد</th><th>وضعیت</th></tr></thead>
+    <tbody id="tb"></tbody>
+  </table></div>
+  <div style="text-align:center;margin-top:8px"><button class="hb" id="more" hidden>نمایش بیشتر</button></div>
 </main>
-<div id="mdl" hidden><div class="box" id="mbox"></div></div>
+<div id="mdl" hidden><div class="box" id="box"></div></div>
+<div id="toast" role="status"></div>
 <script src="sheet-db.js" data-auth="1" data-prefix="l2_"></script>
 <script>DB.ready.then(()=>{
-const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR"),TZ="Asia/Tehran";
+const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString("fa-IR"),TZ="Asia/Tehran",DAY=864e5,INACTIVE=60;
 const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
 const toEn=s=>String(s||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
 const dt=t=>t?new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"short",day:"numeric"}):"—";
-const TY={settle:"سفارش",reverse:"لغو/اصلاح سفارش",adjust:"اصلاح دستی"};
-let M=[],CF={ptv:1};
+const dtt=t=>t?dt(t)+" "+new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false}):"—";
+const TY={settle:"سفارش",reverse:"لغو/اصلاح سفارش",adjust:"اصلاح امتیاز",add:"افزودن عضو",update:"ویرایش اطلاعات",delete:"حذف"};
+const ERR={phone:"شمارهٔ موبایل معتبر نیست",exists:"این شماره قبلاً ثبت شده است",nomember:"عضو پیدا نشد",bad:"اطلاعات واردشده معتبر نیست (تولد را مثل 5/12 بنویس)",auth:"کلید دسترسی اشتباه است"};
+let M=[],CF={ptv:1,min:50,days:180,cap:20,earn:20,levels:[]},SEL=new Set(),FILT="all",LIM=150,CUR=null;
+const call=async b=>{const r=await DB.club(b);if(!r||r.error)throw new Error((r&&r.error)||"fail");return r};
+const fail=e=>toast(ERR[e&&e.message]||"انجام نشد؛ دوباره تلاش کن",1);
+const toast=(t,bad)=>{const el=$("#toast");el.textContent=t;el.className="show"+(bad?" bad":"");clearTimeout(toast.t);toast.t=setTimeout(()=>el.className="",3000)};
+const openBox=h=>{$("#box").innerHTML=h;$("#mdl").hidden=false};
+const closeBox=()=>{$("#mdl").hidden=true;CUR=null};
+const lvlOpts=()=>CF.levels.map(l=>l.n);
+
+/* ---------- بارگذاری ---------- */
 async function load(){
-  try{const r=await DB.club({action:"clubList"});if(!r||!r.ok)throw 0;M=r.members;CF=r.cfg||CF;render()}
-  catch(e){$("#tb").innerHTML='<tr><td class="empty" colspan="8">دریافت اطلاعات ممکن نشد (کلید دسترسی یا اینترنت را بررسی کن)</td></tr>'}
+  try{const r=await call({action:"clubList"});M=r.members;CF=r.cfg||CF;SEL=new Set([...SEL].filter(p=>M.some(m=>m.phone==p)));fillLv();render()}
+  catch(e){$("#tb").innerHTML='<tr><td class="empty" colspan="11">دریافت اطلاعات ممکن نشد (کلید دسترسی یا اینترنت را بررسی کن)</td></tr>'}
+}
+function fillLv(){const s=$("#lvf"),o=s.value;s.innerHTML='<option value="">همهٔ سطح‌ها</option>'+lvlOpts().map(n=>`<option>${esc(n)}</option>`).join("");if([...s.options].some(x=>x.value==o))s.value=o}
+
+/* ---------- تولد (شمسی) ---------- */
+const jp=new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn",{timeZone:TZ,month:"numeric",day:"numeric"});
+const doy=(m,d)=>(m<=6?(m-1)*31:186+(m-7)*30)+d;
+function bdays(days){
+  const p={};jp.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);const td=doy(+p.month,+p.day);
+  return M.filter(m=>/^\d{1,2}\/\d{1,2}$/.test(m.bday)).map(m=>{const [a,b]=m.bday.split("/").map(Number);return{m,k:(doy(a,b)-td+366)%366}}).filter(x=>x.k<=days).sort((a,b)=>a.k-b.k);
+}
+const inactive=m=>m.last>0&&Date.now()-m.last>INACTIVE*DAY;
+
+/* ---------- گزارش‌ها ---------- */
+function report(){
+  const n=M.length,now=Date.now(),pts=M.reduce((a,m)=>a+m.bal,0),rep2=M.filter(m=>m.visits>=2).length;
+  const nw=M.filter(m=>m.joined>now-30*DAY).length,soon=M.reduce((a,m)=>a+(m.soon||0),0);
+  $("#sum").innerHTML=[["تعداد اعضا",fa(n)],["امتیاز فعال",fa(pts)],["بدهی امتیازها (تومان)",fa(Math.floor(pts*CF.ptv))],["نرخ بازگشت",n?fa(Math.round(rep2*100/n))+"٪":"—"],["عضو جدید ۳۰ روز",fa(nw)],["امتیاز در آستانهٔ انقضا",fa(soon)]].map(([a,b])=>`<div><b>${b}</b><span class="mut">${a}</span></div>`).join("");
+  const top=[...M].sort((a,b)=>b.spent-a.spent).slice(0,5),bd=bdays(7),ina=M.filter(inactive).length;
+  const row=(a,b)=>`<div class="lg"><span>${a}</span><b>${b}</b></div>`;
+  $("#rep").innerHTML=`<div><h4>🏆 پرمصرف‌ترین‌ها</h4>${top.length?top.map(m=>row(esc(m.name)||m.phone,fa(m.spent))).join(""):"—"}</div><div><h4>🎂 تولد ۷ روز آینده ${bd.length?'<button class="hb" data-a="gift">🎁 هدیه</button>':""}</h4>${bd.length?bd.map(x=>row(esc(x.m.name)||x.m.phone,x.k?fa(x.k)+" روز دیگر":"امروز")).join(""):"—"}</div><div><h4>😴 غیرفعال (${fa(INACTIVE)}+ روز) ${ina?'<button class="hb" data-a="showina">نمایش</button>':""}</h4>${row("تعداد مشتری غیرفعال",fa(ina))}<div class="mut" style="margin-top:4px">برای برگرداندنشان می‌توانی امتیاز هدیه بدهی.</div></div>`;
+}
+
+/* ---------- جدول ---------- */
+const CH=[["all","همه"],["bd","🎂 تولد نزدیک"],["soon","⏳ امتیاز رو به انقضا"],["ina","😴 غیرفعال"],["new","🆕 جدید ۳۰ روز"],["blk","⛔ مسدود"]];
+function filtered(){
+  const q=toEn($("#q").value).trim(),lv=$("#lvf").value,so=$("#so").value,now=Date.now();
+  const bset=new Set(bdays(7).map(x=>x.m.phone));
+  let L=M.filter(m=>(!q||m.phone.includes(q)||m.name.includes(q)||m.note.includes(q))&&(!lv||m.lv==lv)&&(FILT=="all"||(FILT=="bd"&&bset.has(m.phone))||(FILT=="soon"&&m.soon>0)||(FILT=="ina"&&inactive(m))||(FILT=="new"&&m.joined>now-30*DAY)||(FILT=="blk"&&m.blocked)));
+  const f={last:(a,b)=>b.last-a.last,bal:(a,b)=>b.bal-a.bal,spent:(a,b)=>b.spent-a.spent,visits:(a,b)=>b.visits-a.visits,joined:(a,b)=>b.joined-a.joined,name:(a,b)=>(a.name||"~").localeCompare(b.name||"~","fa")};
+  return L.sort(f[so]);
 }
 function render(){
-  const q=toEn($("#q").value).trim();
-  const L=M.filter(m=>!q||m.phone.includes(q)||m.name.includes(q)).sort((a,b)=>b.last-a.last);
-  const pts=M.reduce((a,m)=>a+m.bal,0);
-  $("#c1").textContent=fa(M.length);$("#c2").textContent=fa(pts);$("#c3").textContent=fa(Math.floor(pts*CF.ptv));
-  $("#tb").innerHTML=L.length?L.map(m=>`<tr data-ph="${m.phone}"><td>${esc(m.name)||"—"}</td><td dir="ltr">${m.phone}</td><td>${m.lv}</td><td><b>${fa(m.bal)}</b></td><td>${fa(m.spent)}</td><td>${fa(m.visits)}</td><td>${dt(m.exp)}</td><td>${dt(m.last)}</td></tr>`).join(""):'<tr><td class="empty" colspan="8">عضوی یافت نشد</td></tr>';
+  report();
+  $("#chips").innerHTML=CH.map(([k,t])=>`<button class="chip ${FILT==k?"on":""}" data-f="${k}">${t}</button>`).join("");
+  const L=filtered(),V=L.slice(0,LIM);
+  $("#tb").innerHTML=V.length?V.map(m=>`<tr data-ph="${m.phone}" class="${m.blocked?"blk":""}"><td class="ck"><input type="checkbox" data-s="${m.phone}" ${SEL.has(m.phone)?"checked":""}></td><td>${esc(m.name)||"—"}</td><td dir="ltr">${m.phone}</td><td>${esc(m.lv)}</td><td><b>${fa(m.bal)}</b></td><td>${fa(m.spent)}</td><td>${fa(m.visits)}</td><td>${dt(m.exp)}</td><td>${dt(m.last)}</td><td>${esc(m.bday)||"—"}</td><td>${m.blocked?'<span class="tag r">⛔ مسدود</span>':inactive(m)?'<span class="tag">غیرفعال</span>':'<span class="tag g">فعال</span>'}</td></tr>`).join(""):'<tr><td class="empty" colspan="11">عضوی یافت نشد</td></tr>';
+  $("#more").hidden=L.length<=LIM;$("#more").textContent="نمایش بیشتر ("+fa(L.length-LIM)+" مورد دیگر)";
+  $("#all").checked=V.length>0&&V.every(m=>SEL.has(m.phone));
+  $("#bulk").hidden=!SEL.size;$("#bsel").textContent=fa(SEL.size)+" عضو انتخاب شده";
 }
-async function openM(ph){
-  const m=M.find(x=>x.phone==ph);if(!m)return;
-  $("#mbox").innerHTML=`<h3>${esc(m.name)||"بدون نام"} <span class="mut" dir="ltr">${m.phone}</span></h3><div class="mut">سطح ${m.lv} · ${fa(m.bal)} امتیاز · مجموع خرید ${fa(m.spent)}</div>
-  <input id="nm" placeholder="نام" value="${esc(m.name)}"><button class="btn g" data-sn>ذخیرهٔ نام</button>
-  <div class="mut">اصلاح دستی امتیاز (عدد منفی = کم کردن):</div><div class="two"><input id="dl" type="number" placeholder="مثلاً 20 یا -20"><input id="nt" placeholder="دلیل"></div><button class="btn" data-ad>ثبت اصلاح</button>
-  <div class="mut">تاریخچه:</div><div id="lg" class="mut">…</div><button class="btn g" data-x>بستن</button>`;
-  $("#mdl").hidden=false;$("#mbox").dataset.ph=ph;
-  try{const r=await DB.club({action:"clubLog",phone:ph});$("#lg").innerHTML=r.log&&r.log.length?r.log.map(x=>`<div class="lg"><span>${TY[x.type]||x.type} · ${dt(x.t)}</span><b style="color:${x.pts<0?"var(--bad)":"var(--ok)"}">${x.pts>0?"+":""}${fa(x.pts)}</b></div>`).join(""):"موردی نیست"}catch(e){$("#lg").textContent="دریافت نشد"}
+
+/* ---------- جزئیات عضو ---------- */
+async function openDetail(ph){
+  openBox('<div class="mut">در حال دریافت…</div>');
+  try{renderDetail(await call({action:"clubDetail",phone:ph}))}catch(e){closeBox();fail(e)}
 }
-async function act(body){
-  try{const r=await DB.club(body);if(!r||!r.ok)throw 0;await load();openM($("#mbox").dataset.ph)}catch(e){alert("انجام نشد؛ دوباره تلاش کن")}
+function renderDetail(r){
+  const m=r.member;CUR=m.phone;
+  const nx=m.next?`تا سطح «${esc(m.next.n)}»: ${fa(m.next.need)} تومان خرید دیگر`:"بالاترین سطح 🏅";
+  openBox(`<h3>${esc(m.name)||"بدون نام"} <span class="mut" dir="ltr">${m.phone}</span></h3>
+  <div class="mut">سطح ${esc(m.lv)} · ${fa(m.bal)} امتیاز · ${nx}</div>
+  <div class="mut">عضویت: ${dt(m.joined)} · آخرین مراجعه: ${dt(m.last)} · رضایت‌نامه: ${dt(m.consent)}</div>
+  <div class="fg"><label>نام<input id="d_n" value="${esc(m.name)}"></label><label>شمارهٔ موبایل<input id="d_p" dir="ltr" value="${m.phone}"></label>
+  <label>تولد (ماه/روز مثل 5/12)<input id="d_b" value="${esc(m.bday)}"></label><label>یادداشت<input id="d_t" value="${esc(m.note)}"></label>
+  <label>مجموع خرید (تومان)<input id="d_s" type="number" value="${m.spent}"></label><label>دفعات مراجعه<input id="d_v" type="number" value="${m.visits}"></label></div>
+  <label class="ck2"><input type="checkbox" id="d_x" ${m.blocked?"checked":""}> ⛔ مسدود (امتیاز نگیرد و تخفیف نگیرد)</label>
+  <button class="btn ok" data-a="save">ذخیرهٔ تغییرات</button>
+  <h4>امتیازهای فعال و انقضا</h4>
+  ${r.lots.length?r.lots.map(x=>`<div class="lg"><span>انقضا: ${dt(x.e)}</span><b>${fa(x.p)}</b></div>`).join(""):'<div class="mut">امتیاز فعالی ندارد</div>'}
+  <h4>اصلاح دستی امتیاز (عدد منفی = کم کردن)</h4>
+  <div class="two"><input id="d_dl" type="number" placeholder="مثلاً 20 یا -20"><input id="d_nt" placeholder="دلیل"></div>
+  <button class="btn" data-a="adj">ثبت اصلاح</button>
+  <h4>تاریخچه</h4>
+  ${r.log.length?r.log.map(x=>`<div class="lg"><span>${TY[x.type]||x.type} · ${dtt(x.t)}${x.note?" · "+esc(x.note):""}</span><b style="color:${x.pts<0?"var(--bad)":"var(--ok)"}">${x.pts>0?"+":""}${fa(x.pts)}</b></div>`).join(""):'<div class="mut">موردی نیست</div>'}
+  <div class="two" style="margin-top:6px"><button class="btn g" data-a="x">بستن</button><button class="btn bad" data-a="del">🗑️ حذف عضو</button></div>`);
 }
+async function doSave(){
+  const ph=CUR,np=toEn($("#d_p").value).trim();
+  try{
+    const r=await call({action:"clubUpdate",phone:ph,newPhone:np!==ph?np:undefined,name:$("#d_n").value.trim(),bday:toEn($("#d_b").value).trim(),note:$("#d_t").value.trim(),spent:$("#d_s").value,visits:$("#d_v").value,blocked:$("#d_x").checked?1:0});
+    toast("✓ ذخیره شد");await load();openDetail(r.phone||ph);
+  }catch(e){fail(e)}
+}
+async function doAdj(){
+  const d=Math.round(+toEn($("#d_dl").value));if(!d)return toast("عدد را وارد کن",1);
+  try{await call({action:"clubAdjust",phone:CUR,delta:d,note:$("#d_nt").value.trim()});toast("✓ ثبت شد");await load();openDetail(CUR)}catch(e){fail(e)}
+}
+async function doDel(){
+  const m=M.find(x=>x.phone==CUR);
+  if(!confirm("«"+((m&&m.name)||CUR)+"» حذف شود؟\nامتیازهای او از بین می‌رود و قابل بازگشت نیست."))return;
+  try{await call({action:"clubDelete",phone:CUR});SEL.delete(CUR);closeBox();toast("✓ عضو حذف شد");load()}catch(e){fail(e)}
+}
+
+/* ---------- افزودن عضو ---------- */
+function openAdd(){
+  openBox(`<h3>➕ افزودن عضو جدید</h3>
+  <div class="fg"><label class="w">شمارهٔ موبایل<input id="a_p" dir="ltr" inputmode="numeric" placeholder="09123456789"></label>
+  <label>نام<input id="a_n"></label><label>تولد (ماه/روز)<input id="a_b" placeholder="5/12"></label>
+  <label>امتیاز اولیه<input id="a_s" type="number" value="0"></label><label>یادداشت<input id="a_t"></label></div>
+  <label class="ck2"><input type="checkbox" id="a_c"> رضایت مشتری برای عضویت و دریافت پیام‌ها گرفته شده است</label>
+  <div class="two"><button class="btn g" data-a="x">انصراف</button><button class="btn ok" data-a="addok">افزودن</button></div>`);
+}
+async function doAdd(){
+  if(!$("#a_c").checked)return toast("تیک رضایت مشتری لازم است",1);
+  try{await call({action:"clubAdd",phone:toEn($("#a_p").value),name:$("#a_n").value.trim(),bday:toEn($("#a_b").value).trim(),points:+toEn($("#a_s").value)||0,note:$("#a_t").value.trim()});closeBox();toast("✓ عضو اضافه شد");load()}catch(e){fail(e)}
+}
+
+/* ---------- تنظیمات ---------- */
+function lvRow(l){return `<div class="lvr"><input class="l_n" placeholder="نام سطح" value="${esc(l.n)}"><input class="l_m" type="number" placeholder="از مجموع خرید" value="${l.min}"><input class="l_p" type="number" placeholder="٪ تخفیف" value="${l.pct}"><button data-a="lvdel">✕</button></div>`}
+function openCfg(){
+  openBox(`<h3>⚙️ تنظیمات کلوپ</h3>
+  <div class="mut">تغییرات فقط روی سفارش‌های بعدی اثر دارد. امتیازهای فعلی دست‌نخورده می‌مانند.</div>
+  <div class="fg"><label>هر چند تومان خرید = ۱ امتیاز<input id="c_e" type="number" value="${CF.earn}"></label><label>ارزش هر امتیاز (تومان)<input id="c_v" type="number" step="any" value="${CF.ptv}"></label>
+  <label>حداقل امتیاز برای مصرف<input id="c_m" type="number" value="${CF.min}"></label><label>سقف کل تخفیف هر فاکتور (٪)<input id="c_c" type="number" value="${CF.cap}"></label>
+  <label class="w">انقضای امتیاز (روز)<input id="c_d" type="number" value="${CF.days}"></label></div>
+  <h4>سطح‌ها (بر اساس مجموع خرید)</h4>
+  <div id="lvs" style="display:grid;gap:6px">${CF.levels.map(lvRow).join("")}</div>
+  <button class="btn g" data-a="lvadd">➕ افزودن سطح</button>
+  <div class="two"><button class="btn g" data-a="x">انصراف</button><button class="btn ok" data-a="cfgok">ذخیره</button></div>`);
+}
+async function doCfg(){
+  const levels=[...document.querySelectorAll("#lvs .lvr")].map(r=>({n:r.querySelector(".l_n").value.trim(),min:+r.querySelector(".l_m").value||0,pct:+r.querySelector(".l_p").value||0})).filter(x=>x.n);
+  if(!levels.length)return toast("حداقل یک سطح لازم است",1);
+  try{const r=await call({action:"clubCfgSet",earn:$("#c_e").value,ptv:$("#c_v").value,min:$("#c_m").value,cap:$("#c_c").value,days:$("#c_d").value,levels});CF=r.cfg;closeBox();toast("✓ تنظیمات ذخیره شد");load()}catch(e){fail(e)}
+}
+
+/* ---------- عملیات گروهی ---------- */
+function bulkPts(phones,note,title){
+  openBox(`<h3>${title||"🎁 افزودن/کسر امتیاز گروهی"}</h3><div class="mut">${fa(phones.length)} عضو انتخاب شده</div>
+  <div class="two"><input id="b_d" type="number" placeholder="مثلاً 20 یا -20" value="${note?20:""}"><input id="b_n" placeholder="دلیل" value="${esc(note||"")}"></div>
+  <div class="two"><button class="btn g" data-a="x">انصراف</button><button class="btn ok" data-a="bok">ثبت برای همه</button></div>`);
+  $("#box").dataset.ph=JSON.stringify(phones);
+}
+async function doBulk(){
+  const d=Math.round(+toEn($("#b_d").value));if(!d)return toast("عدد را وارد کن",1);
+  try{const r=await call({action:"clubBulk",phones:JSON.parse($("#box").dataset.ph),delta:d,note:$("#b_n").value.trim()});closeBox();toast("✓ برای "+fa(r.n)+" عضو ثبت شد");load()}catch(e){fail(e)}
+}
+async function bulkDel(){
+  const ps=[...SEL];if(!ps.length)return;
+  if(!confirm(fa(ps.length)+" عضو برای همیشه حذف شوند؟\nامتیازهایشان از بین می‌رود."))return;
+  let ok=0;toast("در حال حذف…");
+  for(const ph of ps){try{await call({action:"clubDelete",phone:ph});ok++;SEL.delete(ph)}catch(e){}}
+  toast("✓ "+fa(ok)+" عضو حذف شد");load();
+}
+function csv(){
+  const L=filtered();if(!L.length)return toast("چیزی برای خروجی نیست",1);
+  const H=["شماره","نام","سطح","امتیاز","مجموع خرید","دفعات","تاریخ عضویت","آخرین مراجعه","تولد","یادداشت","مسدود"];
+  const R=L.map(m=>[m.phone,m.name,m.lv,m.bal,m.spent,m.visits,dt(m.joined),dt(m.last),m.bday,m.note,m.blocked?"بله":""]);
+  const t="\ufeff"+[H,...R].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv;charset=utf-8"}));a.download="club-lamour2-"+new Date().toLocaleDateString("en-CA",{timeZone:TZ})+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+async function copyPh(phones){try{await navigator.clipboard.writeText(phones.join("\n"));toast("✓ "+fa(phones.length)+" شماره کپی شد")}catch(e){toast("کپی نشد",1)}}
+
+/* ---------- رویدادها ---------- */
 document.addEventListener("click",e=>{
-  if(e.target.id=="mdl"||e.target.closest("[data-x]")){$("#mdl").hidden=true;return}
-  const tr=e.target.closest("tr[data-ph]");if(tr){openM(tr.dataset.ph);return}
-  const ph=$("#mbox").dataset.ph;
-  if(e.target.closest("[data-sn]"))act({action:"clubAdjust",phone:ph,delta:0,name:$("#nm").value.trim(),note:"ویرایش نام"});
-  if(e.target.closest("[data-ad]")){const d=Math.round(+toEn($("#dl").value));if(!d)return alert("عدد را وارد کن");act({action:"clubAdjust",phone:ph,delta:d,note:$("#nt").value.trim()})}
+  if(e.target.id=="mdl"){closeBox();return}
+  const cb=e.target.closest("input[data-s]");
+  if(cb){cb.checked?SEL.add(cb.dataset.s):SEL.delete(cb.dataset.s);render();e.stopPropagation();return}
+  if(e.target.id=="all"){const V=filtered().slice(0,LIM);V.forEach(m=>e.target.checked?SEL.add(m.phone):SEL.delete(m.phone));render();return}
+  const f=e.target.closest("[data-f]");if(f){FILT=f.dataset.f;LIM=150;render();return}
+  const a=e.target.closest("[data-a]");
+  if(a){
+    const k=a.dataset.a;
+    if(k=="add")openAdd();else if(k=="addok")doAdd();
+    else if(k=="cfg"){call({action:"clubCfgGet"}).then(r=>{CF=r.cfg;openCfg()}).catch(fail)}
+    else if(k=="cfgok")doCfg();
+    else if(k=="lvadd")$("#lvs").insertAdjacentHTML("beforeend",lvRow({n:"",min:0,pct:0}));
+    else if(k=="lvdel")a.closest(".lvr").remove();
+    else if(k=="csv")csv();else if(k=="reload"){load();toast("به‌روز شد")}
+    else if(k=="x")closeBox();
+    else if(k=="save")doSave();else if(k=="adj")doAdj();else if(k=="del")doDel();
+    else if(k=="bpts")bulkPts([...SEL]);else if(k=="bok")doBulk();
+    else if(k=="bcopy")copyPh([...SEL]);else if(k=="bdel")bulkDel();else if(k=="bclr"){SEL.clear();render()}
+    else if(k=="gift")bulkPts(bdays(7).map(x=>x.m.phone),"هدیهٔ تولد","🎁 هدیهٔ تولد");
+    else if(k=="showina"){FILT="ina";render();scrollTo({top:document.querySelector(".tools").offsetTop-70,behavior:"smooth"})}
+    return;
+  }
+  const tr=e.target.closest("tr[data-ph]");if(tr&&!e.target.closest("td.ck"))openDetail(tr.dataset.ph);
 });
-$("#q").addEventListener("input",render);
-setInterval(()=>{if($("#mdl").hidden&&!document.hidden)load()},30000);
+$("#more").onclick=()=>{LIM+=150;render()};
+["#q","#lvf","#so"].forEach(s=>$(s).addEventListener("input",()=>{LIM=150;render()}));
+setInterval(()=>{if($("#mdl").hidden&&!document.hidden)load()},45000);
 load();
 });</script>
 </body>
