@@ -97,7 +97,7 @@ tr.blk td{opacity:.55}
     <button class="hb" data-a="bclr">✕</button>
   </div>
   <div class="wrap"><table>
-    <thead><tr><th class="ck"><input type="checkbox" id="all"></th><th>نام</th><th>شماره</th><th>سطح</th><th>امتیاز</th><th>مجموع خرید</th><th>دفعات</th><th>انقضای نزدیک‌ترین</th><th>آخرین مراجعه</th><th>تولد</th><th>وضعیت</th></tr></thead>
+    <thead><tr><th class="ck"><input type="checkbox" id="all"></th><th>نام</th><th>شماره</th><th>سطح</th><th>امتیاز</th><th>مجموع خرید</th><th>دفعات</th><th>انقضای نزدیک‌ترین</th><th>آخرین مراجعه</th><th>تولد (شمسی)</th><th>وضعیت</th></tr></thead>
     <tbody id="tb"></tbody>
   </table></div>
   <div style="text-align:center;margin-top:8px"><button class="hb" id="more" hidden>نمایش بیشتر</button></div>
@@ -112,7 +112,7 @@ const toEn=s=>String(s||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf
 const dt=t=>t?new Date(t).toLocaleDateString("fa-IR-u-ca-persian",{timeZone:TZ,year:"numeric",month:"short",day:"numeric"}):"—";
 const dtt=t=>t?dt(t)+" "+new Date(t).toLocaleTimeString("fa-IR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hour12:false}):"—";
 const TY={settle:"سفارش",reverse:"لغو/اصلاح سفارش",adjust:"اصلاح امتیاز",add:"افزودن عضو",update:"ویرایش اطلاعات",delete:"حذف"};
-const ERR={phone:"شمارهٔ موبایل معتبر نیست",exists:"این شماره قبلاً ثبت شده است",nomember:"عضو پیدا نشد",bad:"اطلاعات واردشده معتبر نیست (تولد را مثل 5/12 بنویس)",auth:"کلید دسترسی اشتباه است"};
+const ERR={phone:"شمارهٔ موبایل معتبر نیست",exists:"این شماره قبلاً ثبت شده است",nomember:"عضو پیدا نشد",bad:"اطلاعات واردشده معتبر نیست",auth:"کلید دسترسی اشتباه است"};
 let M=[],CF={ptv:1,min:50,days:180,cap:20,earn:20,levels:[]},SEL=new Set(),FILT="all",LIM=150,CUR=null;
 const call=async b=>{const r=await DB.club(b);if(!r||r.error)throw new Error((r&&r.error)||"fail");return r};
 const fail=e=>toast(ERR[e&&e.message]||"انجام نشد؛ دوباره تلاش کن",1);
@@ -135,6 +135,11 @@ function bdays(days){
   const p={};jp.formatToParts(new Date()).forEach(x=>p[x.type]=x.value);const td=doy(+p.month,+p.day);
   return M.filter(m=>/^\d{1,2}\/\d{1,2}$/.test(m.bday)).map(m=>{const [a,b]=m.bday.split("/").map(Number);return{m,k:(doy(a,b)-td+366)%366}}).filter(x=>x.k<=days).sort((a,b)=>a.k-b.k);
 }
+const MON=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const bfmt=b=>{const p=String(b||"").split("/").map(Number);return p.length==2&&p[0]>=1&&p[0]<=12&&p[1]>=1?fa(p[1])+" "+MON[p[0]-1]:"—"};
+const bsel=(id,v)=>{const p=String(v||"").split("/").map(Number),mo=p[0]||0,dy=p[1]||0;
+  return `<select id="${id}m"><option value="">ماه</option>${MON.map((n,i)=>`<option value="${i+1}" ${mo==i+1?"selected":""}>${n}</option>`).join("")}</select><select id="${id}d"><option value="">روز</option>${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${dy==i+1?"selected":""}>${fa(i+1)}</option>`).join("")}</select>`};
+const bget=id=>{const m=+$("#"+id+"m").value,d=+$("#"+id+"d").value;if(!m&&!d)return"";if(!m||!d||(m>=7&&d>30))return false;return m+"/"+d};
 const inactive=m=>m.last>0&&Date.now()-m.last>INACTIVE*DAY;
 
 /* ---------- گزارش‌ها ---------- */
@@ -160,7 +165,7 @@ function render(){
   report();
   $("#chips").innerHTML=CH.map(([k,t])=>`<button class="chip ${FILT==k?"on":""}" data-f="${k}">${t}</button>`).join("");
   const L=filtered(),V=L.slice(0,LIM);
-  $("#tb").innerHTML=V.length?V.map(m=>`<tr data-ph="${m.phone}" class="${m.blocked?"blk":""}"><td class="ck"><input type="checkbox" data-s="${m.phone}" ${SEL.has(m.phone)?"checked":""}></td><td>${esc(m.name)||"—"}</td><td dir="ltr">${m.phone}</td><td>${esc(m.lv)}</td><td><b>${fa(m.bal)}</b></td><td>${fa(m.spent)}</td><td>${fa(m.visits)}</td><td>${dt(m.exp)}</td><td>${dt(m.last)}</td><td>${esc(m.bday)||"—"}</td><td>${m.blocked?'<span class="tag r">⛔ مسدود</span>':inactive(m)?'<span class="tag">غیرفعال</span>':'<span class="tag g">فعال</span>'}</td></tr>`).join(""):'<tr><td class="empty" colspan="11">عضوی یافت نشد</td></tr>';
+  $("#tb").innerHTML=V.length?V.map(m=>`<tr data-ph="${m.phone}" class="${m.blocked?"blk":""}"><td class="ck"><input type="checkbox" data-s="${m.phone}" ${SEL.has(m.phone)?"checked":""}></td><td>${esc(m.name)||"—"}</td><td dir="ltr">${m.phone}</td><td>${esc(m.lv)}</td><td><b>${fa(m.bal)}</b></td><td>${fa(m.spent)}</td><td>${fa(m.visits)}</td><td>${dt(m.exp)}</td><td>${dt(m.last)}</td><td>${bfmt(m.bday)}</td><td>${m.blocked?'<span class="tag r">⛔ مسدود</span>':inactive(m)?'<span class="tag">غیرفعال</span>':'<span class="tag g">فعال</span>'}</td></tr>`).join(""):'<tr><td class="empty" colspan="11">عضوی یافت نشد</td></tr>';
   $("#more").hidden=L.length<=LIM;$("#more").textContent="نمایش بیشتر ("+fa(L.length-LIM)+" مورد دیگر)";
   $("#all").checked=V.length>0&&V.every(m=>SEL.has(m.phone));
   $("#bulk").hidden=!SEL.size;$("#bsel").textContent=fa(SEL.size)+" عضو انتخاب شده";
@@ -178,7 +183,7 @@ function renderDetail(r){
   <div class="mut">سطح ${esc(m.lv)} · ${fa(m.bal)} امتیاز · ${nx}</div>
   <div class="mut">عضویت: ${dt(m.joined)} · آخرین مراجعه: ${dt(m.last)} · رضایت‌نامه: ${dt(m.consent)}</div>
   <div class="fg"><label>نام<input id="d_n" value="${esc(m.name)}"></label><label>شمارهٔ موبایل<input id="d_p" dir="ltr" value="${m.phone}"></label>
-  <label>تولد (ماه/روز مثل 5/12)<input id="d_b" value="${esc(m.bday)}"></label><label>یادداشت<input id="d_t" value="${esc(m.note)}"></label>
+  <label>تاریخ تولد (شمسی)<div class="two">${bsel("d_b",m.bday)}</div></label><label>یادداشت<input id="d_t" value="${esc(m.note)}"></label>
   <label>مجموع خرید (تومان)<input id="d_s" type="number" value="${m.spent}"></label><label>دفعات مراجعه<input id="d_v" type="number" value="${m.visits}"></label></div>
   <label class="ck2"><input type="checkbox" id="d_x" ${m.blocked?"checked":""}> ⛔ مسدود (امتیاز نگیرد و تخفیف نگیرد)</label>
   <button class="btn ok" data-a="save">ذخیرهٔ تغییرات</button>
@@ -192,9 +197,10 @@ function renderDetail(r){
   <div class="two" style="margin-top:6px"><button class="btn g" data-a="x">بستن</button><button class="btn bad" data-a="del">🗑️ حذف عضو</button></div>`);
 }
 async function doSave(){
-  const ph=CUR,np=toEn($("#d_p").value).trim();
+  const ph=CUR,np=toEn($("#d_p").value).trim(),bd=bget("d_b");
+  if(bd===false)return toast("تاریخ تولد معتبر نیست (روز ۳۱ فقط برای ۶ ماه اول سال است)",1);
   try{
-    const r=await call({action:"clubUpdate",phone:ph,newPhone:np!==ph?np:undefined,name:$("#d_n").value.trim(),bday:toEn($("#d_b").value).trim(),note:$("#d_t").value.trim(),spent:$("#d_s").value,visits:$("#d_v").value,blocked:$("#d_x").checked?1:0});
+    const r=await call({action:"clubUpdate",phone:ph,newPhone:np!==ph?np:undefined,name:$("#d_n").value.trim(),bday:bd,note:$("#d_t").value.trim(),spent:$("#d_s").value,visits:$("#d_v").value,blocked:$("#d_x").checked?1:0});
     toast("✓ ذخیره شد");await load();openDetail(r.phone||ph);
   }catch(e){fail(e)}
 }
@@ -212,14 +218,15 @@ async function doDel(){
 function openAdd(){
   openBox(`<h3>➕ افزودن عضو جدید</h3>
   <div class="fg"><label class="w">شمارهٔ موبایل<input id="a_p" dir="ltr" inputmode="numeric" placeholder="09123456789"></label>
-  <label>نام<input id="a_n"></label><label>تولد (ماه/روز)<input id="a_b" placeholder="5/12"></label>
+  <label>نام<input id="a_n"></label><label>تاریخ تولد (شمسی)<div class="two">${bsel("a_b","")}</div></label>
   <label>امتیاز اولیه<input id="a_s" type="number" value="0"></label><label>یادداشت<input id="a_t"></label></div>
   <label class="ck2"><input type="checkbox" id="a_c"> رضایت مشتری برای عضویت و دریافت پیام‌ها گرفته شده است</label>
   <div class="two"><button class="btn g" data-a="x">انصراف</button><button class="btn ok" data-a="addok">افزودن</button></div>`);
 }
 async function doAdd(){
   if(!$("#a_c").checked)return toast("تیک رضایت مشتری لازم است",1);
-  try{await call({action:"clubAdd",phone:toEn($("#a_p").value),name:$("#a_n").value.trim(),bday:toEn($("#a_b").value).trim(),points:+toEn($("#a_s").value)||0,note:$("#a_t").value.trim()});closeBox();toast("✓ عضو اضافه شد");load()}catch(e){fail(e)}
+  const bd=bget("a_b");if(bd===false)return toast("تاریخ تولد معتبر نیست (روز ۳۱ فقط برای ۶ ماه اول سال است)",1);
+  try{await call({action:"clubAdd",phone:toEn($("#a_p").value),name:$("#a_n").value.trim(),bday:bd,points:+toEn($("#a_s").value)||0,note:$("#a_t").value.trim()});closeBox();toast("✓ عضو اضافه شد");load()}catch(e){fail(e)}
 }
 
 /* ---------- تنظیمات ---------- */
@@ -262,7 +269,7 @@ async function bulkDel(){
 function csv(){
   const L=filtered();if(!L.length)return toast("چیزی برای خروجی نیست",1);
   const H=["شماره","نام","سطح","امتیاز","مجموع خرید","دفعات","تاریخ عضویت","آخرین مراجعه","تولد","یادداشت","مسدود"];
-  const R=L.map(m=>[m.phone,m.name,m.lv,m.bal,m.spent,m.visits,dt(m.joined),dt(m.last),m.bday,m.note,m.blocked?"بله":""]);
+  const R=L.map(m=>[m.phone,m.name,m.lv,m.bal,m.spent,m.visits,dt(m.joined),dt(m.last),m.bday?bfmt(m.bday):"",m.note,m.blocked?"بله":""]);
   const t="\ufeff"+[H,...R].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv;charset=utf-8"}));a.download="club-lamour2-"+new Date().toLocaleDateString("en-CA",{timeZone:TZ})+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 }
