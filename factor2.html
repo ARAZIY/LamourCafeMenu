@@ -86,7 +86,7 @@ th{background:var(--bg);color:var(--mut);font-weight:600}
   <button id="go">ورود</button>
 </div>
 <div id="app" hidden>
-  <header><h1>🧾 فاکتورهای تحویل‌شده — لامور ۲</h1><a class="lnk" href="admin2.html">← مدیریت</a><a class="lnk" href="index2.html">🛎️ منوی مشتری</a><button class="lnk" id="out">خروج</button></header>
+  <header><h1>🧾 فاکتورهای تحویل‌شده — لامور ۲</h1><a class="lnk" href="admin2.html">← مدیریت</a><a class="lnk" href="club2.html">⭐ کلوپ</a><a class="lnk" href="index2.html">🛎️ منوی مشتری</a><button class="lnk" id="out">خروج</button></header>
   <main>
     <div class="filters">
       <label>جستجو (محصول / میز / شمارهٔ سفارش / شخص / پیگیری)<input id="q" type="search" placeholder="جستجو…" /></label>
@@ -223,6 +223,8 @@ $("#out").onclick=()=>{try{sessionStorage.removeItem(FOK)}catch(e){}location.rel
 
 let cur=[];
 function removeInvoices(ids){
+  /* کلوپ: امتیاز و تخفیف ثبت‌شدهٔ این فاکتورها برگردانده می‌شود */
+  ld().filter(o=>ids.includes(o.id)&&o.ph).forEach(o=>DB.club({action:"clubReverse",orderId:o.id}).catch(()=>{}));
   const del=ld(DEL);ids.forEach(i=>{if(!del.includes(i))del.push(i)});sv(DEL,del);
   const W=ldo(WK);ids.forEach(i=>delete W[i]);sv(WK,W);
   const PY=getPY();ids.forEach(i=>delete PY[i]);setPY(PY);
