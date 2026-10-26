@@ -403,7 +403,7 @@ function paintClub(){
   else if(q.err)info.textContent="⚠️ ارتباط با کلوپ برقرار نیست";
   else{
     const m=q.member;
-    info.textContent=m?`⭐ ${m.name||"عضو"} · سطح ${m.lv} · ${fa(m.bal)} امتیاز`:"عضو جدید؛ بعد از تحویل سفارش عضو می‌شود";
+    info.textContent=m?`⭐ ${m.name||"عضو"} · سطح ${m.lv} · ${fa(m.bal)} امتیاز${m.blocked?" · ⛔ مسدود (بدون تخفیف و امتیاز)":""}`:"عضو جدید؛ بعد از تحویل سفارش عضو می‌شود";
     $("#cconw").hidden=!!m;
     if(q.q.maxP>0){$("#cusew").hidden=false;$("#cusel").textContent="استفاده از امتیاز (تا "+fa(q.q.maxP)+" امتیاز)"}
     if(q.g===G){const Q=q.q;net=Q.net;dis=[Q.dl?`تخفیف سطح ${Q.lv}: −${fa(Q.dl)}`:"",Q.dp?`تخفیف امتیاز: −${fa(Q.dp)}`:"",Q.earn?`امتیاز این سفارش: +${fa(Q.earn)}`:""].filter(Boolean).join(" · ")}
