@@ -16,12 +16,10 @@
     <style>
       :root {
         --bg: #ffecd1;
-        --card: #fffaf1;
         --tx: #2b1d14;
         --mut: #8a7766;
         --pri: #8b5a2b;
         --pri2: #6f4520;
-        --bd: #e8dccb;
         --gold: #c27a10;
         --fs: 20px; /* توسط جاوااسکریپت تنظیم می‌شود */
       }
@@ -47,20 +45,12 @@
 
       /* ---------- هدر ---------- */
       header {
-        position: relative;
         flex: 0 0 auto;
         height: 11vh;
         min-height: 56px;
-        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 2vh;
-      }
-      
-      header > *:not(.bg-video) {
-        position: relative;
-        z-index: 1;
       }
       header img {
         height: 82%;
@@ -68,14 +58,6 @@
         object-fit: cover;
         border-radius: 100%;
         box-shadow: 0 0 20px 1px var(--gold);
-      }
-      header h1 {
-        background: #675347;
-        color: #f3e9dc;
-        font-weight: 800;
-        font-size: clamp(14px, 3.2vh, 40px);
-        padding: 0.35em 1.4em;
-        border-radius: 100px;
       }
 
       /* ---------- بدنهٔ منو ---------- */
@@ -128,20 +110,6 @@
         font-size: 0.95em;
         white-space: nowrap;
       }
-      .it .pr small {
-        font-weight: 400;
-        color: var(--mut);
-        font-size: 0.6em;
-      }
-      .it .ds {
-        display: none;
-      }
-      .empty {
-        text-align: center;
-        color: var(--mut);
-        padding: 10vh 0;
-        font-size: 1.2em;
-      }
     </style>
   </head>
   <body>
@@ -151,99 +119,117 @@
 
     <main id="board"></main>
 
-    <script src="sheet-db.js"></script>
     <script>
-      DB.ready.then(() => {
-        /* ---------- داده‌های پیش‌فرض (اگر دیتابیس چیزی نداد) ---------- */
-        let MENU = [
-          { n: "سینگل", c: "قهوه", p: 140 },
-          { n: "دبل", c: "قهوه", p: 160 },
-          { n: "ترک", c: "قهوه", p: 160 },
-          { n: "آمریکانو", c: "گرم", p: 180 },
-          { n: "آیس آمریکانو", c: "سرد", p: 190 },
-          { n: "لاته", c: "گرم", p: 210 },
-          { n: "آیس لاته", c: "سرد", p: 230 },
-          { n: "هات چاکلت", c: "گرم", p: 240 },
-          { n: "موکا", c: "گرم", p: 230 },
-          { n: "ماکیاتو", c: "گرم", p: 230 },
-          { n: "آیس ماکیاتو", c: "سرد", p: 250 },
-          { n: "چای ماسالا", c: "گرم", p: 230 },
-          { n: "وایت چاکلت", c: "گرم", p: 240 },
-          { n: "کاپوچینو", c: "گرم", p: 240 },
-          { n: "آیس موکا", c: "سرد", p: 250 },
-          { n: "آفوگاتو", c: "سرد", p: 360 },
-          { n: "چای ویژه", c: "چایی", p: 250 },
-          { n: "فنجانی", c: "چایی", p: 70 },
-          { n: "دمنوش زنجبیل", c: "چایی", p: 250 },
-          { n: "دمنوش لیمو نعناع", c: "چایی", p: 250 },
-          { n: "سرماخوردگی", c: "چایی", p: 250 },
-          { n: "گل گاوزبان", c: "چایی", p: 250 },
-          { n: "دمنوش میوه", c: "چایی", p: 290 },
-          { n: "شکلاتی", c: "شیک", p: 470 },
-          { n: "نوتلا", c: "شیک", p: 470 },
-          { n: "موز", c: "شیک", p: 420 },
-          { n: "بادام زمینی", c: "شیک", p: 420 },
-          { n: "نسکافه", c: "شیک", p: 400 },
-          { n: "کیک خیس", c: "خوراکی", p: 250 },
-          { n: "باقلوا", c: "خوراکی", p: 50 },
-          { n: "آب", c: "نوشیدنی", p: 25 },
-          { n: "آب آلبالو", c: "نوشیدنی", p: 120 },
-          { n: "آبلوبری", c: "نوشیدنی", p: 120 },
-          { n: "دراگون فروت", c: "نوشیدنی", p: 150 },
-          { n: "آناناس", c: "نوشیدنی", p: 85 },
-          { n: "شاهتوت سیاه", c: "نوشیدنی", p: 150 },
-          { n: "هلو", c: "نوشیدنی", p: 85 },
-          { n: "انرژی زا کوچک", c: "نوشیدنی", p: 130 },
-          { n: "انرژی زا بزرگ", c: "نوشیدنی", p: 150 },
-          { n: "لیموناد", c: "نوشیدنی", p: 85 },
-          { n: " آب هویج ", c: "موکتل", p: 200  },
-          { n: " آب انار", c: "موکتل", p: 250  },
-          { n: " آب سیب", c: "موکتل", p: 200  },
-          { n: "آب پرتقال ", c: "موکتل", p: 290  },
-          { n: "شیر موز ", c: "موکتل", p: 290  },
-          { n: " آب طالبی", c: "موکتل", p: 290  },
-          { n: " اسکوپ بستنی ", c: "موکتل", p: 70  },
-          
-        ];
+      /* ---------- منو: فقط از همین لیست خوانده می‌شود (بدون دیتابیس) ---------- */
+      const MENU = [
+        { n: "سینگل", c: "قهوه", p: 140 },
+        { n: "دبل", c: "قهوه", p: 160 },
+        { n: "ترک", c: "قهوه", p: 160 },
+        { n: "آمریکانو", c: "گرم", p: 180 },
+        { n: "آیس آمریکانو", c: "سرد", p: 190 },
+        { n: "لاته", c: "گرم", p: 210 },
+        { n: "آیس لاته", c: "سرد", p: 230 },
+        { n: "هات چاکلت", c: "گرم", p: 240 },
+        { n: "موکا", c: "گرم", p: 230 },
+        { n: "ماکیاتو", c: "گرم", p: 230 },
+        { n: "آیس ماکیاتو", c: "سرد", p: 250 },
+        { n: "چای ماسالا", c: "گرم", p: 230 },
+        { n: "وایت چاکلت", c: "گرم", p: 240 },
+        { n: "کاپوچینو", c: "گرم", p: 240 },
+        { n: "آیس موکا", c: "سرد", p: 250 },
+        { n: "آفوگاتو", c: "سرد", p: 360 },
+        { n: "چای ویژه", c: "چایی", p: 250 },
+        { n: "فنجانی", c: "چایی", p: 70 },
+        { n: "دمنوش زنجبیل", c: "چایی", p: 250 },
+        { n: "دمنوش لیمو نعناع", c: "چایی", p: 250 },
+        { n: "سرماخوردگی", c: "چایی", p: 250 },
+        { n: "گل گاوزبان", c: "چایی", p: 250 },
+        { n: "دمنوش میوه", c: "چایی", p: 290 },
+        { n: "شکلاتی", c: "شیک", p: 470 },
+        { n: "نوتلا", c: "شیک", p: 470 },
+        { n: "موز", c: "شیک", p: 420 },
+        { n: "بادام زمینی", c: "شیک", p: 420 },
+        { n: "نسکافه", c: "شیک", p: 400 },
+        { n: "کیک خیس", c: "خوراکی", p: 250 },
+        { n: "باقلوا", c: "خوراکی", p: 50 },
+        { n: "آب", c: "نوشیدنی", p: 25 },
+        { n: "آلبالو", c: "نوشیدنی", p: 120 },
+        { n: "بلوبری", c: "نوشیدنی", p: 120 },
+        { n: "دراگون فروت", c: "نوشیدنی", p: 150 },
+        { n: "آناناس", c: "نوشیدنی", p: 85 },
+        { n: "شاهتوت سیاه", c: "نوشیدنی", p: 150 },
+        { n: "هلو", c: "نوشیدنی", p: 85 },
+        { n: "انرژی زا کوچک", c: "نوشیدنی", p: 130 },
+        { n: "انرژی زا بزرگ", c: "نوشیدنی", p: 150 },
+        { n: "لیموناد", c: "نوشیدنی", p: 85 },
+        { n: "آب هویج", c: "موکتل", p: 200 },
+        { n: "آب انار", c: "موکتل", p: 250 },
+        { n: "آب سیب", c: "موکتل", p: 200 },
+        { n: "آب پرتقال", c: "موکتل", p: 290 },
+        { n: "شیر موز", c: "موکتل", p: 290 },
+        { n: "آب طالبی", c: "موکتل", p: 290 },
+        { n: "اسکوپ بستنی", c: "موکتل", p: 70 },
+      ];
 
-  
+      const $ = (s) => document.querySelector(s);
+      const fa = (n) => Number(n).toLocaleString("fa-IR");
+      const esc = (s) => String(s == null ? "" : s).replace(/[<>&"]/g, "").trim();
 
-        const $ = (s) => document.querySelector(s);
-        const fa = (n) => Number(n).toLocaleString("fa-IR");
-        const esc = (s) =>
-          String(s == null ? "" : s).replace(/[<>&"]/g, "");
+      function render() {
+        const cats = [];
+        MENU.forEach((m) => {
+          const c = esc(m.c);
+          if (!cats.includes(c)) cats.push(c);
+        });
 
-        function getMenu() {
-          const src = DB.menu && DB.menu.length ? DB.menu : MENU;
-          return src.filter((m) => !isHookah(m));
-        }
-
-        function render() {
-          const menu = getMenu();
-          const cats = [];
-          menu.forEach((m) => {
-            if (!cats.includes(m.c)) cats.push(m.c);
-          });
-
-          $("#board").innerHTML = cats.length
-            ? cats
+        $("#board").innerHTML = cats
+          .map(
+            (c) =>
+              `<section class="cat"><h2>${c}</h2>${MENU.filter(
+                (m) => esc(m.c) == c,
+              )
                 .map(
-                  (c) =>
-                    `<section class="cat"><h2>${esc(c)}</h2>${menu
-                      .filter((m) => m.c == c)
-                      .map((m) => {
-                        const from = MIN_FROM[m.n];
-                        const price = from !== undefined ? from : m.p;
-                        return `<div class="it"><span class="nm">${esc(m.n)}</span><span class="dots"></span><span class="pr">${from !== undefined ? "<small>از </small>" : ""}${fa(price)}</span></div>`;
-                      })
-                      .join("")}</section>`,
+                  (m) =>
+                    `<div class="it"><span class="nm">${esc(m.n)}</span><span class="dots"></span><span class="pr">${fa(m.p)}</span></div>`,
                 )
-                .join("")
-            : '<div class="empty">منو در دسترس نیست</div>';
+                .join("")}</section>`,
+          )
+          .join("");
 
-          fit();
+        fit();
+      }
+
+      /* ---------- جاسازی خودکار: همهٔ آیتم‌ها در یک صفحه ---------- */
+      function fit() {
+        const b = $("#board");
+        const ratio = innerWidth / innerHeight;
+        b.style.setProperty("--cols", ratio >= 1.2 ? 4 : ratio >= 0.8 ? 3 : 2);
+        const overflows = () =>
+          b.scrollWidth > b.clientWidth + 2 ||
+          b.scrollHeight > b.clientHeight + 2;
+        let lo = 8,
+          hi = 60,
+          best = lo;
+        while (hi - lo > 0.25) {
+          const mid = (lo + hi) / 2;
+          b.style.setProperty("--fs", mid + "px");
+          if (overflows()) hi = mid;
+          else {
+            best = mid;
+            lo = mid;
+          }
         }
+        b.style.setProperty("--fs", best + "px");
+      }
+
+      let t;
+      addEventListener("resize", () => {
+        clearTimeout(t);
+        t = setTimeout(fit, 150);
       });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+      render();
     </script>
   </body>
 </html>
