@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>منوی کافه لامور</title>
+    <link rel="apple-touch-icon" href="./logolamour.png" />
+    <link rel="icon" type="image/png" href="./logolamour.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #ffecd1;
+        --card: #fffaf1;
+        --tx: #2b1d14;
+        --mut: #8a7766;
+        --pri: #8b5a2b;
+        --pri2: #6f4520;
+        --bd: #e8dccb;
+        --gold: #c27a10;
+        --fs: 20px; /* توسط جاوااسکریپت تنظیم می‌شود */
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden; /* بدون اسکرول؛ همه‌چیز در یک صفحه */
+      }
+      body {
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        color: var(--tx);
+        font-family: Vazirmatn, Tahoma, sans-serif;
+        cursor: none;
+      }
+
+      /* ---------- هدر ---------- */
+      header {
+        position: relative;
+        flex: 0 0 auto;
+        height: 11vh;
+        min-height: 56px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2vh;
+        border-bottom: 1px solid var(--bd);
+      }
+      .bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(3px);
+        z-index: 0;
+      }
+      header > *:not(.bg-video) {
+        position: relative;
+        z-index: 1;
+      }
+      header img {
+        height: 82%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 100%;
+        box-shadow: 0 0 20px 1px var(--gold);
+      }
+      header h1 {
+        background: #675347;
+        color: #f3e9dc;
+        font-weight: 800;
+        font-size: clamp(14px, 3.2vh, 40px);
+        padding: 0.35em 1.4em;
+        border-radius: 100px;
+      }
+
+      /* ---------- بدنهٔ منو ---------- */
+      #board {
+        flex: 1 1 0;
+        min-height: 0;
+        padding: 1.2vh 1.2vw;
+        overflow: hidden;
+        font-size: var(--fs);
+        column-count: var(--cols, 4);
+        column-gap: 1.2vw;
+        column-fill: balance;
+      }
+      .cat {
+        margin-bottom: 0.7em;
+      }
+      .cat h2 {
+        break-after: avoid;
+        background: var(--pri2);
+        color: #fff;
+        font-size: 1em;
+        font-weight: 800;
+        padding: 0.25em 0.9em;
+        border-radius: 100px;
+        margin-bottom: 0.25em;
+      }
+      .it {
+        break-inside: avoid;
+        display: flex;
+        align-items: baseline;
+        gap: 0.5em;
+        padding: 0.2em 0.3em;
+        line-height: 1.35;
+      }
+      .it .nm {
+        font-weight: 600;
+        font-size: 0.95em;
+        white-space: nowrap;
+      }
+      .it .dots {
+        flex: 1;
+        min-width: 1em;
+        border-bottom: 1.5px dotted var(--mut);
+        transform: translateY(-0.25em);
+        opacity: 0.6;
+      }
+      .it .pr {
+        font-weight: 800;
+        color: var(--pri);
+        font-size: 0.95em;
+        white-space: nowrap;
+      }
+      .it .pr small {
+        font-weight: 400;
+        color: var(--mut);
+        font-size: 0.6em;
+      }
+      .it .ds {
+        display: none;
+      }
+      .empty {
+        text-align: center;
+        color: var(--mut);
+        padding: 10vh 0;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <video class="bg-video" autoplay muted loop playsinline>
+        <source src="footig1.mp4" type="video/mp4" />
+      </video>
+      <img src="logolamour.png" alt="لوگو" />
+      <h1>منوی کافه لامور</h1>
+    </header>
+
+    <main id="board"></main>
+
+    <script src="sheet-db.js"></script>
+    <script>
+      DB.ready.then(() => {
+        /* ---------- داده‌های پیش‌فرض (اگر دیتابیس چیزی نداد) ---------- */
+        let MENU = [
+          { n: "سینگل", c: "قهوه", p: 140 },
+          { n: "دبل", c: "قهوه", p: 160 },
+          { n: "ترک", c: "قهوه", p: 160 },
+          { n: "آمریکانو", c: "گرم", p: 180 },
+          { n: "آیس آمریکانو", c: "سرد", p: 190 },
+          { n: "لاته", c: "گرم", p: 210 },
+          { n: "آیس لاته", c: "سرد", p: 230 },
+          { n: "هات چاکلت", c: "گرم", p: 240 },
+          { n: "آلفردو", c: "غذا", p: 490 },
+          { n: "پیتزا", c: "غذا", p: 600 },
+          { n: "املت", c: "غذا", p: 270 },
+          { n: "ایرانی", c: "غذا", p: 600 },
+          { n: "نیمرو", c: "غذا", p: 200 },
+          { n: "سوسیس تخم مرغ", c: "غذا", p: 270 },
+          { n: "قیساوا", c: "غذا", p: 270 },
+          { n: "سجوک", c: "غذا", p: 290 },
+          { n: "موکا", c: "گرم", p: 230 },
+          { n: "ماکیاتو", c: "گرم", p: 230 },
+          { n: "آیس ماکیاتو", c: "سرد", p: 250 },
+          { n: "چای ماسالا", c: "گرم", p: 230 },
+          { n: "وایت چاکلت", c: "گرم", p: 240 },
+          { n: "کاپوچینو", c: "گرم", p: 240 },
+          { n: "آیس موکا", c: "سرد", p: 250 },
+          { n: "آفوگاتو", c: "سرد", p: 360 },
+          { n: "چای ویژه", c: "چایی", p: 250 },
+          { n: "فنجانی", c: "چایی", p: 70 },
+          { n: "دمنوش زنجبیل", c: "چایی", p: 250 },
+          { n: "دمنوش لیمو نعناع", c: "چایی", p: 250 },
+          { n: "سرماخوردگی", c: "چایی", p: 250 },
+          { n: "گل گاوزبان", c: "چایی", p: 250 },
+          { n: "دمنوش میوه", c: "چایی", p: 290 },
+          { n: "شکلاتی", c: "شیک", p: 470 },
+          { n: "نوتلا", c: "شیک", p: 470 },
+          { n: "موز", c: "شیک", p: 420 },
+          { n: "بادام زمینی", c: "شیک", p: 420 },
+          { n: "نسکافه", c: "شیک", p: 400 },
+          { n: "کیک خیس", c: "خوراکی", p: 250 },
+          { n: "باقلوا", c: "خوراکی", p: 50 },
+          { n: "پستو", c: "غذا", p: 620 },
+          { n: "مکن چیز", c: "غذا", p: 400 },
+          { n: "آب", c: "نوشیدنی", p: 25 },
+        ];
+
+        /* قیمت «از ...» برای آیتم‌های چندحالته (مثل صفحهٔ سفارش) */
+        const MIN_FROM = { ترک: 160, سینگل: 140, دبل: 160 };
+
+        /* حذف دستهٔ قلیان */
+        const isHookah = (m) =>
+          /قلیان|قليان|هوکا|hookah|shisha|nargile/i.test(
+            (m.c || "") + " " + (m.n || ""),
+          );
+
+        const $ = (s) => document.querySelector(s);
+        const fa = (n) => Number(n).toLocaleString("fa-IR");
+        const esc = (s) =>
+          String(s == null ? "" : s).replace(/[<>&"]/g, "");
+
+        function getMenu() {
+          const src = DB.menu && DB.menu.length ? DB.menu : MENU;
+          return src.filter((m) => !isHookah(m));
+        }
+
+        function render() {
+          const menu = getMenu();
+          const cats = [];
+          menu.forEach((m) => {
+            if (!cats.includes(m.c)) cats.push(m.c);
+          });
+
+          $("#board").innerHTML = cats.length
+            ? cats
+                .map(
+                  (c) =>
+                    `<section class="cat"><h2>${esc(c)}</h2>${menu
+                      .filter((m) => m.c == c)
+                      .map((m) => {
+                        const from = MIN_FROM[m.n];
+                        const price = from !== undefined ? from : m.p;
+                        return `<div class="it"><span class="nm">${esc(m.n)}</span><span class="dots"></span><span class="pr">${from !== undefined ? "<small>از </small>" : ""}${fa(price)}</span></div>`;
+                      })
+                      .join("")}</section>`,
+                )
+                .join("")
+            : '<div class="empty">منو در دسترس نیست</div>';
+
+          fit();
+        }
+
+        /* ---------- جاسازی خودکار: همهٔ آیتم‌ها در یک صفحه ---------- */
+        function fit() {
+          const b = $("#board");
+          b.style.setProperty(
+            "--cols",
+            innerWidth / innerHeight >= 1.2 ? 4 : innerWidth / innerHeight >= 0.8 ? 3 : 2,
+          );
+          const overflows = () =>
+            b.scrollWidth > b.clientWidth + 2 ||
+            b.scrollHeight > b.clientHeight + 2;
+          let lo = 8,
+            hi = 60,
+            best = lo;
+          while (hi - lo > 0.25) {
+            const mid = (lo + hi) / 2;
+            b.style.setProperty("--fs", mid + "px");
+            if (overflows()) hi = mid;
+            else {
+              best = mid;
+              lo = mid;
+            }
+          }
+          b.style.setProperty("--fs", best + "px");
+        }
+
+        let t;
+        addEventListener("resize", () => {
+          clearTimeout(t);
+          t = setTimeout(fit, 150);
+        });
+        if (document.fonts && document.fonts.ready)
+          document.fonts.ready.then(fit);
+
+        render();
+
+        /* به‌روزرسانی خودکار برای تلویزیون: هر ۵ دقیقه صفحه دوباره از دیتابیس خوانده می‌شود */
+        setInterval(() => location.reload(), 5 * 60 * 1000);
+      });
+    </script>
+  </body>
+</html>
