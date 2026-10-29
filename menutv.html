@@ -43,16 +43,37 @@
         cursor: none;
       }
 
+      /* ---------- هدر ---------- */
+      header {
+        flex: 0 0 auto;
+        height: 9vh;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      header img {
+        height: 82%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 100%;
+        box-shadow: 0 0 20px 1px var(--gold);
+      }
+
       /* ---------- بدنهٔ منو ---------- */
       #board {
         flex: 1 1 0;
         min-height: 0;
-        padding: 1.2vh 1.2vw;
+        display: flex;
+        gap: 1.2vw;
+        padding: 0.8vh 1.2vw 1.2vh;
         overflow: hidden;
         font-size: var(--fs);
-        column-count: var(--cols, 4);
-        column-gap: 1.2vw;
-        column-fill: balance;
+      }
+      .col {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
       }
       .cat {
         margin-bottom: 0.7em;
@@ -96,6 +117,10 @@
     </style>
   </head>
   <body>
+    <header>
+      <img src="logolamour.png" alt="لوگو" />
+    </header>
+
     <main id="board"></main>
 
     <script>
@@ -132,8 +157,8 @@
         { n: "کیک خیس", c: "خوراکی", p: 250 },
         { n: "باقلوا", c: "خوراکی", p: 50 },
         { n: "آب", c: "نوشیدنی", p: 25 },
-        { n: "آلبالو", c: "نوشیدنی", p: 120 },
-        { n: "بلوبری", c: "نوشیدنی", p: 120 },
+        { n: "آب آلبالو", c: "نوشیدنی", p: 120 },
+        { n: "آبلوبری", c: "نوشیدنی", p: 120 },
         { n: "دراگون فروت", c: "نوشیدنی", p: 150 },
         { n: "آناناس", c: "نوشیدنی", p: 85 },
         { n: "شاهتوت سیاه", c: "نوشیدنی", p: 150 },
@@ -154,61 +179,101 @@
       const fa = (n) => Number(n).toLocaleString("fa-IR");
       const esc = (s) => String(s == null ? "" : s).replace(/[<>&"]/g, "").trim();
 
-      function render() {
-        const cats = [];
+      const GROUPS = (() => {
+        const g = [];
         MENU.forEach((m) => {
           const c = esc(m.c);
-          if (!cats.includes(c)) cats.push(c);
+          let x = g.find((y) => y.c == c);
+          if (!x) g.push((x = { c, items: [] }));
+          x.items.push(m);
         });
+        return g;
+      })();
 
-        $("#board").innerHTML = cats
-          .map(
-            (c) =>
-              `<section class="cat"><h2>${c}</h2>${MENU.filter(
-                (m) => esc(m.c) == c,
-              )
-                .map(
-                  (m) =>
-                    `<div class="it"><span class="nm">${esc(m.n)}</span><span class="dots"></span><span class="pr">${fa(m.p)}</span></div>`,
-                )
-                .join("")}</section>`,
-          )
-          .join("");
-
-        fit();
+      /* تقسیم دسته‌ها به n ستونِ پشت‌سرهم با کمترین اختلاف ارتفاع */
+      function split(n) {
+        const w = GROUPS.map((g) => g.items.length * 10 + 16);
+        const cnt = (max) => {
+          let c = 1, cur = 0;
+          w.forEach((x) => {
+            if (cur + x > max) { c++; cur = 0; }
+            cur += x;
+          });
+          return c;
+        };
+        let lo = Math.max(...w), hi = w.reduce((a, b) => a + b, 0);
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          if (cnt(mid) <= n) hi = mid; else lo = mid + 1;
+        }
+        const cols = [[]];
+        let cur = 0;
+        GROUPS.forEach((g, i) => {
+          if (cur + w[i] > lo && cols[cols.length - 1].length) {
+            cols.push([]);
+            cur = 0;
+          }
+          cols[cols.length - 1].push(g);
+          cur += w[i];
+        });
+        return cols;
       }
 
-      /* ---------- جاسازی خودکار: همهٔ آیتم‌ها در یک صفحه ---------- */
-      function fit() {
-        const b = $("#board");
-        const ratio = innerWidth / innerHeight;
-        b.style.setProperty("--cols", ratio >= 1.2 ? 4 : ratio >= 0.8 ? 3 : 2);
-        const overflows = () =>
-          b.scrollWidth > b.clientWidth + 2 ||
-          b.scrollHeight > b.clientHeight + 2;
-        let lo = 8,
-          hi = 60,
-          best = lo;
-        while (hi - lo > 0.25) {
+      function build(n) {
+        $("#board").innerHTML = split(n)
+          .map(
+            (col) =>
+              `<div class="col">${col
+                .map(
+                  (g) =>
+                    `<section class="cat"><h2>${g.c}</h2>${g.items
+                      .map(
+                        (m) =>
+                          `<div class="it"><span class="nm">${esc(m.n)}</span><span class="dots"></span><span class="pr">${fa(m.p)}</span></div>`,
+                      )
+                      .join("")}</section>`,
+                )
+                .join("")}</div>`,
+          )
+          .join("");
+      }
+
+      /* بزرگ‌ترین فونتی که بدون سرریز جا شود */
+      function bestFont(b) {
+        const over = () =>
+          [...b.children].some(
+            (c) =>
+              c.scrollHeight > c.clientHeight + 1 ||
+              c.scrollWidth > c.clientWidth + 1,
+          );
+        let lo = 5, hi = 44;
+        while (hi - lo > 0.2) {
           const mid = (lo + hi) / 2;
           b.style.setProperty("--fs", mid + "px");
-          if (overflows()) hi = mid;
-          else {
-            best = mid;
-            lo = mid;
-          }
+          if (over()) hi = mid; else lo = mid;
         }
-        b.style.setProperty("--fs", best + "px");
+        return lo;
+      }
+
+      /* ---------- ریسپانسیو: بهترین تعداد ستون و اندازهٔ فونت برای هر صفحه ---------- */
+      function fit() {
+        const b = $("#board");
+        let bestN = 1, bestFs = 0;
+        for (let n = 1; n <= Math.min(6, GROUPS.length); n++) {
+          build(n);
+          const fs = bestFont(b);
+          if (fs > bestFs + 0.05) { bestFs = fs; bestN = n; }
+        }
+        build(bestN);
+        b.style.setProperty("--fs", bestFs * 0.95 + "px"); /* ۵٪ حاشیهٔ اطمینان */
       }
 
       let t;
-      addEventListener("resize", () => {
-        clearTimeout(t);
-        t = setTimeout(fit, 150);
-      });
+      const refit = () => { clearTimeout(t); t = setTimeout(fit, 120); };
+      addEventListener("resize", refit);
+      if (window.ResizeObserver) new ResizeObserver(refit).observe(document.body);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-
-      render();
+      fit();
     </script>
   </body>
 </html>
