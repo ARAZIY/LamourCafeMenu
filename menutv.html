@@ -186,8 +186,6 @@
           { n: "نسکافه", c: "شیک", p: 400 },
           { n: "کیک خیس", c: "خوراکی", p: 250 },
           { n: "باقلوا", c: "خوراکی", p: 50 },
-          { n: "پستو", c: "غذا", p: 620 },
-          { n: "مکن چیز", c: "غذا", p: 400 },
           { n: "آب", c: "نوشیدنی", p: 25 },
           { n: "آب آلبالو", c: "نوشیدنی", p: 120 },
           { n: "آبلوبری", c: "نوشیدنی", p: 120 },
@@ -208,14 +206,7 @@
           
         ];
 
-        /* قیمت «از ...» برای آیتم‌های چندحالته (مثل صفحهٔ سفارش) */
-        const MIN_FROM = { ترک: 160, سینگل: 140, دبل: 160 };
-
-        /* حذف دستهٔ قلیان */
-        const isHookah = (m) =>
-          /قلیان|قليان|هوکا|hookah|shisha|nargile/i.test(
-            (m.c || "") + " " + (m.n || ""),
-          );
+  
 
         const $ = (s) => document.querySelector(s);
         const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -252,44 +243,6 @@
 
           fit();
         }
-
-        /* ---------- جاسازی خودکار: همهٔ آیتم‌ها در یک صفحه ---------- */
-        function fit() {
-          const b = $("#board");
-          b.style.setProperty(
-            "--cols",
-            innerWidth / innerHeight >= 1.2 ? 4 : innerWidth / innerHeight >= 0.8 ? 3 : 2,
-          );
-          const overflows = () =>
-            b.scrollWidth > b.clientWidth + 2 ||
-            b.scrollHeight > b.clientHeight + 2;
-          let lo = 8,
-            hi = 60,
-            best = lo;
-          while (hi - lo > 0.25) {
-            const mid = (lo + hi) / 2;
-            b.style.setProperty("--fs", mid + "px");
-            if (overflows()) hi = mid;
-            else {
-              best = mid;
-              lo = mid;
-            }
-          }
-          b.style.setProperty("--fs", best + "px");
-        }
-
-        let t;
-        addEventListener("resize", () => {
-          clearTimeout(t);
-          t = setTimeout(fit, 150);
-        });
-        if (document.fonts && document.fonts.ready)
-          document.fonts.ready.then(fit);
-
-        render();
-
-        /* به‌روزرسانی خودکار برای تلویزیون: هر ۵ دقیقه صفحه دوباره از دیتابیس خوانده می‌شود */
-        setInterval(() => location.reload(), 5 * 60 * 1000);
       });
     </script>
   </body>
