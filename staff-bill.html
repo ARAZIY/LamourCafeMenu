@@ -75,11 +75,15 @@ const mlab=v=>MONTHS[v%100-1]+" "+nn(Math.floor(v/100));
 let M=Math.floor(jKey(Date.now())/100),cashv=0;
 const inM=t=>Math.floor(jKey(t)/100)==M;
 
-let D;try{D=Object.assign({admin:null,staff:[]},JSON.parse(DB.get(K))||{})}catch(e){D={admin:null,staff:[]}}
+let D;try{D=Object.assign({admin:null,staff:[],rates:{}},JSON.parse(DB.get(K))||{})}catch(e){D={admin:null,staff:[],rates:{}}}
 const sv=()=>{try{DB.set(K,JSON.stringify(D))}catch(e){alert("ذخیره‌سازی در مرورگر ممکن نیست")}};
 const sess=()=>{try{return JSON.parse(sessionStorage.getItem("psess"))}catch(e){return null}};
 const setS=s=>{try{s?sessionStorage.setItem("psess",JSON.stringify(s)):sessionStorage.removeItem("psess")}catch(e){}};
 const person=id=>D.staff.find(p=>p.id==id);
+/* پورسانت: ثبت‌های جدید درصد و مبلغ پورسانت را همان لحظه ذخیره می‌کنند؛ ثبت‌های قدیمی ۵٪ حساب می‌شوند */
+const frc=x=>x.c!=null?x.c:x.a*RATE;
+const rate=m=>Number((D.rates||{})[m.n])||0;
+const fopts=()=>{const g={};MENU.forEach((m,i)=>(g[m.c]=g[m.c]||[]).push(`<option value="${i}">${m.n} — ${nf(m.p)} (${nf(rate(m))}٪)</option>`));return Object.keys(g).map(k=>`<optgroup label="${k}">${g[k].join("")}</optgroup>`).join("")};
 
 /* ورود */
 function loginUi(){
@@ -101,7 +105,7 @@ $("#go").onclick=()=>{
 /* محاسبات ماه انتخاب‌شده */
 function calc(p){
   const food=p.food.filter(x=>inM(x.t)),cash=p.cash.filter(x=>inM(x.t)),tips=p.tips.filter(x=>inM(x.t)),fr=p.fr.filter(x=>inM(x.t));
-  const F=sum(food,x=>x.q*x.p),C=sum(cash,x=>x.a),T=sum(tips,x=>x.a),FR=sum(fr,x=>x.a),com=FR*RATE,debt=F+C;
+  const F=sum(food,x=>x.q*x.p),C=sum(cash,x=>x.a),T=sum(tips,x=>x.a),FR=sum(fr,x=>x.a),com=sum(fr,frc),debt=F+C;
   const closed=!!(p.set||{})[M];
   return{food,cash,tips,fr,F,C,T,FR,com,closed,
     debt:closed?0:debt,
@@ -129,8 +133,8 @@ function panel(p,adm){
   T_(["مبلغ","تاریخ و ساعت",...xh],c.cash.map(x=>[nf(x.a),dt(x.t),...(adm?[X("cash",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.C)} تومان</div></section>
   <section class="card"><h3>🎁 انعام</h3><div class="inl"><input id="ta" type="number" min="1" placeholder="مبلغ انعام"><button class="btn" data-a="addtip">ثبت انعام</button></div>`+
   T_(["مبلغ","تاریخ و ساعت",...xh],c.tips.map(x=>[nf(x.a),dt(x.t),...(adm?[X("tips",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.T)} تومان</div></section>
-  <section class="card"><h3>🤝 پورسانت (${nf(RATE*100)}٪ خرید آشنایان)</h3><div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><input id="fa" type="number" min="1" placeholder="مبلغ خرید"><button class="btn" data-a="addfr">ثبت خرید</button></div>`+
-  T_(["نام","مبلغ خرید","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),nf(x.a),nf(x.a*RATE),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
+  <section class="card"><h3>🤝 پورسانت خرید آشنایان (درصد هر محصول)</h3><div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><select id="fp">${fopts()}</select><input id="fq2" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfr">ثبت خرید</button></div>`+
+  T_(["نام","محصول","تعداد","مبلغ خرید","درصد","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),esc(x.pr||"—"),x.q?nf(x.q):"—",nf(x.a),nf(x.r!=null?x.r:RATE*100)+"٪",nf(frc(x)),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
   <section class="card"><h3>⏱️ ورود و خروج</h3><div class="inl"><button class="btn" data-a="in" ${open?"disabled":""}>ثبت ورود</button><button class="btn" data-a="out2" ${open?"":"disabled"}>ثبت خروج</button></div>`+
   T_(["ورود","خروج","مدت",...xh],c.att.map(x=>[dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار",...(adm?[X("att",x.id)]:[])]))+`</section>
   <section class="card"><h3>🏖️ مرخصی</h3><div class="inl"><select id="lk"><option value="day">روزانه</option><option value="hr">ساعتی</option></select><input id="ln" placeholder="توضیحات (اختیاری)"></div>
@@ -139,10 +143,12 @@ function panel(p,adm){
   T_(["نوع","تاریخ","مقدار","توضیحات","ثبت‌کننده","وضعیت",...xh],c.lv.map(x=>[x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?nf(x.days)+" روز":nn(x.f)+" تا "+nn(x.to),esc(x.n)||"—",x.by=="admin"?"مدیر":"خود فرد",stc(x,adm),...(adm?[X("lv",x.id)]:[])]))+`</section>
   <section class="card"><h3>🔑 ${adm?"تغییر رمز این فرد":"تغییر رمز من"}</h3><div class="inl"><input id="np" type="password" placeholder="رمز جدید (حداقل ۴ حرف)"><button class="btn" data-a="chpw">ذخیره رمز</button></div></section>`;
 }
+const ratesSec=()=>`<section class="card"><h3>🤝 درصد پورسانت هر محصول</h3><div class="mut" style="margin-bottom:8px">درصدی از مبلغ خرید دوست/فامیل پرسنل که به‌عنوان پورسانت به پرسنل می‌رسد. خالی یا ۰ = بدون پورسانت.</div>`+T_(["محصول","دسته","قیمت","درصد پورسانت"],MENU.map((m,i)=>[esc(m.n),esc(m.c),nf(m.p),`<input id="rt${i}" type="number" min="0" max="100" step="0.1" value="${rate(m)||""}" placeholder="۰" style="max-width:90px">`]))+`<button class="btn" style="margin-top:8px" data-a="saverates">ذخیره درصدها</button><div class="mut" style="margin-top:6px">تغییر درصد روی ثبت‌های قبلی اثری ندارد.</div></section>`;
 function overview(){
   const rows=D.staff.map(p=>{const c=calc(p);return[`<span class="lk" data-a="open" data-i="${p.id}">${esc(p.name)}</span>`,nf(c.F),nf(c.C),nf(c.debt),nf(c.T),nf(c.com),nf(c.net),(p.set||{})[M]?"🔒 بسته":"باز",`<button class="x" data-a="rpw" data-i="${p.id}">رمز</button> <button class="x" data-a="dst" data-i="${p.id}">حذف</button>`]});
   return`<section class="card"><h3>📋 حساب‌کتاب پرسنل — ${mlab(M)}</h3>`+T_(["نام","خوراکی","برداشت","جمع بدهی","انعام","پورسانت","مانده","وضعیت","مدیریت"],rows)+`<div class="mut" style="margin-top:6px">برای دیدن و ثبت اطلاعات (حساب، مرخصی، ورود و خروج) روی نام هر نفر بزن.</div></section>
   <section class="card"><h3>➕ تعریف پرسنل جدید</h3><div class="inl"><input id="sn" placeholder="نام"><input id="sp" type="password" placeholder="رمز اولیه (حداقل ۴ حرف)"><button class="btn" data-a="addst">افزودن</button></div></section>
+  ${ratesSec()}
   <section class="card"><h3>💾 خروجی و پشتیبان‌گیری (همهٔ داده‌ها)</h3><div class="inl"><button class="btn" data-a="ex" data-f="json">فایل JSON (پشتیبان کامل)</button><button class="btn" data-a="ex" data-f="txt">فایل متنی</button><button class="btn" data-a="ex" data-f="csv">اکسل (CSV)</button><button class="btn" data-a="ex" data-f="doc">ورد (DOC)</button></div>
   <div class="mut">بازیابی از فایل JSON:</div><input id="imp" type="file" accept=".json,application/json" style="margin-top:6px"></section>
   <section class="card"><h3>🔑 تغییر رمز مدیر</h3><div class="inl"><input id="ap" type="password" placeholder="رمز جدید مدیر"><button class="btn" data-a="apw">ذخیره رمز</button></div></section>`;
@@ -160,12 +166,12 @@ $("#mo").onchange=e=>{M=+e.target.value;render()};
 
 /* گزارش و خروجی */
 function report(){
-  const S=[{t:"خلاصه پرسنل",h:["نام","خوراکی","برداشت نقدی","بدهی کل","انعام","پورسانت","مانده"],r:[]},{t:"خوراکی‌ها",h:["پرسنل","نام","تعداد","قیمت واحد","قیمت کل","تاریخ و ساعت"],r:[]},{t:"برداشت نقدی",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"انعام",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"خرید آشنایان و پورسانت",h:["پرسنل","نام","مبلغ خرید","پورسانت","تاریخ و ساعت"],r:[]},{t:"ورود و خروج",h:["پرسنل","ورود","خروج","مدت"],r:[]},{t:"مرخصی",h:["پرسنل","نوع","تاریخ","مقدار","توضیحات","وضعیت"],r:[]},{t:"تسویه حساب ماه‌ها",h:["پرسنل","ماه","بدهی","انعام","پورسانت","مانده","تاریخ بستن"],r:[]}];
-  D.staff.forEach(p=>{const F=sum(p.food,x=>x.q*x.p),C=sum(p.cash,x=>x.a),T=sum(p.tips,x=>x.a),com=sum(p.fr,x=>x.a)*RATE;
+  const S=[{t:"خلاصه پرسنل",h:["نام","خوراکی","برداشت نقدی","بدهی کل","انعام","پورسانت","مانده"],r:[]},{t:"خوراکی‌ها",h:["پرسنل","نام","تعداد","قیمت واحد","قیمت کل","تاریخ و ساعت"],r:[]},{t:"برداشت نقدی",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"انعام",h:["پرسنل","مبلغ","تاریخ و ساعت"],r:[]},{t:"خرید آشنایان و پورسانت",h:["پرسنل","نام","محصول","تعداد","مبلغ خرید","درصد","پورسانت","تاریخ و ساعت"],r:[]},{t:"ورود و خروج",h:["پرسنل","ورود","خروج","مدت"],r:[]},{t:"مرخصی",h:["پرسنل","نوع","تاریخ","مقدار","توضیحات","وضعیت"],r:[]},{t:"تسویه حساب ماه‌ها",h:["پرسنل","ماه","بدهی","انعام","پورسانت","مانده","تاریخ بستن"],r:[]}];
+  D.staff.forEach(p=>{const F=sum(p.food,x=>x.q*x.p),C=sum(p.cash,x=>x.a),T=sum(p.tips,x=>x.a),com=sum(p.fr,frc);
     S[0].r.push([p.name,F,C,F+C,T,com,F+C-T-com]);
     p.food.forEach(x=>S[1].r.push([p.name,x.n,x.q,x.p,x.q*x.p,dt(x.t)]));
     p.cash.forEach(x=>S[2].r.push([p.name,x.a,dt(x.t)]));p.tips.forEach(x=>S[3].r.push([p.name,x.a,dt(x.t)]));
-    p.fr.forEach(x=>S[4].r.push([p.name,x.n,x.a,x.a*RATE,dt(x.t)]));
+    p.fr.forEach(x=>S[4].r.push([p.name,x.n,x.pr||"—",x.q||"—",x.a,x.r!=null?x.r:RATE*100,frc(x),dt(x.t)]));
     p.att.forEach(x=>S[5].r.push([p.name,dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار"]));
     p.lv.forEach(x=>S[6].r.push([p.name,x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?x.days+" روز":x.f+" تا "+x.to,x.n||"",({ok:"تأیید شد",no:"رد شد",pending:"در انتظار"})[x.st||"ok"]]));Object.keys(p.set||{}).sort().forEach(m=>{const z=p.set[m];S[7].r.push([p.name,mlab(+m),z.debt,z.tips,z.com,z.net,dt(z.t)])})});
   return S;
@@ -194,6 +200,7 @@ document.addEventListener("click",e=>{
     if(a=="addst"){const n=v("sn").trim(),pw=v("sp");if(!n||pw.length<4)return alert("نام و رمز (حداقل ۴ حرف) را وارد کنید");D.staff.push({id:uid(),name:n,pw,food:[],cash:[],tips:[],fr:[],att:[],lv:[]})}
     else if(a=="rpw"){const n=prompt("رمز جدید این فرد:");if(!n||n.length<4)return;person(b.dataset.i).pw=n;alert("رمز تغییر کرد")}
     else if(a=="dst"){if(!confirm("این فرد و همهٔ اطلاعاتش حذف شود؟"))return;D.staff=D.staff.filter(x=>x.id!=b.dataset.i)}
+    else if(a=="saverates"){D.rates={};MENU.forEach((m,i)=>{const x=+v("rt"+i);if(x>0)D.rates[m.n]=Math.min(100,x)});alert("درصدها ذخیره شد")}
     else if(a=="apw"){const n=v("ap");if(n.length<4)return alert("حداقل ۴ حرف");D.admin=n;alert("رمز مدیر تغییر کرد")}
     sv();return render();
   }
@@ -202,7 +209,7 @@ document.addEventListener("click",e=>{
   if(a=="addfood"){const m=MENU[+v("fi")],q=Math.max(1,num("fq")||1);p.food.push({id:uid(),n:m.n,q,p:m.p,t:now})}
   else if(a=="addcash"){if(cashv<=0)return;p.cash.push({id:uid(),a:cashv,t:now});cashv=0}
   else if(a=="addtip"){const x=+v("ta");if(!(x>0))return;p.tips.push({id:uid(),a:x,t:now})}
-  else if(a=="addfr"){const n=v("fn").trim(),x=+v("fa");if(!n||!(x>0))return alert("نام و مبلغ را وارد کنید");p.fr.push({id:uid(),n,a:x,t:now})}
+  else if(a=="addfr"){const n=v("fn").trim(),m=MENU[+v("fp")],q=Math.max(1,num("fq2")||1);if(!n||!m)return alert("نام و محصول را وارد کنید");const r=rate(m),t2=q*m.p;p.fr.push({id:uid(),n,pr:m.n,q,r,a:t2,c:t2*r/100,t:now})}
   else if(a=="in"){if(!p.att.some(x=>!x.o))p.att.push({id:uid(),i:now,o:null})}
   else if(a=="out2"){const o=p.att.find(x=>!x.o);if(o)o.o=now}
   else if(a=="addlv"){const k=v("lk"),d=num("ly")*10000+num("lm")*100+num("ld"),r={id:uid(),k,d,n:v("ln").trim(),by:adm?"admin":"staff",st:adm?"ok":"pending",t:now};
@@ -218,7 +225,7 @@ document.addEventListener("change",e=>{
   if(e.target.id=="lk"){const h=e.target.value=="hr";$("#lday").hidden=h;$("#lhr").hidden=!h}
   if(e.target.id=="imp"&&e.target.files[0]){
     const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.staff))throw 0;
-      if(confirm("همهٔ اطلاعات فعلی با این فایل جایگزین شود؟")){D=Object.assign({admin:null,staff:[]},j);sv();render();alert("بازیابی شد")}}catch(x){alert("فایل معتبر نیست")}};
+      if(confirm("همهٔ اطلاعات فعلی با این فایل جایگزین شود؟")){D=Object.assign({admin:null,staff:[],rates:{}},j);sv();render();alert("بازیابی شد")}}catch(x){alert("فایل معتبر نیست")}};
     r.readAsText(e.target.files[0]);
   }
 });
