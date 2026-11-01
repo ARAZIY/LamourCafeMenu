@@ -107,7 +107,7 @@ th{background:var(--bg);color:var(--mut);font-weight:600}
       <button class="chip" id="xd">📄 دانلود ورد (DOC)</button>
       <button class="chip bad" id="da">🗑️ حذف فاکتورهای نمایش‌داده‌شده</button>
     </div>
-    <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div><div><b id="c4">۰</b><span class="mut">دریافت‌شده (تومان)</span></div><div class="dbt"><b id="c5">۰</b><span class="mut">مانده دریافت‌نشده (تومان)</span></div><span id="msum" style="display:contents"></span></div>
+    <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div><div><b id="c6">۰</b><span class="mut">جمع تخفیف (تومان)</span></div><div><b id="c4">۰</b><span class="mut">دریافت‌شده (تومان)</span></div><div class="dbt"><b id="c5">۰</b><span class="mut">مانده دریافت‌نشده (تومان)</span></div><span id="msum" style="display:contents"></span></div>
     <div class="wrap"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
     <p class="mut" style="margin-top:8px">فایل خروجی (اکسل/ورد) طبق فیلترهای فعلی ساخته می‌شود؛ برای خروجی کامل، فیلترها را پاک کن.</p>
   </main>
@@ -137,6 +137,8 @@ function payInfo(o,PY){
 const bySum=by=>Object.keys(by).map(k=>(MI[k]||"")+" "+(MN[k]||k)+" "+fa(by[k])).join(" + ");
 const bySumPlain=by=>Object.keys(by).map(k=>(MN[k]||k)+" "+by[k]).join(" + ");
 const claimTxt=c=>c.pl.map(x=>(MI[x.m]||"")+" "+(MN[x.m]||x.m)+" "+fa(x.a)+(x.m=="c2c"?"":" (در کافه)")).join(" + ");
+/* جمع تخفیف یک فاکتور: کلوپ (سطح + امتیاز) + تخفیف دستی */
+const discOf=o=>(o.dl||0)+(o.dp||0)+(o.dm||0);
 function payCell(o,f){
   const t=f.st=="paid"?"✅ تسویه شد":f.st=="part"?"🟡 نیمه‌پرداخت ("+fa(f.paid)+" از "+fa(o.sum)+")":"⏳ تسویه نشده";
   return `<div class="pc"><span class="pst ${f.st}">${t}</span>${f.paid?`<span class="mut">${bySum(f.by)}</span>`:""}${f.cl?`<span class="pst claim">🔔 رسید در انتظار تأیید</span>`:""}<button class="pb" data-pay="${o.id}">💰 پرداخت</button></div>`;
@@ -248,9 +250,9 @@ function render(){
     return !q||o.items.some(i=>i.n.includes(q))||String(o.tbl||"").includes(q)||String(o.no||"").includes(q)||(w&&w.n.includes(q))||f.ps.some(x=>String(x.r||"").includes(q));
   });
   cur=inv;
-  let qty=0,total=0,paid=0,rem=0;const bm={};
-  inv.forEach(o=>{o.items.forEach(i=>qty+=i.q);total+=o.sum;const f=payInfo(o,PY);paid+=f.paid;rem+=f.rem;Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k])});
-  $("#c1").textContent=fa(inv.length);$("#c2").textContent=fa(qty);$("#c3").textContent=fa(total);$("#c4").textContent=fa(paid);$("#c5").textContent=fa(rem);
+  let qty=0,total=0,paid=0,rem=0,disc=0;const bm={};
+  inv.forEach(o=>{o.items.forEach(i=>qty+=i.q);total+=o.sum;disc+=discOf(o);const f=payInfo(o,PY);paid+=f.paid;rem+=f.rem;Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k])});
+  $("#c1").textContent=fa(inv.length);$("#c2").textContent=fa(qty);$("#c3").textContent=fa(total);$("#c4").textContent=fa(paid);$("#c5").textContent=fa(rem);$("#c6").textContent=fa(disc);
   $("#msum").innerHTML=["cash","pos","c2c","unk"].filter(k=>bm[k]>0).map(k=>`<div><b>${fa(bm[k])}</b><span class="mut">${MI[k]} ${MN[k]}</span></div>`).join("");
   $("#mt").parentElement.style.display=(so=="top"||so=="low")?"":"none";
   const onePerson=!!pf&&pf!="__none";
@@ -280,29 +282,30 @@ function render(){
     return;
   }
   const list=[...inv].sort((a,b)=>so=="old"?a.t-b.t:b.t-a.t),P=people();
-  $("#th").innerHTML="<tr><th>سفارش</th><th>نام محصول</th><th>تعداد</th><th>قیمت واحد</th><th>قیمت کل</th><th>تاریخ و ساعت</th><th>شخص</th><th>تسویه</th><th>نوع</th><th>حذف</th></tr>";
+  $("#th").innerHTML="<tr><th>سفارش</th><th>نام محصول</th><th>تعداد</th><th>قیمت واحد</th><th>قیمت کل</th><th>تخفیف (تومان)</th><th>تاریخ و ساعت</th><th>شخص</th><th>تسویه</th><th>نوع</th><th>حذف</th></tr>";
   const rows=[];
   list.forEach(o=>{
     const w=W[o.id],f=payInfo(o,PY);
+    const D=discOf(o);
     const ctl=`<div class="pc"><select class="pp" data-id="${o.id}"><option value="">— بدون شخص —</option>${P.map(n=>`<option value="${n}" ${w&&w.n==n?"selected":""}>${n}</option>`).join("")}<option value="__new">➕ شخص جدید…</option></select></div>`;
-    o.items.forEach((i,idx)=>rows.push(`<tr><td data-l="سفارش">#${fa(o.no||0)}${o.e?` <span class="tag ed" title="ویرایش در ${irDate(o.e)} ${irTime(o.e)}">✎ ویرایش‌شده</span>`:""}</td><td data-l="نام محصول">${esc(i.n)}</td><td data-l="تعداد">${fa(i.q)}</td><td data-l="قیمت واحد">${fa(i.p)}</td><td data-l="قیمت کل">${fa(i.p*i.q)}</td><td data-l="تاریخ و ساعت">${irDate(o.t)} · ${irTime(o.t)}</td><td data-l="شخص">${idx==0?ctl:`<span class="mut">${w?esc(w.n):"—"}</span>`}</td><td data-l="تسویه">${idx==0?payCell(o,f):`<span class="mut">${f.st=="paid"?"✅":f.st=="part"?"🟡":"⏳"}</span>`}</td><td data-l="نوع"><span class="tag">${o.typ=="میز"?"داخل سالن"+(o.tbl?" (میز "+esc(o.tbl)+")":""):"بیرون‌بر"}</span></td><td><button class="del" data-del="${o.id}">🗑️ حذف فاکتور</button></td></tr>`));
+    o.items.forEach((i,idx)=>rows.push(`<tr><td data-l="سفارش">#${fa(o.no||0)}${o.e?` <span class="tag ed" title="ویرایش در ${irDate(o.e)} ${irTime(o.e)}">✎ ویرایش‌شده</span>`:""}</td><td data-l="نام محصول">${esc(i.n)}</td><td data-l="تعداد">${fa(i.q)}</td><td data-l="قیمت واحد">${fa(i.p)}</td><td data-l="قیمت کل">${fa(i.p*i.q)}</td><td data-l="تخفیف">${idx==0&&D?`<span style="color:var(--ok)">−${fa(D)}</span>`:"—"}</td><td data-l="تاریخ و ساعت">${irDate(o.t)} · ${irTime(o.t)}</td><td data-l="شخص">${idx==0?ctl:`<span class="mut">${w?esc(w.n):"—"}</span>`}</td><td data-l="تسویه">${idx==0?payCell(o,f):`<span class="mut">${f.st=="paid"?"✅":f.st=="part"?"🟡":"⏳"}</span>`}</td><td data-l="نوع"><span class="tag">${o.typ=="میز"?"داخل سالن"+(o.tbl?" (میز "+esc(o.tbl)+")":""):"بیرون‌بر"}</span></td><td><button class="del" data-del="${o.id}">🗑️ حذف فاکتور</button></td></tr>`));
   });
-  $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="10">فاکتوری یافت نشد</td></tr>';
+  $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="11">فاکتوری یافت نشد</td></tr>';
 }
 
 /* خروجی اکسل / ورد */
 function exportData(){
   const W=ldo(WK),PY=getPY(),list=[...cur].sort((a,b)=>a.t-b.t);
-  const det={t:"فاکتورها",h:["شمارهٔ سفارش","تاریخ","ساعت","شخص","وضعیت تسویه","روش پرداخت","شمارهٔ پیگیری","نوع","میز","محصول","تعداد","قیمت واحد (تومان)","قیمت کل (تومان)","جمع فاکتور (تومان)","دریافت‌شده (تومان)","مانده (تومان)"],r:[]};
-  let qty=0,total=0,paid=0,rem=0;const bm={};
+  const det={t:"فاکتورها",h:["شمارهٔ سفارش","تاریخ","ساعت","شخص","وضعیت تسویه","روش پرداخت","شمارهٔ پیگیری","نوع","میز","محصول","تعداد","قیمت واحد (تومان)","قیمت کل (تومان)","جمع فاکتور (تومان)","تخفیف (تومان)","دریافت‌شده (تومان)","مانده (تومان)"],r:[]};
+  let qty=0,total=0,paid=0,rem=0,disc=0;const bm={};
   list.forEach(o=>{
-    const w=W[o.id],f=payInfo(o,PY);total+=o.sum;paid+=f.paid;rem+=f.rem;
+    const w=W[o.id],f=payInfo(o,PY),D=discOf(o);total+=o.sum;paid+=f.paid;rem+=f.rem;disc+=D;
     Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k]);
     const st=f.st=="paid"?"تسویه شده":f.st=="part"?"نیمه‌پرداخت":"تسویه نشده";
     const refs=f.ps.map(x=>x.r).filter(Boolean).join("، ");
-    o.items.forEach((i,idx)=>{qty+=i.q;const first=idx==0;det.r.push([o.no||"",irDate(o.t),irTime(o.t),w?w.n:"",st,first?bySumPlain(f.by):"",first?refs:"",o.typ=="میز"?"داخل سالن":"بیرون‌بر",o.typ=="میز"?(o.tbl||""):"",i.n,i.q,i.p,i.p*i.q,first?o.sum:"",first?f.paid:"",first?f.rem:""])});
+    o.items.forEach((i,idx)=>{qty+=i.q;const first=idx==0;det.r.push([o.no||"",irDate(o.t),irTime(o.t),w?w.n:"",st,first?bySumPlain(f.by):"",first?refs:"",o.typ=="میز"?"داخل سالن":"بیرون‌بر",o.typ=="میز"?(o.tbl||""):"",i.n,i.q,i.p,i.p*i.q,first?o.sum:"",first?D:"",first?f.paid:"",first?f.rem:""])});
   });
-  const sumRows=[["تعداد فاکتور",list.length],["تعداد اقلام فروخته‌شده",qty],["جمع فروش (تومان)",total],["دریافت‌شده (تومان)",paid],["مانده دریافت‌نشده (تومان)",rem]];
+  const sumRows=[["تعداد فاکتور",list.length],["تعداد اقلام فروخته‌شده",qty],["جمع فروش (تومان)",total],["جمع تخفیف (تومان)",disc],["دریافت‌شده (تومان)",paid],["مانده دریافت‌نشده (تومان)",rem]];
   ["cash","pos","c2c","unk"].forEach(k=>{if(bm[k]>0)sumRows.push(["دریافتی "+MN[k]+" (تومان)",bm[k]])});
   const S=[det,{t:"خلاصه",h:["شرح","مقدار"],r:sumRows}];
   const ps=pplStats(list,W,PY);
