@@ -80,8 +80,8 @@ const sv=()=>{try{DB.set(K,JSON.stringify(D))}catch(e){alert("ذخیره‌سا�
 const sess=()=>{try{return JSON.parse(sessionStorage.getItem("psess"))}catch(e){return null}};
 const setS=s=>{try{s?sessionStorage.setItem("psess",JSON.stringify(s)):sessionStorage.removeItem("psess")}catch(e){}};
 const person=id=>D.staff.find(p=>p.id==id);
-/* پورسانت: ثبت‌های جدید درصد و مبلغ پورسانت را همان لحظه ذخیره می‌کنند؛ ثبت‌های قدیمی ۵٪ حساب می‌شوند */
-const frc=x=>x.c!=null?x.c:x.a*RATE;
+const rOf=x=>x.pr!=null?(Number((D.rates||{})[x.pr])||0):(x.r!=null?x.r:RATE*100);
+const frc=x=>x.a*rOf(x)/100;
 const rate=m=>Number((D.rates||{})[m.n])||0;
 const fopts=()=>{const g={};MENU.forEach((m,i)=>(g[m.c]=g[m.c]||[]).push(`<option value="${i}">${m.n} — ${nf(m.p)} (${nf(rate(m))}٪)</option>`));return Object.keys(g).map(k=>`<optgroup label="${k}">${g[k].join("")}</optgroup>`).join("")};
 
@@ -136,7 +136,7 @@ function panel(p,adm){
   <section class="card"><h3>🎁 انعام</h3><div class="inl"><input id="ta" type="number" min="1" placeholder="مبلغ انعام"><button class="btn" data-a="addtip">ثبت انعام</button></div>`+
   T_(["مبلغ","تاریخ و ساعت",...xh],c.tips.map(x=>[nf(x.a),dt(x.t),...(adm?[X("tips",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.T)} تومان</div></section>
   <section class="card"><h3>🤝 پورسانت خرید آشنایان (درصد هر محصول)</h3><div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><select id="fp">${fopts()}</select><input id="fq2" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfr">ثبت خرید</button></div>`+
-  T_(["نام","محصول","تعداد","مبلغ خرید","درصد","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),esc(x.pr||"—"),x.q?nf(x.q):"—",nf(x.a),nf(x.r!=null?x.r:RATE*100)+"٪",nf(frc(x)),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
+  T_(["نام","محصول","تعداد","مبلغ خرید","درصد","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),esc(x.pr||"—"),x.q?nf(x.q):"—",nf(x.a),nf(rOf(x))+"٪",nf(frc(x)),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
   <section class="card"><h3>⏱️ ورود و خروج</h3><div class="inl"><button class="btn" data-a="in" ${open?"disabled":""}>ثبت ورود</button><button class="btn" data-a="out2" ${open?"":"disabled"}>ثبت خروج</button></div>`+
   T_(["ورود","خروج","مدت",...xh],c.att.map(x=>[dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار",...(adm?[X("att",x.id)]:[])]))+`</section>
   <section class="card"><h3>🏖️ مرخصی</h3><div class="inl"><select id="lk"><option value="day">روزانه</option><option value="hr">ساعتی</option></select><input id="ln" placeholder="توضیحات (اختیاری)"></div>
@@ -145,7 +145,7 @@ function panel(p,adm){
   T_(["نوع","تاریخ","مقدار","توضیحات","ثبت‌کننده","وضعیت",...xh],c.lv.map(x=>[x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?nf(x.days)+" روز":nn(x.f)+" تا "+nn(x.to),esc(x.n)||"—",x.by=="admin"?"مدیر":"خود فرد",stc(x,adm),...(adm?[X("lv",x.id)]:[])]))+`</section>
   <section class="card"><h3>🔑 ${adm?"تغییر رمز این فرد":"تغییر رمز من"}</h3><div class="inl"><input id="np" type="password" placeholder="رمز جدید (حداقل ۴ حرف)"><button class="btn" data-a="chpw">ذخیره رمز</button></div></section>`;
 }
-const ratesSec=()=>`<section class="card"><h3>🤝 درصد پورسانت هر محصول</h3><div class="mut" style="margin-bottom:8px">درصدی از مبلغ خرید دوست/فامیل پرسنل که به‌عنوان پورسانت به پرسنل می‌رسد. خالی یا ۰ = بدون پورسانت.</div>`+T_(["محصول","دسته","قیمت","درصد پورسانت"],MENU.map((m,i)=>[esc(m.n),esc(m.c),nf(m.p),`<input id="rt${i}" type="number" min="0" max="100" step="0.1" value="${rate(m)||""}" placeholder="۰" style="max-width:90px">`]))+`<button class="btn" style="margin-top:8px" data-a="saverates">ذخیره درصدها</button><div class="mut" style="margin-top:6px">تغییر درصد روی ثبت‌های قبلی اثری ندارد.</div></section>`;
+const ratesSec=()=>`<section class="card"><h3>🤝 درصد پورسانت هر محصول</h3><div class="mut" style="margin-bottom:8px">درصدی از مبلغ خرید دوست/فامیل پرسنل که به‌عنوان پورسانت به پرسنل می‌رسد. خالی یا ۰ = بدون پورسانت.</div>`+T_(["محصول","دسته","قیمت","درصد پورسانت"],MENU.map((m,i)=>[esc(m.n),esc(m.c),nf(m.p),`<input id="rt${i}" type="number" min="0" max="100" step="0.1" value="${rate(m)||""}" placeholder="۰" style="max-width:90px">`]))+`<button class="btn" style="margin-top:8px" data-a="saverates">ذخیره درصدها</button></section>`;
 function overview(){
   const rows=D.staff.map(p=>{const c=calc(p);return[`<span class="lk" data-a="open" data-i="${p.id}">${esc(p.name)}</span>`,nf(c.F),nf(c.C),nf(c.A),nf(c.debt),nf(c.T),nf(c.com),nf(c.net),(p.set||{})[M]?"🔒 بسته":"باز",`<button class="x" data-a="rpw" data-i="${p.id}">رمز</button> <button class="x" data-a="dst" data-i="${p.id}">حذف</button>`]});
   return`<section class="card"><h3>📋 حساب‌کتاب پرسنل — ${mlab(M)}</h3>`+T_(["نام","خوراکی","برداشت","مساعده","جمع بدهی","انعام","پورسانت","مانده","وضعیت","مدیریت"],rows)+`<div class="mut" style="margin-top:6px">برای دیدن و ثبت اطلاعات (حساب، مرخصی، ورود و خروج) روی نام هر نفر بزن.</div></section>
@@ -173,7 +173,7 @@ function report(){
     S[0].r.push([p.name,F,C,A,F+C+A,T,com,F+C+A-T-com]);
     p.food.forEach(x=>S[1].r.push([p.name,x.n,x.q,x.p,x.q*x.p,dt(x.t)]));
     (p.adv||[]).forEach(x=>S[8].r.push([p.name,x.a,x.n||"",dt(x.t)]));p.cash.forEach(x=>S[2].r.push([p.name,x.a,dt(x.t)]));p.tips.forEach(x=>S[3].r.push([p.name,x.a,dt(x.t)]));
-    p.fr.forEach(x=>S[4].r.push([p.name,x.n,x.pr||"—",x.q||"—",x.a,x.r!=null?x.r:RATE*100,frc(x),dt(x.t)]));
+    p.fr.forEach(x=>S[4].r.push([p.name,x.n,x.pr||"—",x.q||"—",x.a,rOf(x),frc(x),dt(x.t)]));
     p.att.forEach(x=>S[5].r.push([p.name,dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار"]));
     p.lv.forEach(x=>S[6].r.push([p.name,x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?x.days+" روز":x.f+" تا "+x.to,x.n||"",({ok:"تأیید شد",no:"رد شد",pending:"در انتظار"})[x.st||"ok"]]));Object.keys(p.set||{}).sort().forEach(m=>{const z=p.set[m];S[7].r.push([p.name,mlab(+m),z.debt,z.tips,z.com,z.net,dt(z.t)])})});
   return S;
