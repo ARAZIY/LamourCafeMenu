@@ -129,6 +129,7 @@ textarea{resize:vertical;min-height:4rem}
           <label class="ck" id="cconw" hidden><input type="checkbox" id="ccon"> مشتری پیام بالا را دید و موافق است</label>
           <label class="ck" id="cusew" hidden><input type="checkbox" id="cuse"> <span id="cusel"></span></label>
         </div>
+        <input id="dsc" type="number" inputmode="numeric" min="0" placeholder="🏷️ تخفیف (مبلغ به تومان، اختیاری)" />
         <div class="mut" id="cdisc" style="margin-top:8px"></div>
         <div class="tot"><span>جمع کل</span><span id="sum">۰</span></div>
         <button class="big" id="sub" disabled>ثبت سفارش ✓</button>
@@ -346,7 +347,7 @@ function renderOrders(){
   $("#fl2").innerHTML=P2.map(([v,l])=>`<button class="chip ${flt2==v?"on":""}" data-pfl="${v}">${l}</button>`).join("");
   const ok=o=>{if(!flt2)return true;const f=payInfo(o,PY);return flt2=="claim"?!!f.cl:f.st==flt2};
   const list=all.filter(o=>(flt<0||o.s==flt)&&ok(o)).sort((a,b)=>(a.s==3)-(b.s==3)||a.t-b.t);
-  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان</div>${payBox(o,PY)}${clubLine(o)}<div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
+  $("#ol").innerHTML=list.length?list.map(o=>`<div class="oc s${o.s}"><div class="h"><span>#${fa(o.no)} · ${o.typ=="میز"?"میز "+(esc(o.tbl)||"؟"):"بیرون‌بر"}${o.by?" · 🧑‍🍳":""}</span><span class="mut">${irDate(o.t)} · ${irTime(o.t)}</span></div><ul>${o.items.map(i=>`<li>${fa(i.q)} × ${esc(i.n)}</li>`).join("")}</ul>${o.note?`<div class="note">${esc(o.note)}</div>`:""}<div class="mut" style="margin-top:6px">${ST[o.s]} · ${fa(o.sum)} تومان${o.dm?" · 🏷️ تخفیف "+fa(o.dm):""}</div>${payBox(o,PY)}${clubLine(o)}<div class="acts">${o.s<3?`<button class="go" data-adv="${o.id}">${NX[o.s]}</button>`:""}<button class="ed" data-ed="${o.id}">✎</button><button class="x" data-del="${o.id}">✕</button></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">سفارشی وجود ندارد</div>';
 }
 function resetForm(){cart={};editing=null;clubReset();$("#tbl").value="";$("#note").value="";setTyp("میز")}
 
@@ -383,6 +384,8 @@ const save2=o=>sv(K,o);
 /* ===== کلوپ مشتریان ===== */
 const toEn=s=>String(s||"").replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
 const normPh=s=>{let d=toEn(s).replace(/\D/g,"");if(d.startsWith("0098"))d=d.slice(4);else if(d.length==12&&d.startsWith("98"))d=d.slice(2);if(d.length==10&&d[0]=="9")d="0"+d;return /^09\d{9}$/.test(d)?d:""};
+/* تخفیف دستی (مبلغ به تومان) */
+const md=()=>Math.max(0,Math.floor(+toEn($("#dsc").value)||0));
 let G=0,CQ=null,CSEQ=0,CT=null;
 function clubSync(){clearTimeout(CT);if(!normPh($("#cph").value)){CQ=null;paintClub();return}paintClub();CT=setTimeout(clubQuote,300)}
 async function clubQuote(){
@@ -408,6 +411,7 @@ function paintClub(){
     if(q.q.maxP>0){$("#cusew").hidden=false;$("#cusel").textContent="استفاده از امتیاز (تا "+fa(q.q.maxP)+" امتیاز)"}
     if(q.g===G){const Q=q.q;net=Q.net;dis=[Q.dl?`تخفیف سطح ${Q.lv}: −${fa(Q.dl)}`:"",Q.dp?`تخفیف امتیاز: −${fa(Q.dp)}`:"",Q.earn?`امتیاز این سفارش: +${fa(Q.earn)}`:""].filter(Boolean).join(" · ")}
   }
+  const dm=Math.min(md(),Math.max(0,net));if(dm>0){net-=dm;dis=(dis?dis+" · ":"")+"تخفیف: −"+fa(dm)}
   $("#cdisc").textContent=dis;$("#sum").textContent=fa(net)+" تومان";
 }
 /* فیلدهای کلوپ برای ذخیره روی سفارش؛ false یعنی ثبت متوقف شود */
@@ -423,8 +427,8 @@ async function clubFields(gross){
 }
 const clubReverseP=id=>DB.club({action:"clubReverse",orderId:id}).catch(()=>null);
 function clubReverse(id){const o=ld(K).find(r=>r.id==id);if(o&&o.cs)clubReverseP(id)}
-function clubLoad(x){$("#cph").value=x.ph||"";$("#cnm").value=x.cnm||"";$("#ccon").checked=!!x.cn;$("#cuse").checked=!!x.rp}
-function clubReset(){$("#cph").value="";$("#cnm").value="";$("#ccon").checked=false;$("#cuse").checked=false;CQ=null}
+function clubLoad(x){$("#dsc").value=x.dm||"";$("#cph").value=x.ph||"";$("#cnm").value=x.cnm||"";$("#ccon").checked=!!x.cn;$("#cuse").checked=!!x.rp}
+function clubReset(){$("#dsc").value="";$("#cph").value="";$("#cnm").value="";$("#ccon").checked=false;$("#cuse").checked=false;CQ=null}
 /* بعد از «تحویل داده شد»: امتیاز و تخفیف در سرور نهایی می‌شود (هر سفارش فقط یک‌بار) */
 async function clubSettle(id){
   const o=ld(K).find(r=>r.id==id);if(!o||!o.ph||o.cs||o.s!=3)return;
@@ -434,13 +438,14 @@ async function clubSettle(id){
     const all=ld(K),x=all.find(q=>q.id==id);if(!x)return;
     x.cs=1;x.ep=r.earn;
     const diff=r.dl!==x.dl||r.dp!==x.dp;
-    if(diff){x.dl=r.dl;x.dp=r.dp;x.rp=r.pts;x.sum=r.net}
+    if(diff){x.dl=r.dl;x.dp=r.dp;x.rp=r.pts;x.sum=Math.max(0,r.net-(x.dm||0))}
     sv(K,all);if(diff)reinvoice(x);
     renderOrders();toast(diff?"⚠️ تخفیف کلوپ با موجودی فعلی اصلاح شد":"⭐ "+fa(r.earn)+" امتیاز ثبت شد",diff);
   }catch(e){toast("ثبت امتیاز انجام نشد؛ دکمهٔ «ثبت امتیاز» را بزن",true);renderOrders()}
 }
 $("#cph").addEventListener("input",clubSync);
 $("#cuse").addEventListener("change",clubQuote);
+$("#dsc").addEventListener("input",paintClub);
 
 async function clubIncoming(id){
   const o=ld(K).find(r=>r.id==id);if(!o||!o.ph||o.gross)return;
@@ -457,7 +462,7 @@ async function clubApprove(id,ok){
     let r=null;try{r=await DB.club({action:"clubQuote",phone:x.ph,gross:x.gross||x.sum,want:1e9})}catch(e){}
     if(!r||!r.ok){toast("ارتباط با کلوپ برقرار نیست",true);return}
     const y=ld(K).find(q=>q.id==id);if(!y)return;
-    if(r.q.pts>0){y.dl=r.q.dl;y.dp=r.q.dp;y.rp=r.q.pts;y.sum=(y.gross||y.sum)-y.dl-y.dp;toast("✓ تخفیف امتیاز اعمال شد")}
+    if(r.q.pts>0){y.dl=r.q.dl;y.dp=r.q.dp;y.rp=r.q.pts;y.sum=Math.max(0,(y.gross||y.sum)-y.dl-y.dp-(y.dm||0));toast("✓ تخفیف امتیاز اعمال شد")}
     else toast("امتیاز قابل استفاده‌ای نیست",true);
     y.ruse=0;sv(K,ld(K).map(q=>q.id==id?y:q));
   }else{x.ruse=0;sv(K,all)}
@@ -473,14 +478,14 @@ $("#sub").onclick=async()=>{
   const items=ids.map(k=>{const r=parse(k);return{id:r.id,o:r.o,n:r.n,q:cart[k],p:r.p}});
   const gross=items.reduce((a,i)=>a+i.p*i.q,0),note=$("#note").value.trim();
   const cf=await clubFields(gross);if(cf===false)return;
-  const sum=gross-cf.dl-cf.dp;
+  const dm=Math.min(md(),Math.max(0,gross-cf.dl-cf.dp)),sum=gross-cf.dl-cf.dp-dm;
   if(editing){const ox=ld(K).find(r=>r.id==editing);if(ox&&ox.cs){const rr=await clubReverseP(ox.id);if(!rr||!rr.ok){alert("لغو امتیاز قبلی انجام نشد؛ دوباره تلاش کن");return}}}
   if(editing){
     const all=ld(K),x=all.find(r=>r.id==editing);
-    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum},cf,{cs:0});sv(K,all);if(x.s==3){reinvoice(x);clubSettle(x.id)}}
+    if(x){Object.assign(x,{typ,tbl:typ=="میز"?tbl:"",note,items,sum,dm},cf,{cs:0});sv(K,all);if(x.s==3){reinvoice(x);clubSettle(x.id)}}
     toast("✓ تغییرات ذخیره شد");
   }else{
-    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,by:"waiter",...cf,cs:0});
+    addOrder({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t:Date.now(),typ,tbl:typ=="میز"?tbl:"",note,items,sum,dm,by:"waiter",...cf,cs:0});
     toast("✓ سفارش ثبت شد");
   }
   resetForm();renderCart();renderOrders();
