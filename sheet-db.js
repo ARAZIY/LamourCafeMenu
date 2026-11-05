@@ -16,6 +16,7 @@
   // منوی شعبه: data-menu="Menu2" یعنی منو از تب Menu2 خوانده شود (اگر نبود، از Menu)
   const MENU_SHEET = (me && me.dataset.menu) || '';
   const R = k => PFX + k;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   const cache = {}, pending = {}, timers = {}, seenVer = {};
   let token = '', offline = false, lastV = null, refreshing = false;
@@ -27,15 +28,29 @@
   const note = t => { badge.textContent = t || ''; badge.style.display = t ? 'block' : 'none'; };
 
   async function call(body) {
-    const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000)
+    });
     return r.json();
   }
   const mirror = (k, v) => { try { localStorage.setItem('db:' + R(k), v); } catch (e) {} };
   const val = (data, k) => (data[R(k)] == null ? undefined : String(data[R(k)]));   // شیت گاهی "1" را عدد می‌کند
 
-  async function load() {
-    if (!needAuth) return;
-    for (let tries = 0; tries < 2; tries++) {
+  // پر کردن کش از نسخهٔ ذخیره‌شده در مرورگر؛ true اگر چیزی بود
+  function loadMirror() {
+    let any = false;
+    KEYS.forEach(k => { try { const v = localStorage.getItem('db:' + R(k)); if (v != null) { cache[k] = v; any = true; } } catch (e) {} });
+    return any;
+  }
+
+  /* همگام‌سازی با شیت.
+     bg=false: اولین بارگذاری (صفحه منتظر می‌ماند)
+     bg=true : در پس‌زمینه؛ فقط کلیدهایی که تغییر کرده‌اند و در حال ذخیره نیستند به‌روز می‌شوند */
+  async function sync(bg) {
+    for (let tries = 0; tries < 3; tries++) {
       if (!token) {
         token = (prompt('کلید دسترسی را وارد کنید (همان SECRET داخل Apps Script):') || '').trim();
         if (!token) break;
@@ -43,23 +58,39 @@
       try {
         const res = await call({ action: 'all', token, p: PFX });
         if (res.error === 'auth') { token = ''; try { localStorage.removeItem('sheet_token'); } catch (e) {} alert('کلید دسترسی اشتباه است'); continue; }
+        if (res.error === 'busy') { await sleep(1500); continue; }       // سرور مشغول است؛ دوباره تلاش
+        if (!res.ok || !res.data) break;                                  // پاسخ ناقص: هرگز به‌عنوان «شیت خالی» قبول نشود
         try { localStorage.setItem('sheet_token', token); } catch (e) {}
         if (res.v !== undefined) lastV = res.v;
+        const changed = [];
         KEYS.forEach(k => {
-          const v = res.data ? val(res.data, k) : undefined;
-          if (v !== undefined) { cache[k] = v; seenVer[k] = v; mirror(k, v); }
-          else if (!PFX) {
+          const v = val(res.data, k);
+          if (v !== undefined) {
+            if (bg) {
+              if (!pending[k] && v !== cache[k]) { cache[k] = v; seenVer[k] = v; mirror(k, v); changed.push(k); }
+            } else { cache[k] = v; seenVer[k] = v; mirror(k, v); }
+          } else if (!PFX && !bg) {
             // فقط شعبهٔ اصلی: انتقال داده‌های قبلی مرورگر به شیت
             let old = null; try { old = localStorage.getItem(k); } catch (e) {}
             if (old == null) { try { old = localStorage.getItem('db:' + k); } catch (e) {} }
             if (old != null) { cache[k] = old; DB.set(k, old); }
           }
         });
-        offline = false; note(''); return;
+        offline = false; note('');
+        changed.forEach(k => window.dispatchEvent(new StorageEvent('storage', { key: k })));
+        return true;
       } catch (e) { break; }
     }
     offline = true; note('اتصال به شیت برقرار نیست');
-    KEYS.forEach(k => { try { const v = localStorage.getItem('db:' + R(k)); if (v != null) cache[k] = v; } catch (e) {} });
+    if (!bg) loadMirror();
+    return false;
+  }
+
+  async function load() {
+    if (!needAuth) return;
+    // اگر قبلاً وارد شده‌ایم و نسخهٔ محلی داریم، صفحه فوراً با آن باز می‌شود و همگام‌سازی در پس‌زمینه انجام می‌شود
+    if (token && loadMirror()) { sync(true); return; }
+    await sync(false);
   }
 
   async function menu() {
@@ -99,7 +130,7 @@
         if (vr && vr.ok && vr.v === lastV) { if (offline) { offline = false; note(''); } return; }
       } catch (e) { return; }
       const res = await call({ action: 'all', token, p: PFX });
-      if (!res.data || Object.keys(pending).length) return;
+      if (!res.ok || !res.data || Object.keys(pending).length) return;
       if (res.v !== undefined) lastV = res.v;
       KEYS.forEach(k => {
         const v = val(res.data, k);
@@ -120,8 +151,11 @@
   // کلوپ مشتریان: فراخوانی با کلید (ادمین و صفحهٔ اعضا) و فراخوانی عمومی بدون کلید (صفحهٔ مشتری)
   DB.club = b => call(Object.assign({ token, p: PFX }, b));
   DB.pub = b => call(b);
-  DB.ready = Promise.all([load(), menu()]).then(([, m]) => {
-    DB.menu = m;
+
+  // منو در پس‌زمینه بارگذاری می‌شود؛ صفحه‌های مدیریتی بیشتر از ۱٫۵ ثانیه منتظرش نمی‌مانند
+  const menuP = menu().then(m => { DB.menu = m; return m; });
+  const menuWait = needAuth ? Promise.race([menuP, sleep(1500)]) : menuP;
+  DB.ready = Promise.all([load(), menuWait]).then(() => {
     setInterval(refresh, 8000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
     addEventListener('focus', refresh);
