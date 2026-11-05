@@ -440,7 +440,15 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.mradd!==undefined){$("#nr").insertAdjacentHTML("beforeend",rowH("",1,""));return}
   if(b.dataset.mrx!==undefined){const r=b.closest(".mr");if(document.querySelectorAll("#nr .mr").length>1)r.remove();else{r.querySelectorAll("input").forEach((i,k)=>i.value=k==1?1:"")}calcM();return}
-  if(b.dataset.msave!==undefined){saveManual(b.dataset.msave=="1");return}
+  if(b.dataset.msave!==undefined){
+    if(b.disabled)return;
+    const again=b.dataset.msave=="1",btns=[...document.querySelectorAll("[data-msave]")],old=btns.map(x=>x.textContent);
+    btns.forEach(x=>{x.disabled=true;x.style.opacity=".6"});b.textContent="⏳ در حال ذخیره…";
+    setTimeout(()=>{
+      try{saveManual(again)}catch(err){console.error(err);alert("خطا در ثبت فاکتور: "+(err&&err.message))}
+      btns.forEach((x,i)=>{if(x.isConnected){x.disabled=false;x.style.opacity="";x.textContent=old[i]}});
+    },30);
+    return}
   const pa=PA.find(k=>b.dataset[k]!==undefined);
   if(pa){payAct(pa,b);return}
   if(b.dataset.dis){openDisc(b.dataset.dis);return}
@@ -471,7 +479,7 @@ $("#da").onclick=()=>{
   if(confirm(fa(cur.length)+" فاکتور نمایش‌داده‌شده (طبق فیلترهای فعلی) برای همیشه حذف شود؟"))removeInvoices(cur.map(o=>o.id));
 };
 $("#sa").onclick=openBulk;
-$("#am").onclick=()=>openManual();
+$("#am").onclick=()=>{try{openManual()}catch(err){console.error(err);alert("خطا در باز کردن فرم: "+(err&&err.message))}};
 $("#dp").onclick=()=>{
   const n=$("#pf").value;if(!n||n=="__none")return;
   if(!confirm("«"+n+"» از لیست اشخاص حذف شود؟ فاکتورهای او به حالت «بدون شخص» برمی‌گردند (خود فاکتورها حذف نمی‌شوند)."))return;
