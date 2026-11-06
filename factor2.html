@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8" />
@@ -104,14 +104,13 @@ th{background:var(--bg);color:var(--mut);font-weight:600}
       <button class="chip" id="cd">✕ پاک‌کردن فیلتر تاریخ</button>
       <button class="chip ok" id="sa" hidden>✅ تسویهٔ گروهی نمایش‌داده‌شده‌ها</button>
       <button class="chip bad" id="dp" hidden>✕ حذف این شخص از لیست</button>
-      <button class="chip ok" id="am">➕ افزودن فاکتور دستی</button>
-      <button class="chip" id="xc">📊 دانلود اکسل (CSV)</button>
-      <button class="chip" id="xd">📄 دانلود ورد (DOC)</button>
+      <button class="chip ok" id="addm">➕ افزودن فاکتور دستی</button>
+      <button class="chip" id="xp">📄 دانلود PDF</button>
       <button class="chip bad" id="da">🗑️ حذف فاکتورهای نمایش‌داده‌شده</button>
     </div>
     <div class="sum"><div><b id="c1">۰</b><span class="mut">تعداد فاکتور</span></div><div><b id="c2">۰</b><span class="mut">تعداد اقلام فروخته‌شده</span></div><div><b id="c3">۰</b><span class="mut">جمع فروش (تومان)</span></div><div><b id="c6">۰</b><span class="mut">جمع تخفیف (تومان)</span></div><div><b id="c4">۰</b><span class="mut">دریافت‌شده (تومان)</span></div><div class="dbt"><b id="c5">۰</b><span class="mut">مانده دریافت‌نشده (تومان)</span></div><span id="msum" style="display:contents"></span></div>
     <div class="wrap"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
-    <p class="mut" style="margin-top:8px">فایل خروجی (اکسل/ورد) طبق فیلترهای فعلی ساخته می‌شود؛ برای خروجی کامل، فیلترها را پاک کن.</p>
+    <p class="mut" style="margin-top:8px">فایل PDF طبق فیلترهای فعلی ساخته می‌شود؛ برای خروجی کامل، فیلترها را پاک کن. در پنجرهٔ چاپ، گزینهٔ «ذخیره به‌صورت PDF» را انتخاب کن.</p>
   </main>
 </div>
 <div id="mdl" hidden><div class="box" id="mbox"></div></div>
@@ -406,31 +405,84 @@ function render(){
   $("#tb").innerHTML=rows.length?rows.join(""):'<tr><td class="empty" colspan="11">فاکتوری یافت نشد</td></tr>';
 }
 
-/* خروجی اکسل / ورد */
-function exportData(){
-  const W=ldo(WK),PY=getPY(),list=[...cur].sort((a,b)=>a.t-b.t);
-  const det={t:"فاکتورها",h:["شمارهٔ سفارش","تاریخ","ساعت","شخص","وضعیت تسویه","روش پرداخت","شمارهٔ پیگیری","نوع","میز","محصول","تعداد","قیمت واحد (تومان)","قیمت کل (تومان)","جمع فاکتور (تومان)","تخفیف (تومان)","دریافت‌شده (تومان)","مانده (تومان)"],r:[]};
-  let qty=0,total=0,paid=0,rem=0,disc=0;const bm={};
-  list.forEach(o=>{
-    const w=W[o.id],f=payInfo(o,PY),D=discOf(o);total+=o.sum;paid+=f.paid;rem+=f.rem;disc+=D;
-    Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k]);
-    const st=f.st=="paid"?"تسویه شده":f.st=="part"?"نیمه‌پرداخت":"تسویه نشده";
-    const refs=f.ps.map(x=>x.r).filter(Boolean).join("، ");
-    o.items.forEach((i,idx)=>{qty+=i.q;const first=idx==0;det.r.push([o.no||"",irDate(o.t),irTime(o.t),w?w.n:"",st,first?bySumPlain(f.by):"",first?refs:"",o.typ=="میز"?"داخل سالن":"بیرون‌بر",o.typ=="میز"?(o.tbl||""):"",i.n,i.q,i.p,i.p*i.q,first?o.sum:"",first?D:"",first?f.paid:"",first?f.rem:""])});
-  });
-  const sumRows=[["تعداد فاکتور",list.length],["تعداد اقلام فروخته‌شده",qty],["جمع فروش (تومان)",total],["جمع تخفیف (تومان)",disc],["دریافت‌شده (تومان)",paid],["مانده دریافت‌نشده (تومان)",rem]];
-  ["cash","pos","c2c","unk"].forEach(k=>{if(bm[k]>0)sumRows.push(["دریافتی "+MN[k]+" (تومان)",bm[k]])});
-  const S=[det,{t:"خلاصه",h:["شرح","مقدار"],r:sumRows}];
-  const ps=pplStats(list,W,PY);
-  if(ps.length)S.push({t:"حساب اشخاص",h:["شخص","تعداد فاکتور","جمع کل (تومان)","پرداخت‌شده (تومان)","مانده بدهی (تومان)"],r:ps.map(r=>[r.n,r.c,r.t,r.p,r.u])});
-  return S;
-}
-function dl(name,type,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function exportAs(f){
+/* ---------- خروجی PDF (A4 افقی، فارسی راست‌به‌چپ، سرستون تکرارشونده در هر صفحه) ---------- */
+function exportPDF(){
   if(!cur.length)return alert("فاکتوری برای خروجی وجود ندارد");
-  const S=exportData(),base="invoices-lamour2-"+new Date().toLocaleDateString("en-CA",{timeZone:TZ});
-  if(f=="csv")dl(base+".csv","text/csv;charset=utf-8","\ufeff"+S.map(s=>s.t+"\n"+[s.h,...s.r].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n")).join("\n\n"));
-  else dl(base+".doc","application/msword","<html dir=\"rtl\"><head><meta charset=\"utf-8\"></head><body style=\"font-family:Tahoma\"><h1>فاکتورهای کافه لامور ۲</h1>"+S.map(s=>`<h2>${s.t}</h2><table border="1" cellpadding="4" style="border-collapse:collapse"><tr>${s.h.map(h=>`<th>${h}</th>`).join("")}</tr>${s.r.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table>`).join("")+"</body></html>");
+  const W=ldo(WK),PY=getPY(),list=[...cur].sort((a,b)=>a.t-b.t);
+  let qty=0,total=0,paid=0,rem=0,disc=0;const bm={},pm={};
+  const stT={paid:"تسویه شد",part:"نیمه‌پرداخت",none:"تسویه نشده"};
+  const rows=list.map(o=>{
+    const w=W[o.id],f=payInfo(o,PY),D=discOf(o);
+    total+=o.sum;paid+=f.paid;rem+=f.rem;disc+=D;
+    Object.keys(f.by).forEach(k=>bm[k]=(bm[k]||0)+f.by[k]);
+    const its=o.items.map(i=>{
+      qty+=i.q;const r=pm[i.n]||(pm[i.n]={n:i.n,q:0,s:0,o:0});r.q+=i.q;r.s+=i.q*i.p;r.o++;
+      return `<div class="it"><span>${esc(i.n)}</span><span>${fa(i.q)} × ${fa(i.p)} = <b>${fa(i.q*i.p)}</b></span></div>`;
+    }).join("");
+    const refs=f.ps.map(x=>x.r).filter(Boolean).join("، ");
+    const byTxt=Object.keys(f.by).map(k=>(MN[k]||k)+" "+fa(f.by[k])).join(" + ");
+    return `<tr><td>#${fa(o.no||0)}${o.man?" (دستی)":""}</td>
+      <td>${irDate(o.t)}<br>${irTime(o.t)}</td>
+      <td>${o.typ=="میز"?"داخل سالن"+(o.tbl?"<br>میز "+esc(o.tbl):""):"بیرون‌بر"}</td>
+      <td>${w?esc(w.n):"—"}</td>
+      <td class="its">${its}</td>
+      <td>${D?"−"+fa(D):"—"}</td>
+      <td><b>${fa(o.sum)}</b></td>
+      <td><span class="st ${f.st}">${stT[f.st]}</span>${f.paid?`<br>دریافتی: ${fa(f.paid)}<br><small>${byTxt}</small>`:""}${f.rem?`<br><span class="bad">مانده: ${fa(f.rem)}</span>`:""}${refs?`<br><small>پیگیری: ${esc(refs)}</small>`:""}</td></tr>`;
+  }).join("");
+
+  /* فیلترهای فعال */
+  const sel=id=>{const e=$("#"+id);return e.value?e.options[e.selectedIndex].text:""};
+  const kf=k=>fa(Math.floor(k/10000)).replace(/٬/g,"")+"/"+fa(Math.floor(k/100)%100)+"/"+fa(k%100);
+  const k1=selKey("a"),k2=selKey("b"),fl=[];
+  if(k1)fl.push("از "+kf(k1));if(k2)fl.push("تا "+kf(k2));
+  if(sel("ty"))fl.push("نوع: "+sel("ty"));if(sel("pf"))fl.push("شخص: "+sel("pf"));
+  if(sel("sf"))fl.push("تسویه: "+sel("sf"));
+  if(sel("mf"))fl.push("پرداخت: "+sel("mf").replace(/[^\u0600-\u06FF\s()]/g,"").trim());
+  if($("#q").value.trim())fl.push("جستجو: "+esc($("#q").value.trim()));
+
+  const box=(l,v,c)=>`<div class="bx"><b${c?` class="${c}"`:""}>${fa(v)}</b><span>${l}</span></div>`;
+  let sm=box("تعداد فاکتور",list.length)+box("تعداد اقلام",qty)+box("جمع فروش (تومان)",total)+box("جمع تخفیف (تومان)",disc)+box("دریافت‌شده (تومان)",paid)+box("مانده دریافت‌نشده (تومان)",rem,"bad");
+  ["cash","pos","c2c","unk"].forEach(k=>{if(bm[k]>0)sm+=box("دریافتی "+MN[k]+" (تومان)",bm[k])});
+
+  const ps=pplStats(list,W,PY);
+  const ppl=ps.length?`<h2>حساب اشخاص</h2><table><thead><tr><th>شخص</th><th>تعداد فاکتور</th><th>جمع کل (تومان)</th><th>پرداخت‌شده (تومان)</th><th>مانده بدهی (تومان)</th></tr></thead><tbody>${ps.map(r=>`<tr><td>${esc(r.n)}</td><td>${fa(r.c)}</td><td>${fa(r.t)}</td><td>${fa(r.p)}</td><td class="${r.u?"bad":""}"><b>${fa(r.u)}</b></td></tr>`).join("")}</tbody></table>`:"";
+  const pr=Object.values(pm).sort((a,b)=>b.q-a.q);
+  const prod=`<h2>فروش محصولات</h2><table><thead><tr><th>رتبه</th><th>محصول</th><th>تعداد فروش</th><th>تعداد سفارش</th><th>مجموع فروش (تومان)</th></tr></thead><tbody>${pr.map((r,i)=>`<tr><td>${fa(i+1)}</td><td>${esc(r.n)}</td><td>${fa(r.q)}</td><td>${fa(r.o)}</td><td>${fa(r.s)}</td></tr>`).join("")}</tbody></table>`;
+
+  const name="invoices-lamour2-"+new Date().toLocaleDateString("en-CA",{timeZone:TZ});
+  const css=`@page{size:A4 landscape;margin:10mm}
+  *{box-sizing:border-box;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:Vazirmatn,Tahoma,sans-serif;font-size:10px;color:#2b1d14;line-height:1.6;direction:rtl}
+  h1{font-size:18px;color:#8b5a2b}h2{font-size:13px;margin:16px 0 6px;color:#8b5a2b;break-after:avoid}
+  .meta{color:#8a7766;margin:2px 0 10px}
+  .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-bottom:8px}
+  .bx{border:1px solid #e8dccb;border-radius:8px;padding:6px;text-align:center;background:#faf5ee;break-inside:avoid}
+  .bx b{display:block;font-size:12px;color:#8b5a2b}.bx span{color:#8a7766;font-size:9px}
+  table{width:100%;border-collapse:collapse;table-layout:auto}
+  thead{display:table-header-group}tr{break-inside:avoid}
+  th,td{border:1px solid #d9cbb8;padding:4px 6px;text-align:right;vertical-align:top;word-break:break-word}
+  th{background:#f1e6d6;font-weight:600}
+  tbody tr:nth-child(even){background:#fcfaf6}
+  .its{min-width:170px}.it{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted #d9cbb8}.it:last-child{border:0}
+  .st{display:inline-block;padding:0 8px;border-radius:99px;font-weight:600;background:#eee}
+  .st.paid{background:#d9efe2;color:#2e7d4f}.st.part{background:#fbe9c9;color:#c27a10}.st.none{background:#f6d9d6;color:#b3392f}
+  .bad{color:#b3392f}small{color:#8a7766}`;
+  const html=`<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet"><style>${css}</style></head><body>
+  <h1>🧾 فاکتورهای کافه لامور ۲</h1>
+  <div class="meta">تاریخ گزارش: ${irDate(Date.now())} · ${irTime(Date.now())}${fl.length?" · فیلتر: "+fl.join(" | "):" · بدون فیلتر (همهٔ فاکتورها)"}</div>
+  <div class="sum">${sm}</div>
+  <h2>فاکتورها</h2>
+  <table><thead><tr><th>سفارش</th><th>تاریخ و ساعت</th><th>نوع</th><th>شخص</th><th>اقلام (تعداد × قیمت واحد)</th><th>تخفیف</th><th>جمع (تومان)</th><th>تسویه و پرداخت</th></tr></thead><tbody>${rows}</tbody></table>
+  ${ppl}${prod}</body></html>`;
+
+  const fr=document.createElement("iframe");
+  fr.style.cssText="position:fixed;width:0;height:0;border:0;right:0;bottom:0;visibility:hidden";
+  document.body.appendChild(fr);
+  const d=fr.contentWindow.document;d.open();d.write(html);d.close();
+  const go=()=>{try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){alert("ساخت PDF ناموفق بود")}setTimeout(()=>fr.remove(),60000)};
+  setTimeout(()=>{(d.fonts&&d.fonts.ready?Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,2500))]):Promise.resolve()).then(()=>setTimeout(go,200))},700);
 }
 
 const PA=["padd","pq","pdel","pok","pno"];
@@ -479,7 +531,7 @@ $("#da").onclick=()=>{
   if(confirm(fa(cur.length)+" فاکتور نمایش‌داده‌شده (طبق فیلترهای فعلی) برای همیشه حذف شود؟"))removeInvoices(cur.map(o=>o.id));
 };
 $("#sa").onclick=openBulk;
-$("#am").onclick=()=>{try{openManual()}catch(err){console.error(err);alert("خطا در باز کردن فرم: "+(err&&err.message))}};
+$("#addm").onclick=()=>{try{openManual()}catch(err){console.error(err);alert("خطا در باز کردن فرم: "+(err&&err.message))}};
 $("#dp").onclick=()=>{
   const n=$("#pf").value;if(!n||n=="__none")return;
   if(!confirm("«"+n+"» از لیست اشخاص حذف شود؟ فاکتورهای او به حالت «بدون شخص» برمی‌گردند (خود فاکتورها حذف نمی‌شوند)."))return;
@@ -487,8 +539,7 @@ $("#dp").onclick=()=>{
   const W=ldo(WK);Object.keys(W).forEach(k=>{if(W[k].n==n)delete W[k]});sv(WK,W);
   $("#pf").value="";fillFilter();render();
 };
-$("#xc").onclick=()=>exportAs("csv");
-$("#xd").onclick=()=>exportAs("doc");
+$("#xp").onclick=exportPDF;
 $("#cd").onclick=()=>{["a","b"].forEach(p=>["y","m","d"].forEach(s=>$("#"+p+s).value=""));render()};
 document.querySelectorAll(".filters input,.filters select").forEach(el=>el.addEventListener("input",render));
 addEventListener("storage",e=>{if(!$("#app").hidden&&(e.key==A||e.key==WK||e.key==PK||e.key==PYK)){fillFilter();render()}});
