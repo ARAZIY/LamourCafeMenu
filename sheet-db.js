@@ -93,17 +93,29 @@
     await sync(false);
   }
 
+  // منو از تب Menu شیت خوانده می‌شود. آخرین منوی موفق در مرورگر نگه داشته می‌شود
+  // تا اگر اتصال قطع یا کند بود، صفحه بدون منو نماند (این نسخه هم از همان دیتابیس است).
+  const MENU_KEY = 'db:menu:' + PFX + MENU_SHEET;
   async function menu() {
     try {
       const url = API + '?action=menu' + (MENU_SHEET ? '&sheet=' + encodeURIComponent(MENU_SHEET) : '');
       const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
       const rows = await r.json();
-      if (!Array.isArray(rows) || !rows.length) return null;
-      return rows.filter(x => x.name).map(x => ({
+      if (!Array.isArray(rows) || !rows.length) throw 0;
+      const out = rows.filter(x => x.name).map(x => ({
         n: String(x.name), c: String(x.category || 'سایر'), p: Number(x.price) || 0,
         i: String(x.image || ''), d: String(x.description || '')
       }));
-    } catch (e) { return null; }
+      if (!out.length) throw 0;
+      try { localStorage.setItem(MENU_KEY, JSON.stringify(out)); } catch (e) {}
+      return out;
+    } catch (e) {
+      try {
+        const c = JSON.parse(localStorage.getItem(MENU_KEY));
+        if (Array.isArray(c) && c.length) return c;
+      } catch (x) {}
+      return null;
+    }
   }
 
   function push(k) {
