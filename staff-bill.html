@@ -14,6 +14,7 @@
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 button{font:inherit;cursor:pointer;border:0;border-radius:10px;color:inherit;background:none}
+button:disabled{opacity:.45;cursor:not-allowed}
 input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);min-width:0;width:100%}
 header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--bd)}
 header h1{font-size:1.05rem;flex:1}header select{width:auto}
@@ -30,9 +31,10 @@ main{max-width:1000px;margin:auto;padding:14px}
 .sum div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:.82rem;color:var(--mut)}
 .sum b{display:block;color:var(--pri);font-size:1.05rem}.sum .net b{color:var(--bad)}
 .mut{color:var(--mut);font-size:.85rem}.empty{text-align:center;color:var(--mut);padding:14px}.tl{margin-top:8px;font-weight:700}
+.warn{background:var(--bd);color:var(--bad);border-radius:10px;padding:10px;margin-bottom:10px;text-align:center;font-size:.9rem}
 .wrap{overflow-x:auto}table{width:100%;border-collapse:collapse}
 th,td{padding:8px;text-align:right;border-bottom:1px solid var(--bd);font-size:.9rem;white-space:nowrap}th{color:var(--mut);font-weight:600}
-.lk{color:var(--pri);font-weight:700;text-decoration:underline}
+.lk{color:var(--pri);font-weight:700;text-decoration:underline;cursor:pointer}
 .d3{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:4px}
 @media(max-width:700px){
  thead{display:none}table,tbody,tr,td{display:block;width:100%}
@@ -54,12 +56,18 @@ th,td{padding:8px;text-align:right;border-bottom:1px solid var(--bd);font-size:.
   <header><h1 id="hello"></h1><select id="mo"></select><button class="btn" data-a="out">خروج</button></header>
   <main id="body"></main>
 </div>
-<script src="sheet-db.js" data-auth="1">});</script>
+<script src="sheet-db.js" data-auth="1"></script>
 <script>DB.ready.then(()=>{
 const K="cafe_staff_v1",TZ="Asia/Tehran",STEP=5,RATE=0.05;
 const MONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
-let MENU=[["سینگل","قهوه",140],["دبل","قهوه",160],["ترک","قهوه",160],["آمریکانو","گرم",180],["آیس آمریکانو","سرد",190],["لاته","گرم",210],["آیس لاته","سرد",230],["هات چاکلت","گرم",240],["آلفردو","غذا",490],["پیتزا","غذا",600],["املت","غذا",270],["ایرانی","غذا",600],["نیمرو","غذا",200],["سوسیس تخم مرغ","غذا",270],["قیساوا","غذا",270],["سجوک","غذا",290],["موکا","گرم",230],["ماکیاتو","گرم",230],["آیس ماکیاتو","سرد",250],["چای ماسالا","گرم",230],["وایت چاکلت","گرم",240],["کاپوچینو","گرم",240],["آیس موکا","سرد",250],["آفوگاتو","سرد",360],["چای ویژه","چایی",250],["فنجانی","چایی",70],["دمنوش زنجبیل","چایی",250],["دمنوش لیمو نعناع","چایی",250],["سرماخوردگی","چایی",250],["گل گاوزبان","چایی",250],["دمنوش میوه","چایی",290],["شکلاتی","شیک",470],["نوتلا","شیک",470],["موز","شیک",420],["بادام زمینی","شیک",420],["نسکافه","شیک",400],["کیک خیس","خوراکی",250],["باقلوا","خوراکی",50],["پستو","غذا",620],["مکن چیز","غذا",400],["آب","نوشیدنی",25]].map(m=>({n:m[0],c:m[1],p:m[2]}));
-if(DB.menu)MENU=DB.menu.map(m=>({n:m.n,c:m.c,p:m.p}));
+
+/* منو: فقط از دیتابیس (تب Menu در شیت) */
+let MENU=[];
+const loadMenu=()=>{MENU=(DB.menu||[]).map(m=>({n:m.n,c:m.c,p:m.p}))};
+loadMenu();
+/* اگر منو دیرتر از DB.ready رسید، تا حداکثر ۳۰ ثانیه منتظر می‌مانیم و بعد صفحه را به‌روز می‌کنیم */
+if(!MENU.length){let tries=0;const iv=setInterval(()=>{loadMenu();if(MENU.length){clearInterval(iv);render()}else if(++tries>20)clearInterval(iv)},1500)}
+
 const $=s=>document.querySelector(s),nf=n=>Number(n).toLocaleString("fa-IR"),nn=n=>Number(n).toLocaleString("fa-IR",{useGrouping:false});
 const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,"");
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -76,18 +84,22 @@ let M=Math.floor(jKey(Date.now())/100),cashv=0;
 const inM=t=>Math.floor(jKey(t)/100)==M;
 
 let D;try{D=Object.assign({admin:null,staff:[],rates:{}},JSON.parse(DB.get(K))||{})}catch(e){D={admin:null,staff:[],rates:{}}}
-const sv=()=>{try{DB.set(K,JSON.stringify(D))}catch(e){alert("ذخیره‌سازی در مرورگر ممکن نیست")}};
+const sv=()=>{try{DB.set(K,JSON.stringify(D))}catch(e){alert("ذخیره‌سازی ممکن نیست")}};
 const sess=()=>{try{return JSON.parse(sessionStorage.getItem("psess"))}catch(e){return null}};
 const setS=s=>{try{s?sessionStorage.setItem("psess",JSON.stringify(s)):sessionStorage.removeItem("psess")}catch(e){}};
 const person=id=>D.staff.find(p=>p.id==id);
 const rOf=x=>x.pr!=null?(Number((D.rates||{})[x.pr])||0):(x.r!=null?x.r:RATE*100);
 const frc=x=>x.a*rOf(x)/100;
 const rate=m=>Number((D.rates||{})[m.n])||0;
-const fopts=()=>{const g={};MENU.forEach((m,i)=>(g[m.c]=g[m.c]||[]).push(`<option value="${i}">${m.n} — ${nf(m.p)} (${nf(rate(m))}٪)</option>`));return Object.keys(g).map(k=>`<optgroup label="${k}">${g[k].join("")}</optgroup>`).join("")};
+
+/* گزینه‌های منو (مقدار هر گزینه = نام محصول) */
+const opts=withRate=>{const g={};MENU.forEach(m=>(g[m.c]=g[m.c]||[]).push(`<option value="${esc(m.n)}">${esc(m.n)} — ${nf(m.p)}${withRate?` (${nf(rate(m))}٪)`:""}</option>`));return Object.keys(g).map(k=>`<optgroup label="${esc(k)}">${g[k].join("")}</optgroup>`).join("")};
+const byName=n=>MENU.find(m=>esc(m.n)==n);
+const noMenu=()=>MENU.length?"":'<div class="warn">⚠️ منو از دیتابیس بارگذاری نشد. اتصال را بررسی کنید و صفحه را دوباره باز کنید.</div>';
 
 /* ورود */
 function loginUi(){
-  $("#who").innerHTML='<option value="admin">👑 مدیر</option>'+D.staff.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+  $("#who").innerHTML='<option value="admin">👑 مدیر</option>'+D.staff.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
   loginMode();
 }
 function loginMode(){const st=$("#who").value=="admin"&&!D.admin;$("#pw2").hidden=!st;$("#lt").textContent=st?"تعیین رمز مدیر (اولین ورود)":"ورود"}
@@ -123,11 +135,10 @@ function closeSec(p,adm,c){const z=(p.set||{})[M];
   return`<section class="card"><h3>🔒 بستن حساب ماه</h3>`+(z?`<div>حساب ${mlab(M)} در ${dt(z.t)} بسته شد.<br>مانده نهایی: <b>${nf(z.net)} تومان</b> (بدهی ${nf(z.debt)}، انعام ${nf(z.tips)}، پورسانت ${nf(z.com)})</div>`+(adm?`<button class="btn" style="margin-top:8px" data-a="openm">باز کردن مجدد حساب</button>`:""):`<div class="mut">حساب ${mlab(M)} هنوز بسته نشده است. مانده فعلی: ${nf(c.net)} تومان</div>`+(adm?`<button class="btn" style="margin-top:8px" data-a="closem">بستن حساب این ماه</button>`:""))+`</section>`}
 function panel(p,adm){
   const c=calc(p),X=(k,id)=>adm?`<button class="x" data-a="del" data-k="${k}" data-i="${id}">✕</button>`:"",xh=adm?[""]:[];
-  const groups={};MENU.forEach((m,i)=>(groups[m.c]=groups[m.c]||[]).push(`<option value="${i}">${m.n} — ${nf(m.p)}</option>`));
-  const open=p.att.find(x=>!x.o);
+  const open=p.att.find(x=>!x.o),dis=MENU.length?"":"disabled";
   return(adm?`<button class="btn" data-a="back" style="margin-bottom:10px">← بازگشت به لیست پرسنل</button><h2 style="margin-bottom:10px">${esc(p.name)}</h2>`:"")+
   `<div class="sum"><div><b>${nf(c.F)}</b>خوراکی</div><div><b>${nf(c.C)}</b>برداشت نقدی</div><div><b>${nf(c.A)}</b>مساعده</div><div><b>${nf(c.debt)}</b>جمع کل بدهی</div><div><b>${nf(c.T)}</b>انعام</div><div><b>${nf(c.com)}</b>پورسانت</div><div class="net"><b>${nf(c.net)}</b>مانده (بدهی − انعام − پورسانت)</div></div>${closeSec(p,adm,c)}
-  <section class="card"><h3>🍽️ خوراکی‌ها</h3><div class="inl"><select id="fi">${Object.keys(groups).map(g=>`<optgroup label="${g}">${groups[g].join("")}</optgroup>`).join("")}</select><input id="fq" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfood">افزودن به حساب</button></div>`+
+  <section class="card"><h3>🍽️ خوراکی‌ها</h3>${noMenu()}<div class="inl"><select id="fi" ${dis}>${opts(false)}</select><input id="fq" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfood" ${dis}>افزودن به حساب</button></div>`+
   T_(["نام","تعداد","قیمت واحد","قیمت کل","تاریخ و ساعت",...xh],c.food.map(x=>[esc(x.n),nf(x.q),nf(x.p),nf(x.q*x.p),dt(x.t),...(adm?[X("food",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.F)} تومان</div></section>
   <section class="card"><h3>💵 برداشت نقدی از دخل</h3><div class="mut" style="margin-bottom:6px">هر کلیک ${nf(STEP)} تومان</div><div class="stp"><button data-a="cdn">−</button><b id="cv">${nf(cashv)}</b><button data-a="cup">+</button><button class="btn" data-a="addcash">ثبت برداشت</button></div>`+
   T_(["مبلغ","تاریخ و ساعت",...xh],c.cash.map(x=>[nf(x.a),dt(x.t),...(adm?[X("cash",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.C)} تومان</div></section>
@@ -135,7 +146,7 @@ function panel(p,adm){
   T_(["مبلغ","توضیحات","تاریخ و ساعت",...xh],c.adv.map(x=>[nf(x.a),esc(x.n)||"—",dt(x.t),...(adm?[X("adv",x.id)]:[])]))+`<div class="tl">جمع مساعده: ${nf(c.A)} تومان</div></section>
   <section class="card"><h3>🎁 انعام</h3><div class="inl"><input id="ta" type="number" min="1" placeholder="مبلغ انعام"><button class="btn" data-a="addtip">ثبت انعام</button></div>`+
   T_(["مبلغ","تاریخ و ساعت",...xh],c.tips.map(x=>[nf(x.a),dt(x.t),...(adm?[X("tips",x.id)]:[])]))+`<div class="tl">جمع: ${nf(c.T)} تومان</div></section>
-  <section class="card"><h3>🤝 پورسانت خرید آشنایان (درصد هر محصول)</h3><div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><select id="fp">${fopts()}</select><input id="fq2" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfr">ثبت خرید</button></div>`+
+  <section class="card"><h3>🤝 پورسانت خرید آشنایان (درصد هر محصول)</h3>${noMenu()}<div class="inl"><input id="fn" placeholder="نام دوست/فامیل"><select id="fp" ${dis}>${opts(true)}</select><input id="fq2" type="number" min="1" value="1" style="max-width:90px"><button class="btn" data-a="addfr" ${dis}>ثبت خرید</button></div>`+
   T_(["نام","محصول","تعداد","مبلغ خرید","درصد","پورسانت","تاریخ و ساعت",...xh],c.fr.map(x=>[esc(x.n),esc(x.pr||"—"),x.q?nf(x.q):"—",nf(x.a),nf(rOf(x))+"٪",nf(frc(x)),dt(x.t),...(adm?[X("fr",x.id)]:[])]))+`<div class="tl">جمع خرید: ${nf(c.FR)} ← پورسانت: ${nf(c.com)} تومان</div></section>
   <section class="card"><h3>⏱️ ورود و خروج</h3><div class="inl"><button class="btn" data-a="in" ${open?"disabled":""}>ثبت ورود</button><button class="btn" data-a="out2" ${open?"":"disabled"}>ثبت خروج</button></div>`+
   T_(["ورود","خروج","مدت",...xh],c.att.map(x=>[dt(x.i),x.o?dt(x.o):"—",x.o?dur(x.i,x.o):"در حال کار",...(adm?[X("att",x.id)]:[])]))+`</section>
@@ -145,7 +156,7 @@ function panel(p,adm){
   T_(["نوع","تاریخ","مقدار","توضیحات","ثبت‌کننده","وضعیت",...xh],c.lv.map(x=>[x.k=="day"?"روزانه":"ساعتی",jfmt(x.d),x.k=="day"?nf(x.days)+" روز":nn(x.f)+" تا "+nn(x.to),esc(x.n)||"—",x.by=="admin"?"مدیر":"خود فرد",stc(x,adm),...(adm?[X("lv",x.id)]:[])]))+`</section>
   <section class="card"><h3>🔑 ${adm?"تغییر رمز این فرد":"تغییر رمز من"}</h3><div class="inl"><input id="np" type="password" placeholder="رمز جدید (حداقل ۴ حرف)"><button class="btn" data-a="chpw">ذخیره رمز</button></div></section>`;
 }
-const ratesSec=()=>`<section class="card"><h3>🤝 درصد پورسانت هر محصول</h3><div class="mut" style="margin-bottom:8px">درصدی از مبلغ خرید دوست/فامیل پرسنل که به‌عنوان پورسانت به پرسنل می‌رسد. خالی یا ۰ = بدون پورسانت.</div>`+T_(["محصول","دسته","قیمت","درصد پورسانت"],MENU.map((m,i)=>[esc(m.n),esc(m.c),nf(m.p),`<input id="rt${i}" type="number" min="0" max="100" step="0.1" value="${rate(m)||""}" placeholder="۰" style="max-width:90px">`]))+`<button class="btn" style="margin-top:8px" data-a="saverates">ذخیره درصدها</button></section>`;
+const ratesSec=()=>`<section class="card"><h3>🤝 درصد پورسانت هر محصول</h3>${noMenu()}<div class="mut" style="margin-bottom:8px">درصدی از مبلغ خرید دوست/فامیل پرسنل که به‌عنوان پورسانت به پرسنل می‌رسد. خالی یا ۰ = بدون پورسانت.</div>`+T_(["محصول","دسته","قیمت","درصد پورسانت"],MENU.map((m,i)=>[esc(m.n),esc(m.c),nf(m.p),`<input id="rt${i}" type="number" min="0" max="100" step="0.1" value="${rate(m)||""}" placeholder="۰" style="max-width:90px">`]))+(MENU.length?`<button class="btn" style="margin-top:8px" data-a="saverates">ذخیره درصدها</button>`:"")+`</section>`;
 function overview(){
   const rows=D.staff.map(p=>{const c=calc(p);return[`<span class="lk" data-a="open" data-i="${p.id}">${esc(p.name)}</span>`,nf(c.F),nf(c.C),nf(c.A),nf(c.debt),nf(c.T),nf(c.com),nf(c.net),(p.set||{})[M]?"🔒 بسته":"باز",`<button class="x" data-a="rpw" data-i="${p.id}">رمز</button> <button class="x" data-a="dst" data-i="${p.id}">حذف</button>`]});
   return`<section class="card"><h3>📋 حساب‌کتاب پرسنل — ${mlab(M)}</h3>`+T_(["نام","خوراکی","برداشت","مساعده","جمع بدهی","انعام","پورسانت","مانده","وضعیت","مدیریت"],rows)+`<div class="mut" style="margin-top:6px">برای دیدن و ثبت اطلاعات (حساب، مرخصی، ورود و خروج) روی نام هر نفر بزن.</div></section>
@@ -156,6 +167,7 @@ function overview(){
   <section class="card"><h3>🔑 تغییر رمز مدیر</h3><div class="inl"><input id="ap" type="password" placeholder="رمز جدید مدیر"><button class="btn" data-a="apw">ذخیره رمز</button></div></section>`;
 }
 function render(){
+  loadMenu();
   const s=sess();$("#login").hidden=!!s;$("#app").hidden=!s;
   if(!s){loginUi();return}
   const adm=s.r=="admin",p=adm?(s.view?person(s.view):null):person(s.id);
@@ -189,9 +201,9 @@ function exportAs(f){
 
 /* رویدادها */
 document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-a]");if(!b)return;
-  const a=b.dataset.a,s=sess();if(!s&&a!="x")return;
-  const adm=s.r=="admin",p=adm?person(s.view):person(s.id),now=Date.now(),v=id=>$("#"+id).value;
+  const b=e.target.closest("[data-a]");if(!b||b.disabled)return;
+  const a=b.dataset.a,s=sess();if(!s)return;
+  const adm=s.r=="admin",p=adm?person(s.view):person(s.id),now=Date.now(),v=id=>{const el=$("#"+id);return el?el.value:""};
   const num=id=>Math.floor(+v(id));
   if(a=="out"){setS(null);return render()}
   if(a=="open"){s.view=b.dataset.i;setS(s);cashv=0;return render()}
@@ -202,16 +214,19 @@ document.addEventListener("click",e=>{
     if(a=="addst"){const n=v("sn").trim(),pw=v("sp");if(!n||pw.length<4)return alert("نام و رمز (حداقل ۴ حرف) را وارد کنید");D.staff.push({id:uid(),name:n,pw,food:[],cash:[],tips:[],fr:[],adv:[],att:[],lv:[]})}
     else if(a=="rpw"){const n=prompt("رمز جدید این فرد:");if(!n||n.length<4)return;person(b.dataset.i).pw=n;alert("رمز تغییر کرد")}
     else if(a=="dst"){if(!confirm("این فرد و همهٔ اطلاعاتش حذف شود؟"))return;D.staff=D.staff.filter(x=>x.id!=b.dataset.i)}
-    else if(a=="saverates"){D.rates={};MENU.forEach((m,i)=>{const x=+v("rt"+i);if(x>0)D.rates[m.n]=Math.min(100,x)});alert("درصدها ذخیره شد")}
+    else if(a=="saverates"){
+      D.rates=D.rates||{};
+      MENU.forEach((m,i)=>{const el=$("#rt"+i);if(!el)return;const x=+el.value;if(x>0)D.rates[m.n]=Math.min(100,x);else delete D.rates[m.n]});
+      alert("درصدها ذخیره شد")}
     else if(a=="apw"){const n=v("ap");if(n.length<4)return alert("حداقل ۴ حرف");D.admin=n;alert("رمز مدیر تغییر کرد")}
     sv();return render();
   }
   if(!p)return;
   if(["addfood","addcash","addtip","addfr","addadv"].includes(a)&&(p.set||{})[curM()])return alert("حساب این ماه بسته شده است. مدیر باید آن را دوباره باز کند.");
-  if(a=="addfood"){const m=MENU[+v("fi")],q=Math.max(1,num("fq")||1);p.food.push({id:uid(),n:m.n,q,p:m.p,t:now})}
+  if(a=="addfood"){const m=byName(v("fi")),q=Math.max(1,num("fq")||1);if(!m)return alert("محصول انتخاب‌شده در منوی دیتابیس پیدا نشد");p.food.push({id:uid(),n:m.n,q,p:m.p,t:now})}
   else if(a=="addcash"){if(cashv<=0)return;p.cash.push({id:uid(),a:cashv,t:now});cashv=0}
   else if(a=="addtip"){const x=+v("ta");if(!(x>0))return;p.tips.push({id:uid(),a:x,t:now})}
-  else if(a=="addfr"){const n=v("fn").trim(),m=MENU[+v("fp")],q=Math.max(1,num("fq2")||1);if(!n||!m)return alert("نام و محصول را وارد کنید");const r=rate(m),t2=q*m.p;p.fr.push({id:uid(),n,pr:m.n,q,r,a:t2,c:t2*r/100,t:now})}
+  else if(a=="addfr"){const n=v("fn").trim(),m=byName(v("fp")),q=Math.max(1,num("fq2")||1);if(!n||!m)return alert("نام و محصول را وارد کنید");const r=rate(m),t2=q*m.p;p.fr.push({id:uid(),n,pr:m.n,q,r,a:t2,c:t2*r/100,t:now})}
   else if(a=="addadv"){const x=+v("aa");if(!(x>0))return alert("مقدار مساعده را وارد کنید");(p.adv=p.adv||[]).push({id:uid(),a:x,n:v("an").trim(),t:now})}
   else if(a=="in"){if(!p.att.some(x=>!x.o))p.att.push({id:uid(),i:now,o:null})}
   else if(a=="out2"){const o=p.att.find(x=>!x.o);if(o)o.o=now}
@@ -231,6 +246,13 @@ document.addEventListener("change",e=>{
       if(confirm("همهٔ اطلاعات فعلی با این فایل جایگزین شود؟")){D=Object.assign({admin:null,staff:[],rates:{}},j);sv();render();alert("بازیابی شد")}}catch(x){alert("فایل معتبر نیست")}};
     r.readAsText(e.target.files[0]);
   }
+});
+/* وقتی دیتابیس از تب دیگر/دستگاه دیگر به‌روز شد، داده‌ها دوباره خوانده شوند (فقط اگر کاربر در حال ورود داده نیست) */
+window.addEventListener("storage",ev=>{
+  if(ev.key!==K)return;
+  try{D=Object.assign({admin:null,staff:[],rates:{}},JSON.parse(DB.get(K))||{})}catch(e){return}
+  const ae=document.activeElement;if(ae&&/INPUT|SELECT/.test(ae.tagName)&&ae.id!="who")return;
+  render();
 });
 render();
 });</script>
